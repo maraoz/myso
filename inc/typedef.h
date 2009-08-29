@@ -1,5 +1,5 @@
 /*
- * Header que contiene los typedefs a utilizar en el programa.
+ * Header containing type definitions for project.
  */ 
 
 #ifndef _TYPEDEF_H
