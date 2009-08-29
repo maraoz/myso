@@ -38,7 +38,7 @@
 
 typedef struct msg {
         long mtype;
-        char content[30];
+        char * content;
     } msg_t;
 
 typedef int session_t;
@@ -64,9 +64,9 @@ int w_write(session_t session, msg_t msg) {
 }
 
 msg_t w_read(session_t session) {
-    msg_t rcvd_msg;
-    msgrcv(session, &rcvd_msg, sizeof(rcvd_msg), 2, 0);
-    return rcvd_msg;
+    msg_t ret;
+    msgrcv(session, &ret, sizeof(ret), 2, 0);
+    return ret;
 }
 
 
@@ -75,7 +75,7 @@ int main(void) {
     if (sid == -1){
         printf("error al abrir la IPC\n");
     }
-    msg_t msg = {2, "hola!\n"};
+    msg_t msg = {2, "hola como te va?!\n"};
     if (w_write(sid, msg) != 0) {
         printf("error al escribir en el IPC\n");
     }
