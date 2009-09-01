@@ -41,7 +41,7 @@ insert_bus(int * id, point_t pos){
         printf("No se puede insertar un colectivo en medio de una manzana.\n");
         return BLOCKED_SLOT;
     }
-    
+
     if(tiles[pos.y][pos.x]){
         printf("Hay un bus en ese lugar, intentar luego.\n");
         return BUS_ALREADY_IN_SLOT;
