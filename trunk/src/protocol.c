@@ -1,4 +1,3 @@
-
 /**
  * protocol.c
  * author: maraoz
@@ -41,37 +40,82 @@ typedef struct msg {
         char * content;
     } msg_t;
 
-typedef int session_t;
 
-session_t w_open(int who) {
-    key_t key; /* key to be passed to msgget() */ 
-    int msgflg; /* msgflg to be passed to msgget() */ 
-    int msqid; /* return value from msgget() */ 
+#define TRUE 1
+#define FALSE 0
 
-    key = 1928;
-    msgflg = IPC_CREAT | 0666;
-    if ((msqid = msgget(key, msgflg)) == -1)
+#define USED 0
+#define READ 1
+#define WRITE 2
+#define SESSION_MAX 100
+
+session_t sessions[SESSION_MAX][3]; // USED, WRITE, READ
+
+session_t get_session(void) {
+    int i;
+    for (i=0; i< SESSION_MAX; i++) {
+        if (sessions[i][USED] == FALSE) {
+            return i;
+        }
+    }
+    return -1;
+}
+
+int commit_session(session_t session) {
+    if (sessions[session][USED] == FALSE) {
+        sessions[session][USED] = TRUE;
+    } else {
         return -1;
-    return msqid;
+    }
+}
+
+
+session_t w_open(int other) {
+
+    session_t new_session = get_session();
+
+    /* For writing */
+    key_t key;
+    int msgflg, msqid;
+    key = 1928+other*2;
+
+    msgflg = IPC_CREAT | 0666;
+    msqid = msgget(key, msgflg);
+    if ( msqid == -1)
+        return -1;
+    sessions[new_session][WRITE] = msqid;
+
+    /* For reading */
+    key = other*2+1927;
+    msqid = msgget(key, msgflg);
+    if ( msqid == -1)
+        return -1;
+    sessions[new_session][READ] = msqid;
+    if (commit_session(new_session) != -1)
+        return new_session;
+    else
+        return -1;
 }
 
 int w_close(session_t session) {
     return msgctl(session, IPC_RMID, NULL);
 }
 
-int w_write(session_t session, msg_t msg) {
-    return msgsnd(session, &msg, sizeof(msg), 0);
+int w_write(session_t session_id, msg_t msg) {
+    int msqid = sessions[session_id][WRITE];
+    return msgsnd(msqid, &msg, sizeof(msg), 0);
 }
 
-msg_t w_read(session_t session) {
+msg_t w_read(session_t session_id) {
     msg_t ret;
-    msgrcv(session, &ret, sizeof(ret), 2, 0);
+    int msqid = sessions[session_id][READ];
+    msgrcv(session_id, &ret, sizeof(ret), 2, 0);
     return ret;
 }
 
 
 int main(void) {
-    session_t sid = w_open(1);
+    session_t sid = w_open(12);
     if (sid == -1){
         printf("error al abrir la IPC\n");
     }
@@ -86,3 +130,4 @@ int main(void) {
     w_close(sid);
     return 0;
 }
+
