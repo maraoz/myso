@@ -72,7 +72,7 @@ openFiles(char * dir)
 
     while( (opdir = readdir( direct )) != NULL )
     {
-	fd = w_open( opdir->d_name );
+	fd = open( opdir->d_name );
 	
 	files->cantFiles++;
 	
@@ -87,7 +87,25 @@ openFiles(char * dir)
     return files;
 }
 
+/*
+** Datos que tiene que albergar un archivo de linea:
+**	cantidad de colectivos. [ int ]
+**	horarios de salida. [ int* ]
+**	recorrido [ point_t* ]
+**	cantidad de paradas. [ int ]
+**	posiciones de las paradas. [ point_t* ]
+*/
 
+int
+get_path(int fd_b, point_t *)
+{
+    
+
+
+
+
+
+}
 
 
 

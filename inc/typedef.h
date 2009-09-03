@@ -21,7 +21,7 @@ typedef struct
 {
     int msg_id;			/* id del mensaje que se envia */
     int id_line;		/*  */ 
-    int id_bus			/*  */
+    int id_bus;			/*  */
     point_t point;		/* posible posicion del colectivo */
 } package_t;
 
