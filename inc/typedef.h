@@ -19,12 +19,18 @@ typedef struct point_t {
 // marshall
 typedef struct
 {
-    int msg_id;
-    int * integer_p;
-    char * character_p;
-    int integer;
-    point_t point;
+    int msg_id;			/* id del mensaje que se envia */
+    int id_line;		/*  */ 
+    int id_bus			/*  */
+    point_t point;		/* posible posicion del colectivo */
 } package_t;
+
+typedef struct
+{
+    int cantFiles;
+    session_t * filesId;
+} files_t;
+
 
 // protocol
 typedef int session_t;
