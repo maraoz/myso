@@ -18,6 +18,10 @@ main(void){
     int qty_buses;
     pthread_t * buses_threads;
     int aux_pthread_creation;
+    pthread_attr_t attr;
+
+    pthread_attr_init(&attr);
+    pthread_attr_setdetachstate(&attr, PTHREAD_CREATE_JOINABLE);
 
 
     buses.path_length = get_path(0, &buses.path);
@@ -29,9 +33,9 @@ main(void){
     }
     buses.stops_length = get_stops(0, &buses.stops);
 
-    while(qty_buses > 0) {
-	aux_pthread_creation = pthread_create(&threads[qty_buses], NULL, new_bus, (void *)t);
-	if(!rc){
+    while(qty_buses > 0) { 
+	aux_pthread_creation = pthread_create(&threads[qty_buses], attr, new_bus, (void *)t);
+	if(!aux_pthread_creation){
 	    qty_buses--;
 	} else {
 	    printf("No se puedo crear el colectivo \n");
@@ -42,5 +46,5 @@ main(void){
 
 void *
 new_bus() {
-    
+    insert_request(int * id, point_t pos);
 }
