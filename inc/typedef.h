@@ -15,6 +15,8 @@ typedef struct point_t {
     int y;
 } point_t;
 
+// protocol
+typedef int session_t;
 
 // marshall
 typedef struct
@@ -32,8 +34,6 @@ typedef struct
 } files_t;
 
 
-// protocol
-typedef int session_t;
 
 typedef struct {
     point_t pos;
