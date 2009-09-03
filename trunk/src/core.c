@@ -20,7 +20,7 @@ main(void) {
   
 }
 
-void *
+int
 init(void) {
     
     int i,j;
@@ -36,7 +36,7 @@ init(void) {
                 tiles[i][j] = FALSE;
         }
     }
-    pthread_exit((void *) 0);
+    return 0;
 }
 
 void *
@@ -48,7 +48,7 @@ listen() {
 
 
 
-void *
+int
 insert_bus(int * id, point_t pos){
     
     int aux_id;
@@ -59,47 +59,47 @@ insert_bus(int * id, point_t pos){
     if(((pos.y%(CUADRAS/2) == 1) || (pos.y%(CUADRAS/2) == 2)) 
       && ((pos.x%(CUADRAS/2) == 1) || (pos.x%(CUADRAS/2) == 2))){
         printf("No se puede insertar un colectivo en medio de una manzana.\n");
-        pthread_exit((void *) BLOCKED_SLOT);
+        return BLOCKED_SLOT;
     }
 
     if(tiles[pos.y][pos.x]){
         printf("Hay un bus en ese lugar, intentar luego.\n");
-        pthread_exit((void *) BUS_ALREADY_IN_SLOT);
+        return BUS_ALREADY_IN_SLOT;
     }
     
     tiles[pos.y][pos.x] = TRUE;
-    pthread_mutex_lock(&instert_bus_mutex);
+//     pthread_mutex_lock(&instert_bus_mutex);
     aux_id = next_id
     buses[next_id] = pos;
     (*id) = next_id;
     next_id++;
-    pthread_mutex_unlock(&instert_bus_mutex);
-    pthread_exit((void *) aux_id);
+//     pthread_mutex_unlock(&instert_bus_mutex);
+    return aux_id;
         
 }
 
 
-void *
+int
 move_bus(int id, point_t new_pos){
     point_t actual_pos = buses[id];
     if(!valid_pos(new_pos)){
-        pthread_exit((void *)  NEW_POS_INVALID);
+        return  NEW_POS_INVALID;
     }
     if(dist(new_pos, actual_pos) > 1){
         printf("No te podes mover mas de 1 lugar por turno.\n");
-        pthread_exit((void *) NEW_POS_FAR_AWAY);
+       return NEW_POS_FAR_AWAY;
     }
     if(tile[new_pos.y][new_pos.x]){
         printf("No se puede avanzar, nueva posicion esta ocupada.\n");
-        pthread_exit((void *) NEW_POS_ALREADY_OCCUPIED);
+        return NEW_POS_ALREADY_OCCUPIED;
     }
     /* aca habria que chequear que esto sea atomico */
-    pthread_mutex_lock(&tiles_mutex[actual_pos.y][actual_pos.x]);
+//     pthread_mutex_lock(&tiles_mutex[actual_pos.y][actual_pos.x]);
     bus[id] = new_pos;
     tiles[actual_pos.y][actual_pos.x] = FALSE;
     tiles[new_pos.y][new_pos.x] = TRUE;
-    pthread_mutex_unlock(&tiles_mutex[actual_pos.y][actual_pos.x]);
-    pthread_exit((void *) id);
+//     pthread_mutex_unlock(&tiles_mutex[actual_pos.y][actual_pos.x]);
+    return id;
 }
 
 int

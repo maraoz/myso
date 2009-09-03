@@ -5,12 +5,12 @@
 int valid_pos(point_t pos);
 
 /* funcion que hace mover al autobus en caso de ser posible */
-void * move_bus(int id, point_t new_pos);
+int move_bus(int id, point_t new_pos);
 
 /* funcion que inserta un autobus en la ciudad */
-void * insert_bus(int * id, point_t pos); 
+int insert_bus(int * id, point_t pos); 
 
 /* funcion que inicializa la ciudad */
-void * init(void);
+int init(void);
 
 #endif
