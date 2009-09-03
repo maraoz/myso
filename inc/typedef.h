@@ -35,4 +35,9 @@ typedef struct
 // protocol
 typedef int session_t;
 
+typedef struct {
+    point_t pos;
+    int state;
+}sempahore;
+
 #endif
