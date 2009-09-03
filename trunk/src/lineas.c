@@ -10,7 +10,7 @@ typedef struct {
     int stops_length;
 } buses_line;
 
-bus_line buses;
+buses_line buses;
 
 int
 main(void){
