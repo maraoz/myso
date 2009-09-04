@@ -38,6 +38,6 @@ typedef struct
 typedef struct {
     point_t pos;
     int state;
-}sempahore;
+}semaphore;
 
 #endif
