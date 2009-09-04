@@ -1,43 +1,53 @@
 #include "../inc/typedef.h"
 #include "../inc/core.h"
+#include "../inc/draw.h"
 #include <pthread.h>
 #include <stdio.h>
 #include <unistd.h>
 
 
-#define CUADRAS 6
-#define TILES_CUADRAS 2
-#define XDIM 3*CUADRAS
-#define YDIM 3*CUADRAS
-#define TRUE 1
-#define FALSE 0
-#define V_GREEN 1
-#define V_RED	0
-#define	H_GREEN V_RED
-#define	V_GREEN H_RED
+
 
 boolean tiles[YDIM][XDIM];
-point_t buses[XDIM*YDIM];
+point_t buses[XDIM*YDIM][XDIM*YDIM];
+
+
 semaphore semps[(CUADRAS+1)*(CUADRAS+1)-4];
 int semps_hash[(CUADRAS+1)][(CUADRAS+1)];
-int next_id=0;
 pthread_mutex_t semaphore_mutex = PTHREAD_MUTEX_INITIALIZER;
-
-
-
+pthread_mutex_t map_mutex = PTHREAD_MUTEX_INITIALIZER;
+int sim_on = 1;
 
 
 
 int
 main(void) {
- 
     
-    while(1){
-	usleep(1000);
-	pthread_mutex_lock(&semaphore_mutex);
-	for(i = 0; i<(CUADRAS+1)*(CUADRAS+1) - 4 ; i++)
-	    switch_semaphore(&semps[i]);
-	pthread_mutex_unlock(&semaphore_mutex);
+    pthread_t core_threads[2];
+    pthread_attr_t attr;
+    int aux_pthread_creation;
+    
+    pthread_attr_init(&attr);
+    pthread_attr_setdetachstate(&attr, PTHREAD_CREATE_JOINABLE);
+    
+    init();
+    
+    aux_pthread_creation = pthread_create(&core_threads[0], &attr, (void*)(draw), NULL);
+    if(aux_pthread_creation){
+        printf("No se pudo crear el thread pedido.\n");
+    
+    aux_pthread_creation = pthread_create(&core_threads[1], &attr, (void*)(listen), NULL);
+    if(aux_pthread_creation){
+        printf("No se pudo crear el thread pedido.\n");
+
+    pthread_attr_destroy(&attr);
+    while(sim_on){
+        int i;
+        usleep(1000);
+        pthread_mutex_lock(&semaphore_mutex);
+        for(i = 0; i<(CUADRAS+1)*(CUADRAS+1) - 4 ; i++)
+            switch_semaphore(&semps[i]);
+        pthread_mutex_unlock(&semaphore_mutex);
 
     }
     
@@ -73,9 +83,11 @@ init(void) {
     return 0;
 }
 
+    
+
 void *
 listen() {
-    while(1){
+    while(sim_on){
 
 	
 
@@ -85,12 +97,20 @@ listen() {
 
 
 int
-insert_bus(int * id, point_t pos){
+insert_bus(int fd, int id, point_t pos){
+        
+    if(fd >= XDIM*YDIM || fd < 0) {
+        printf("Linea no soportada por el sistema.\n");
+        return FD_TOO_LARGE;
+    }
     
-    int aux_id;
+    if(id >= XDIM*YDIM || id < 0) {
+        printf("Colectivo no soportado por el sistema.\n");
+        return ID_TOO_LARGE;
+    }
     
     if(!valid_pos(pos)){
-        pthread_exit((void *)  NEW_POS_INVALID);
+        return NEW_POS_INVALID;
     }
     if(((pos.y%(TILES_CUADRAS+1) == 1) || (pos.y%(TILES_CUADRAS+1) == 2)) 
       && ((pos.x%(TILES_CUADRAS+1) == 1) || (pos.x%(TILES_CUADRAS+1) == 2))){
@@ -103,51 +123,86 @@ insert_bus(int * id, point_t pos){
         return BUS_ALREADY_IN_SLOT;
     }
     
+    pthread_mutex_lock(&map_mutex);
+    
     tiles[pos.y][pos.x] = TRUE;
-//     pthread_mutex_lock(&instert_bus_mutex);
-    aux_id = next_id
-    buses[next_id] = pos;
-    (*id) = next_id;
-    next_id++;
-//    pthread_mutex_unlock(&instert_bus_mutex);
-    return aux_id;
+    buses[fd][id] = pos;
+    pthread_mutex_unlock(&map_mutex);
+    return id;
         
 }
 
 
 int
-move_bus(int id, point_t new_pos){
-    point_t actual_pos = buses[id];
-    if(!valid_pos(new_pos)){
-        return  NEW_POS_INVALID;
+move_bus(int fd, int id, point_t new_pos){
+    point_t actual_pos = buses[fd][id];
+    int aux; 
+    
+    if(fd >= XDIM*YDIM || fd < 0) {
+        printf("Linea no soportada por el sistema.\n");
+        return FD_TOO_LARGE;
     }
+    
+    if(id >= XDIM*YDIM || id < 0) {
+        printf("Colectivo no soportado por el sistema.\n");
+        return ID_TOO_LARGE;
+    }  
+    
+    if(!valid_pos(new_pos)){
+        returnpthread_attr_destroy(&attr);
+  NEW_POS_INVALID;
+    }
+    
     if(dist(new_pos, actual_pos) > 1){
         printf("No te podes mover mas de 1 lugar por turno.\n");
        return NEW_POS_FAR_AWAY;
     }
+  
     pthread_mutex_lock(&semaphore_mutex);
-    if(hassSemaphore(new_pos) && isVRedHGreen(semps[(semps_hash[pos.y][pos.x])]) 
+    if(hassSemaphore(new_pos) && isVRedHGreen(semps[(semps_hash[new_pos.y][new_pos.x])]) 
 	&& actual_pos.x == new_pos.x) {
 	printf("No se puede avanzar, semaforo en rojo.\n");
         return RED_LIGHT_ON;
     }
     pthread_mutex_unlock(&semaphore_mutex);
-    if(tile[new_pos.y][new_pos.x] == TRUE){
+    
+    if(tiles[new_pos.y][new_pos.x] == TRUE){
         printf("No se puede avanzar, nueva posicion esta ocupada.\n");
         return NEW_POS_ALREADY_OCCUPIED;
     }
 
+    if((aux=new_pos.x - actual_pos.x) != 0) {
+        if(new_pos.y%6==0  && aux != 1) {
+            printf("CONTRAMANO.\n");
+            return WRONG_WAY;
+        }
+        if((new_pos.y%3==0 || new_pos.y==XDIM-1) && aux != -1) {
+            printf("CONTRAMANO.\n");
+            return WRONG_WAY;
+        }
+    } else if((aux=new_pos.y - actual_pos.y) != 0) {
+        if((new_pos.x%6==0 || new_pos.x==YDIM-1 ) && aux != 1) {
+            printf("CONTRAMANO.\n");
+            return WRONG_WAY;
+        }
+        if(new_pos.x%3==0 && aux != -1) {
+            printf("CONTRAMANO.\n");
+            return WRONG_WAY;
+        }
+    }
 	
-    bus[id] = new_pos;
+    buses[fd][id] = new_pos;
+    pthread_mutex_unlock(&map_mutex);
     tiles[actual_pos.y][actual_pos.x] = FALSE;
     tiles[new_pos.y][new_pos.x] = TRUE;
+    pthread_mutex_unlock(&map_mutex);
     return id;
 }
 
 int
 valid_pos(point_t pos){
     
-    if(pos.x >= XIMD || pos.x < 0 
+    if(pos.x >= XDIM || pos.x < 0 
         || pos.y >= YDIM || pos.y < 0){
             printf("Posicion fuera las dimensiones de la ciudad.\n");
             return FALSE;
@@ -156,9 +211,9 @@ valid_pos(point_t pos){
 }
 
 int
-hassSemaphore(point_t pos){
+hasSemaphore(point_t pos){
     if( !((pos.y == 0 || pos.y == CUADRAS*TILES_CUADRAS+1) 
-	&& (pos.X == 0 || pos.X == CUADRAS*TILES_CUADRAS+1))
+	&& (pos.x == 0 || pos.x == CUADRAS*TILES_CUADRAS+1))
 	&& ((pos.y % TILES_CUADRAS == 0) && (pos.x % TILES_CUADRAS == 0)))
 	    return 1;
     return 0;
@@ -167,13 +222,13 @@ hassSemaphore(point_t pos){
 int
 isVRedHGreen(semaphore s){
     if( s.state == V_RED ){
-	return TRUE;
+        return TRUE;
     }
     return FALSE;
 }
 
 void
-switch_semaphore(sempahore * sem){
+switch_semaphore(semaphore * sem){
     sem->state = !sem->state;
 }
 
