@@ -13,6 +13,8 @@ typedef struct {
 } buses_line;
 
 buses_line buses;
+pid_t my_pid;
+int sim_on = 1;
 
 int
 main(void){
@@ -24,9 +26,10 @@ main(void){
     pthread_attr_t attr;
     int index = 0;
     int aux = 0;
-    
+
+    my_pid = getpid();
     pthread_attr_init(&attr);
-    pthread_attr_setdetachstate(&attr, PTHREAD_CREATE_JOINABLE);
+    pthread_attr_setdetachstate(&attr, PTHREAD_CREATE_DETACHED);
 
 
     buses.path_length = get_path(0, &buses.path);
@@ -66,13 +69,13 @@ new_bus(int index) {
     i++;j++;
     while(sim_on){
         usleep(500);
-        if(!(buses.path[i] == buses.stops[j])){
-            i = i%buses.path;
+        if(!(buses.path[i].x == buses.stops[j].x && buses.path[i].y == buses.stops[j].y)){
+            i = i%buses.path_length;
             move_request(my_pid, index, buses.path[i]);
             i++;
         }
         else {
-            j = j%buses.path;
+            j = j%buses.stops_length;
             usleep(500);
             j++;
         }
