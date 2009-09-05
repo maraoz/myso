@@ -1,5 +1,5 @@
-#ifndef _CORE_H
-#define _CORE_H
+#ifndef __CORE_H__
+#define __CORE_H__
 
 #define CUADRAS 6
 #define TILES_CUADRAS 2
@@ -12,14 +12,26 @@
 #define H_GREEN V_RED
 #define H_REG V_GREEN
 
+
+#define FD_TOO_LARGE 1
+#define ID_TOO_LARGE 1
+#define NEW_POS_INVALID 1
+#define BLOCKED_SLOT 1
+#define BUS_ALREADY_IN_SLOT 1
+#define NEW_POS_FAR_AWAY 1
+#define RED_LIGHT_ON 1
+#define NEW_POS_ALREADY_OCCUPIED 1
+#define WRONG_WAY 1
+
+
 /*funcion que dice si una posicion esta dentro de los limites de la ciudad */
 int valid_pos(point_t pos);
 
 /* funcion que hace mover al autobus en caso de ser posible */
-int move_bus(int idl, int idb, point_t new_pos);
+int move_bus(int fd, int id, point_t new_pos);
 
 /* funcion que inserta un autobus en la ciudad */
-int insert_bus(int idl, int idb, point_t pos); 
+int insert_bus(int fd, int id, point_t pos); 
 
 /* funcion que inicializa la ciudad */
 int init(void);
@@ -31,5 +43,7 @@ int isVRedHGreen(semaphore s);
 int hasSemaphore(point_t pos);
 
 void * listen(void);
+
+void switch_semaphore(semaphore *s);
 
 #endif

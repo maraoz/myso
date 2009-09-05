@@ -1,6 +1,7 @@
 #include "../inc/typedef.h"
 #include "../inc/core.h"
 #include "../inc/draw.h"
+#include "../inc/util.h"
 #include <pthread.h>
 #include <stdio.h>
 #include <unistd.h>
@@ -26,20 +27,37 @@ main(void) {
     pthread_t core_threads[2];
     pthread_attr_t attr;
     int aux_pthread_creation;
+    files_t * file;
     
     pthread_attr_init(&attr);
-    pthread_attr_setdetachstate(&attr, PTHREAD_CREATE_JOINABLE);
+    pthread_attr_setdetachstate(&attr, PTHREAD_CREATE_DETACHED);
+    
+    while((file = openFiles) != NULL) {
+        pid_t pid;
+        int aux;
+        char *args[] = {"./lineas", (char *) 0 };
+        pid = fork();
+        switch(pid){
+            case 0: aux = execv("../bin/", args);
+            if(aux == -1){
+                 return -1;
+            }
+            case -1: return 1;
+            default: break;
+        }           
+        
+    }
     
     init();
     
     aux_pthread_creation = pthread_create(&core_threads[0], &attr, (void*)(draw), NULL);
     if(aux_pthread_creation){
         printf("No se pudo crear el thread pedido.\n");
-    
+    }
     aux_pthread_creation = pthread_create(&core_threads[1], &attr, (void*)(listen), NULL);
     if(aux_pthread_creation){
         printf("No se pudo crear el thread pedido.\n");
-
+    }
     pthread_attr_destroy(&attr);
     while(sim_on){
         int i;
@@ -65,18 +83,18 @@ init(void) {
     esta ocupada y no se puede pasar por encima de una manzana. */
     for(i=0 ; i < YDIM ; i++){
         for(j=0 ; j < XDIM ; j++){
-	    aux.x = j;
-	    aux.y = i;
-	    if(hasSemaphore(aux)) {
-		semps[index].state = V_RED;
-		semps_hash[aux.y][aux.x] = index;
-		semps[index++].pos = aux;
-	    }
-            else if(((i%(TILES_CUADRAS+1) == 1) || (i%(TILES_CUADRAS+1) == 2)) 
-                && ((j%(TILES_CUADRAS+1) == 1) || (j%(TILES_CUADRAS+1) == 2)))
+            aux.x = j;
+            aux.y = i;
+            if(hasSemaphore(aux)) {
+                semps[index].state = V_RED;
+                semps_hash[aux.y][aux.x] = index;
+                semps[index++].pos = aux;
+            } else if(((i%(TILES_CUADRAS+1) == 1) || (i%(TILES_CUADRAS+1) == 2)) 
+                && ((j%(TILES_CUADRAS+1) == 1) || (j%(TILES_CUADRAS+1) == 2))) {
                 tiles[i][j] = TRUE;
-            else
+            } else {
                 tiles[i][j] = FALSE;
+            }
         }
     }
 
@@ -149,7 +167,7 @@ move_bus(int fd, int id, point_t new_pos){
     }  
     
     if(!valid_pos(new_pos)){
-        returnpthread_attr_destroy(&attr);
+        return NEW_POS_INVALID;
   NEW_POS_INVALID;
     }
     
@@ -159,7 +177,7 @@ move_bus(int fd, int id, point_t new_pos){
     }
   
     pthread_mutex_lock(&semaphore_mutex);
-    if(hassSemaphore(new_pos) && isVRedHGreen(semps[(semps_hash[new_pos.y][new_pos.x])]) 
+    if(hasSemaphore(new_pos) && isVRedHGreen(semps[(semps_hash[new_pos.y][new_pos.x])]) 
 	&& actual_pos.x == new_pos.x) {
 	printf("No se puede avanzar, semaforo en rojo.\n");
         return RED_LIGHT_ON;
