@@ -3,11 +3,9 @@
 
 /*
 ** formato del file:
-** c * x * a1 b1 a2 b2 a3 c3 .. an bn * y * c1 d1 c2 d2 c3 d3 .. cn dn * t1 t2 t3 ... tn *
+** c * a1 b1 a2 b2 a3 c3 .. an bn * c1 d1 c2 d2 c3 d3 .. cn dn * t1 t2 t3 ... tn *
 ** c = cantidad de colectivos.
-** x = recorrido cantidad.
 ** despues viene el recorrido.
-** y = paradas cantidad.
 ** despues vienen las paradas.
 ** t = tiempos.
 */
