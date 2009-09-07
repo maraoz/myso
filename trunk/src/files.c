@@ -69,16 +69,14 @@ openFiles(char * dir)
 */
 
 int
-get_path(int fd, int ** path)
+get_path(FILE * fd, int ** path)
 {
     int i,j;
     char num;
-    char * param = malloc(3);
-    param = itoa(fd);
 
     *path = NULL;
 
-    for(i=0, j=0; (num = fgetc(param)) != '*'; i++)
+    for(i=0, j=0; (num = fgetc(fd)) != '*'; i++)
     {
         if(i%3 == 0)
         {
@@ -89,57 +87,45 @@ get_path(int fd, int ** path)
             (*path)[j].y = (int)num;
     }
 
-    free(param);
-
     return j;
 }
 
 int
-get_qty_buses(int fd)
+get_qty_buses(FILE * fd)
 {
-    char * param = malloc(3);
-    param = itoa(fd);
     char num;
 
-    num = fgetc(param);
-
-    free(param);
+    num = fgetc(fd);
 
     return (int)num;
 }
 
 int *
-get_times(fd)
+get_times(FILE * fd)
 {
-    char * param = malloc(3);
-    param = itoa(fd);
     int i;
     int * times;
     char num;
 
-    for(i=0; (num = fgetc(param)) != '*'; i++)
+    for(i=0; (num = fgetc(fd)) != '*'; i++)
         if(i%2 == 0)
         {
             times = realloc((i+1)*sizeof(int));
             times[i] = (int)num;
         }
 
-    free(param);
-
     return times;
 }
 
 int
-get_stops(int fd, int ** stops)
+get_stops(FILE * fd, int ** stops)
 {
     int i,j;
     char num;
-    char * param = malloc(3);
-    param = itoa(fd);
 
     *stops = NULL;
 
-    for(i=0, j=0; (num = fgetc(param)) != '*'; i++)
+    for(i=0, j=0; (num = fgetc(fd)) != '*'; i++)
     {
         if(i%3 == 0)
         {
@@ -150,16 +136,11 @@ get_stops(int fd, int ** stops)
             (*stops)[j].y = (int)num;
     }
 
-    free(param);
-
     return j;
 }
 
 int
-closeFd(int fd)
+closeFd(FILE * fd)
 {
-    char * param = malloc(3);
-    param = itoa(fd);
-
-    return fclose(param);
+    return fclose(fd);
 }
