@@ -32,9 +32,9 @@ main(void){
     pthread_attr_setdetachstate(&attr, PTHREAD_CREATE_DETACHED);
 
 
-    buses.path_length = get_path(0, &buses.path);
-    qty_buses = get_qty_buses(0);
-    buses_times = get_times(0);
+    buses.path_length = get_path(3, &buses.path);
+    qty_buses = get_qty_buses(3);
+    buses_times = get_times(3);
     
     buses_threads = malloc(sizeof(pthread_t) * qty_buses);
     if(buses_threads == NULL){

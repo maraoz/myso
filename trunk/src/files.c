@@ -32,6 +32,7 @@ preguntas:
 entonces por que tuvimos que hacer ese cambio en el openFiles para que el 
 while lo haga wilson en vez de hacerlo yo dentro de la funcion y devolver una 
 estructura, yo creo que era porque no se podia devolver una estructura.
+USAMOS ESTRUCTURA, CAMBIAMOS LO QUE TENEMOS Y DEVOLVEMOS ESTRUCTURA CON VECTOR DE FD Y CANTIDAD
 
 2) por que se supone que cuando llego a get_path() el archivo ya esta abierto?
 no deberia llamar antes a alguna funcion tipo openFiles??
