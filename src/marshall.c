@@ -20,8 +20,8 @@ insert_request(int idl, int idb, point_t pos)
     w_write(data);
 }
 
-insetr_bus_ack
-move_reaquest_ack
+insert_bus_ack
+move_request_ack
 
 void
 move_request_ack(int idl, int idb, point_t new_pos)
