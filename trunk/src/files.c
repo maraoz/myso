@@ -16,12 +16,7 @@
 #define MAXFILES 10
 #define ISNUM(a) ( (a) >= '0' || (a) <= '9' )
 
-typedef struct{
-    int cant;
-    int fd_lst[MAXFILES];
-} fd_strct;
-
-fd_strct fd_list;
+DIR * direct;
 
 /*
 ** readtoint recibe un fd y retorna en formato int el 
@@ -40,44 +35,22 @@ readToInt(int fd)
     return num;
 }
 
-/*
-** openfiles abre todos los archivos cada uno en un file descriptor.
-** se lo llama una sola vez. el ciclo hay que hacerlo con returnfd.
-** openfiles deja la informacion (cantidad de fd y numero de fd) en una
-** estructura global.
-*/
 
 int
 openFiles(void)
 {
-    DIR * direct;
     struct dirent *opdir;
-    char * dir = "../files";
-    int fd_list.cant = 0;
-
-    if( (direct = opendir(dir)) == NULL )
-	printf("Error de directorio\n");
-
-    while( (opdir = readdir( direct )) != NULL )
-	fd_list[i-1] = open(opdir->d_name, O_RDONLY, 0);
-
-    closedir(direct);
-}
-
-/*
-** returnfd va devolviendo los fd uno a uno cada vez que es llamada.
-*/
-
-int
-returnFd()
-{
-    static int i = 0;
     int fd;
+
+    opdir = readdir(direct);
     
-    fd = fd_list[i];
-    i++;
-    
-    return fd;
+    if(opdir)
+    {
+	fd = open(opdir->d_name, O_RDONLY, 0);
+	return fd;
+    }
+
+    return 0;
 }
 
 /*
@@ -178,4 +151,17 @@ int
 closeFd(int fd)
 {
     return close(fd);
+}
+
+void
+openDir(void)
+{
+    char * dir = "../files";
+    direct = opendir(dir);
+}
+
+void
+closeDir(void)
+{
+    closedir(direct);
 }
