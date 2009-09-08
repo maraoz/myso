@@ -1,65 +1,83 @@
 #include<dirent.h>
+#include<fildes.h>
 #include<stdio.h>
 
 /*
 ** formato del file:
-** c * a1 b1 a2 b2 a3 c3 .. an bn * c1 d1 c2 d2 c3 d3 .. cn dn * t1 t2 t3 ... tn *
-** c = cantidad de colectivos.
-** despues viene el recorrido.
-** despues vienen las paradas.
-** t = tiempos.
+** c 					cantidad de colectivos.
+** ac					cantidad de puntos de recorrido.
+** a1 b1 a2 b2 a3 c3 .. an bn 		recorrido.
+** cc					cantidad de paradas.
+** c1 d1 c2 d2 c3 d3 .. cn dn 		paradas.
+** tc					cantidad de tiempos.
+** t1 t2 t3 ... tn			tiempos de salidas.
 */
 
-/*
-** lo que voy a hacer es dejar todo listo la informacion pedida en una 
-** estructura que despeus vamos a hablar con matias de que forma se la
-** paso, si puedo retornar habiendo hecho malloc de ellas, o las
-** tenemos que transferir con las funciones para conmunicacion entre
-** procesos (eso no lo se).
-** La causa del cambio y de que no lo voy a hacer como habiamos dicho, es
-** que para devolver los fd de las lineas, si me llama muchas veces a mi
-** funcion filesOpen, tengo que abrir el directorio cada vez que me llama
-** y cerrarlo, lo que me parece bastante berreta hacer eso.
-** se podria solucionar haciendo variables globales pero no me parece
-** tampoco la mejor solucion.
-*/
+#define MAXFILES 10
+#define ISNUM(a) ( (a) >= '0' || (a) <= '9' )
 
+typedef struct{
+    int cant;
+    int fd_lst[MAXFILES];
+} fd_strct;
+
+fd_strct fd_list;
 
 /*
-preguntas: 
-
-1) asumo entonces que puedo hacer un malloc y devolverlo por parametro
-entonces por que tuvimos que hacer ese cambio en el openFiles para que el 
-while lo haga wilson en vez de hacerlo yo dentro de la funcion y devolver una 
-estructura, yo creo que era porque no se podia devolver una estructura.
-USAMOS ESTRUCTURA, CAMBIAMOS LO QUE TENEMOS Y DEVOLVEMOS ESTRUCTURA CON VECTOR DE FD Y CANTIDAD
-
-2) por que se supone que cuando llego a get_path() el archivo ya esta abierto?
-no deberia llamar antes a alguna funcion tipo openFiles??
-
-3) despues de correr get_path() donde queda el cursor dentro del archivo?
-cuando entro a get_stops() lo tengo al principio del archivo o en lo ultimo que lei
-*/
-
-/*
-** A esta funcion hay que arreglarla, despues hablare con matias como lo hacemos.
+** readtoint recibe un fd y retorna en formato int el 
+** numero que estaba en el archivo.
 */
 
 int
-openFiles(char * dir)
+readToInt(int fd)
+{
+    char vec;
+    int num = 0;
+    
+    while( ISNUM(read(fd, &vec, sizeof(char))) )
+	num = num * 10 + vec - '0';
+    
+    return num;
+}
+
+/*
+** openfiles abre todos los archivos cada uno en un file descriptor.
+** se lo llama una sola vez. el ciclo hay que hacerlo con returnfd.
+** openfiles deja la informacion (cantidad de fd y numero de fd) en una
+** estructura global.
+*/
+
+int
+openFiles(void)
 {
     DIR * direct;
     struct dirent *opdir;
-    int i = 0;
-    int fd;
+    char * dir = "../files";
+    int fd_list.cant = 0;
 
     if( (direct = opendir(dir)) == NULL )
 	printf("Error de directorio\n");
 
     while( (opdir = readdir( direct )) != NULL )
-	printf("file nombre = %s\n", opdir->d_name);
+	fd_list[i-1] = open(opdir->d_name, O_RDONLY, 0);
 
-	closedir(direct);
+    closedir(direct);
+}
+
+/*
+** returnfd va devolviendo los fd uno a uno cada vez que es llamada.
+*/
+
+int
+returnFd()
+{
+    static int i = 0;
+    int fd;
+    
+    fd = fd_list[i];
+    i++;
+    
+    return fd;
 }
 
 /*
@@ -69,79 +87,103 @@ openFiles(char * dir)
 ** para eso necesito sacarme las dudas que tengo.
 */
 
+
+/*
+** me falta saber como mover el cursor dentro del file
+** descriptor para ir saltando de un lugar a otro.
+*/
+
 int
-get_path(FILE * fd, int ** path)
+get_path(int fd, point_t ** path)
 {
     int i,j;
-    char num;
+    int num;
+    int cant;
 
-    *path = NULL;
+    /* posiciono el cursor en cantidad de puntos*/
+    
+    cant = readToInt(fd);
 
-    for(i=0, j=0; (num = fgetc(fd)) != '*'; i++)
+    *path = malloc(cant * sizeof(point_t));
+    
+    /* posiciono el cursor en los puntos */
+
+    for(i=0, j=0; i < cant ; i++)
     {
-        if(i%3 == 0)
-        {
-            *path = realloc((j+1)*sizeof(point_t));
-            (*path)[j].x = (int)num;
-        }
-        else if(i%3 == 1)
-            (*path)[j].y = (int)num;
+	num = readToInt(fd);
+    
+        if(i%2)
+            (*path)[j].x = num;
+        else
+            (*path)[j++].y = num;
     }
 
     return j;
 }
 
 int
-get_qty_buses(FILE * fd)
+get_qty_buses(int fd)
 {
-    char num;
+    int cant;
 
-    num = fgetc(fd);
+    /* posiciono el cursor en cantidad de colectivos */
+    
+    cant = readToInt(fd);
 
-    return (int)num;
+    return cant;
 }
 
 int *
-get_times(FILE * fd)
+get_times(int fd)
 {
     int i;
+    int cant;
     int * times;
-    char num;
 
-    for(i=0; (num = fgetc(fd)) != '*'; i++)
-        if(i%2 == 0)
-        {
-            times = realloc((i+1)*sizeof(int));
-            times[i] = (int)num;
-        }
+    /* posiciono el cursor en cantidad de tiempos*/
+
+    cant = readToInt(fd);
+    
+    times = malloc(cant * sizeof(int));
+
+    /* posiciono el cursor en tiempos */
+
+    for(i=0; i < cant ; i++)
+	    times[i] = readToInt(fd);
 
     return times;
 }
 
 int
-get_stops(FILE * fd, int ** stops)
+get_stops(int fd, point_t ** stops)
 {
     int i,j;
-    char num;
+    int cant;
+    int num;
 
-    *stops = NULL;
+    /* posiciono el cursor en cantidad de paradas*/
 
-    for(i=0, j=0; (num = fgetc(fd)) != '*'; i++)
+    cant = readToInt(fd);
+
+    *stops = malloc(cant * sizeof(point_t));
+    
+    /* posiciono el cursor en las paradas */
+
+    for(i=0, j=0; i < cant; i++)
     {
-        if(i%3 == 0)
-        {
-            *stops = realloc((j+1)*sizeof(point_t));
-            (*stops)[j].x = (int)num;
-        }
-        else if(i%3 == 1)
-            (*stops)[j].y = (int)num;
+	num = readToInt(fd);
+	
+        if(i%2)
+            (*stops)[j].x = num;
+        else
+            (*stops)[j++].y = num;
     }
 
     return j;
 }
 
 int
-closeFd(FILE * fd)
+closeFd(int fd)
 {
-    return fclose(fd);
+    return close(fd);
 }

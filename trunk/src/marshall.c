@@ -20,8 +20,11 @@ insert_request(int idl, int idb, point_t pos)
     w_write(data);
 }
 
+insetr_bus_ack
+move_reaquest_ack
+
 void
-move_request(int idl, int idb, point_t new_pos)
+move_request_ack(int idl, int idb, point_t new_pos)
 {
     package_t data;
 
@@ -48,44 +51,6 @@ receive(package_t data)
     }
 }
 
-
-/*
-** openFiles recibe un char* con el directorio y retorna un puntero a files_t, el cual 
-** contiene un int con la cantidad de archivos que abrio (porque los abre)
-** y un string de session_t con todos los fd de los archivos abiertos que devolvio w_open
-*/
-
-files_t *
-openFiles(char * dir)
-{
-    DIR * direct;
-    struct dirent *opdir;
-    files_t * files = malloc(sizeof(files_t));
-    int i = 0;
-    int fd;
-
-    if( (direct = opendir(dir)) == NULL )
-	printf("Error de directorio\n");
-
-    files->cantFiles = 0;
-    files->filesId = NULL;
-
-    while( (opdir = readdir( direct )) != NULL )
-    {
-	fd = open( opdir->d_name );
-	
-	files->cantFiles++;
-	
-	if(i%5==0)
-	    files->filesId=realloc((i+5)*sizeof(int));
-	
-	files->filesId[i] = fd;
-    }
-
-    files->filesId=realloc(i*sizeof(int));
-    
-    return files;
-}
 
 /*
 ** Datos que tiene que albergar un archivo de linea:
