@@ -81,14 +81,6 @@ returnFd()
 }
 
 /*
-** necesito que antes de entrar al for este todo listo
-** como para que el proximo caracter que lea sea el
-** valor x de la primera posicion del recorrido.
-** para eso necesito sacarme las dudas que tengo.
-*/
-
-
-/*
 ** me falta saber como mover el cursor dentro del file
 ** descriptor para ir saltando de un lugar a otro.
 */
