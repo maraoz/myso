@@ -16,7 +16,7 @@ typedef struct {
 
 buses_line buses;
 pid_t my_pid;
-int sim_on = 1;
+extern int sim_on;
 int * movements;
 int qty_buses;
 
@@ -66,7 +66,7 @@ main(void){
             aux = 0;
         }
     }
-    m_line_init();
+    m_init_line();
     openChannel(1);
     while(sim_on){
 	receive_lines();
@@ -77,12 +77,12 @@ main(void){
 }
 
 void
-move_ack(int id){
+move_ack(int fd, int id){
     movements[id]++;
 }
 
 void
-insert_ack(){
+insert_ack(int id){
     qty_buses--;
 }
 

@@ -20,7 +20,7 @@ pthread_mutex_t semaphore_mutex = PTHREAD_MUTEX_INITIALIZER;
 pthread_mutex_t map_mutex = PTHREAD_MUTEX_INITIALIZER;
 int sim_on = 1;
 
-
+/*
 int
 main(void) {
     
@@ -81,7 +81,7 @@ main(void) {
 
     }
     
-}
+}*/
 
 int
 init(void) {
@@ -118,7 +118,7 @@ init(void) {
 void *
 listen() {
     while(sim_on){
-        receive();
+        receive_core();
     }
 }
 
@@ -224,7 +224,7 @@ move_bus(int fd, int id, point_t new_pos){
     tiles[actual_pos.y][actual_pos.x] = FALSE;
     tiles[new_pos.y][new_pos.x] = TRUE;
     pthread_mutex_unlock(&map_mutex);
-    move_bus_ack(fd,id);
+    move_request_ack(fd,id);
     return id;
 }
 
