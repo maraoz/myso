@@ -19,52 +19,22 @@
  * http://www.ecst.csuchico.edu/~beej/guide/ipc/
  */
 
-#define SHARED_MEMORY 0
-#define FIFO 1
-#define SOCKET 2
-#define MESSAGE_QUEUE 3
-int program_ipc_method;
-
-int w_init(int ipc_type) {
-    program_ipc_methods = ipc_type;
-    switch(program_ipc_methods) {
-        case SHARED_MEMORY:
-            s_w_init(); break;
-        case FIFO:
-            f_w_init(); break;
-        case SOCKET:
-            s_w_init(); break;
-        case MESSAGE_QUEUE:
-            m_w_init(); break;
-        default:
-            printf("Método IPC inválido\n");
-    }
-}
-
-session_t w_open(int other) {
-}
-
-int w_close(session_t session) {
-}
-
-int w_write(session_t session_id, package_t package) {
-}
-
-package_t w_read(void) {
-}
 
 
 /**
  * Shared Memory
  */
 
+int s_w_init(void) {};
+
 /**
  * FIFOs
  */
-
+int f_w_init(void) {};
 /**
  * Sockets
  */
+int k_w_init(void) {};
 
 /**
  * Message Queue
@@ -104,7 +74,7 @@ int commit_session(session_t session) {
 }
 
 
-int w_init(void) {
+int m_w_init(void) {
     key_t key;
     int msgflg, msqid;
     key = 1928;
@@ -116,7 +86,7 @@ int w_init(void) {
     msqid_singleton = msqid;
 }
 
-session_t w_open(int other) {
+session_t m_w_open(int other) {
 
     session_t new_session = get_session();
     sessions[new_session][CONTENT] = other;
@@ -126,11 +96,11 @@ session_t w_open(int other) {
         return -1;
 }
 
-int w_close(session_t session) {
+int m_w_close(session_t session) {
     sessions[session][USED] = FALSE;
 }
 
-int w_write(session_t session_id, package_t package) {
+int m_w_write(session_t session_id, package_t package) {
     int msqid = msqid_singleton;
     long msg_key = sessions[session_id][CONTENT];
     q_msg_t queue_message;
@@ -139,7 +109,7 @@ int w_write(session_t session_id, package_t package) {
     return msgsnd(msqid, &queue_message, sizeof(package_t), 0);
 }
 
-package_t w_read(void) {
+package_t m_w_read(void) {
     package_t ret;
     int msqid = msqid_singleton;
     q_msg_t q_message;
@@ -155,9 +125,65 @@ package_t w_read(void) {
 }
 
 
+
+
+
+
+/**
+ * GENERAL
+ */
+
+#define SHARED_MEMORY 0
+#define FIFO 1
+#define SOCKET 2
+#define MESSAGE_QUEUE 3
+int program_ipc_method;
+
+int w_init(int ipc_type) {
+    int program_ipc_methods = ipc_type;
+    switch(program_ipc_methods) {
+        case SHARED_MEMORY:
+            s_w_init(); break;
+        case FIFO:
+            f_w_init(); break;
+        case SOCKET:
+            k_w_init(); break;
+        case MESSAGE_QUEUE:
+            m_w_init(); break;
+        default:
+            printf("Método IPC inválido\n");
+    }
+}
+
+session_t w_open(int other) {
+    // TODO: contemplate other IPCS
+    return m_w_open(other);
+}
+
+int w_close(session_t session) {
+    // TODO: contemplate other IPCS
+    return m_w_close(session);
+}
+
+int w_write(session_t session_id, package_t package) {
+    // TODO: contemplate other IPCS
+    return m_w_write(session_id, package);
+}
+
+package_t w_read(void) {
+    // TODO: contemplate other IPCS
+    return m_w_read();
+}
+
+
+
+/**
+ * TESTCASES
+ */
+
 int main(void) {
 
-    w_init();
+    w_init(MESSAGE_QUEUE);
     session_t sid = w_open(getpid());
     package_t pck;
 
@@ -174,4 +200,7 @@ int main(void) {
 
     return 0;
 }
+
+
+
 
