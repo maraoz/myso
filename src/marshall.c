@@ -77,10 +77,10 @@ move_request(int idl, int idb, point_t new_pos)
 }
 
 void
-receive_core()
+receive_core(package_t data)
 {
     int code;
-    package_t data;
+//     package_t data;
 
 //     data = w_read();
     switch(data.msg_id)
@@ -94,16 +94,16 @@ receive_core()
 }
 
 void
-receive_lines()
+receive_lines(package_t data)
 {
     int code;
-    package_t data;
+//     package_t data;
 
 //     data = w_read();
     switch(data.msg_id)
     {
-        case CD_INSERT_BUS: code = insert_ack(data.id_line);break;
-        case CD_MOVE_BUS: code = move_ack(data.id_line, data.id_bus);break;
+        case CD_INSERT_ACK: code = insert_ack(data.id_line);break;
+        case CD_MOVE_ACK: code = move_ack(data.id_line, data.id_bus);break;
         default: /* */;
     }
 }
@@ -111,15 +111,17 @@ receive_lines()
 void
 receive()
 {
+    package_t data;
     data = w_read();
+
     switch(data.msg_id)
     {
         case CD_INSERT_BUS:
         case CD_MOVE_BUS:
         case CD_VALID_POS:
-        case CD_INIT: receive_core(); break;
-        case CD_INSERT_BUS:
-        case CD_MOVE_BUS: receive_lines(); break;
+        case CD_INIT: receive_core(data); break;
+        case CD_INSERT_ACK:
+        case CD_MOVE_ACK: receive_lines(data); break;
         default: /* */;
     }
 }
