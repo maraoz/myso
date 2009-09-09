@@ -15,11 +15,12 @@ typedef struct {
 buses_line buses;
 pid_t my_pid;
 int sim_on = 1;
+int * movements;
+int qty_buses;
 
 int
 main(void){
 
-    int qty_buses;
     int * buses_times;
     pthread_t * buses_threads;
     int aux_pthread_creation;
@@ -27,6 +28,7 @@ main(void){
     int index = 0;
     int aux = 0;
 
+    m_init_line();
     my_pid = getpid();
     pthread_attr_init(&attr);
     pthread_attr_setdetachstate(&attr, PTHREAD_CREATE_DETACHED);
@@ -36,6 +38,10 @@ main(void){
     qty_buses = get_qty_buses(3);
     buses_times = get_times(3);
     
+    movements = calloc(sizeof(int),qty_buses);
+    if(movements == NULL){
+	return 1;
+    }
     buses_threads = malloc(sizeof(pthread_t) * qty_buses);
     if(buses_threads == NULL){
         printf("No hay suficiente memoria \n");
@@ -44,11 +50,13 @@ main(void){
     buses.stops_length = get_stops(0, &buses.stops);
     
     aux = buses_times[0];
+    tmp_qty_buses = qty_buses;
     while(qty_buses > 0) {
         usleep(aux);
         aux_pthread_creation = pthread_create(&buses_threads[index], &attr, (void*)(new_bus), (void *)index);
         if(!aux_pthread_creation){
-            qty_buses--;
+	    while(tmp_qty_buses == qty_buses);
+            tmp_qty_buses--;
             index++;
             aux = buses_times[index] - buses_times[index-1];
         } else {
@@ -56,8 +64,23 @@ main(void){
             aux = 0;
         }
     }
-    pthread_attr_destroy(&attr);
+    openChannel(1);
+    while(sim_on){
+	listen();
+    }
 
+    pthread_attr_destroy(&attr);
+    free(movements);
+}
+
+void
+move_ack(int id){
+    movements[id]++;
+}
+
+void
+insert_ack(){
+    qty_buses--;
 }
 
 void *
@@ -69,15 +92,15 @@ new_bus(int index) {
     i++;j++;
     while(sim_on){
         usleep(500);
-        if(!(buses.path[i].x == buses.stops[j].x && buses.path[i].y == buses.stops[j].y)){
-            i = i%buses.path_length;
-            move_request(my_pid, index, buses.path[i]);
-            i++;
-        }
-        else {
-            j = j%buses.stops_length;
-            usleep(500);
-            j++;
-        }
+	i = i%buses.path_length;
+        move_request(my_pid, index, buses.path[i]);
+	if(&& movements[my_index] > i) {
+	    if(buses.path[i].x == buses.stops[j].x && buses.path[i].y == buses.stops[j].y ) {
+		j = j%buses.stops_length;
+		usleep(500);
+		j++;
+	    }
+	    i++;
+	}
     }
 }

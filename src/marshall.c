@@ -20,8 +20,27 @@ insert_request(int idl, int idb, point_t pos)
     w_write(data);
 }
 
-insert_bus_ack
-move_request_ack
+void
+insert_bus_ack(int idl, int idb){
+
+    package_t data;
+
+    data.msg_id = CD_MOVE_BUS;
+    data.id_line = idl;
+    data.id_bus = idb;
+    data.point = new_pos;
+}
+
+void
+move_request_ack(int idl, int idb){
+
+    package_t data;
+
+    data.msg_id = CD_MOVE_BUS;
+    data.id_line = idl;
+    data.id_bus = idb;
+    data.point = new_pos;
+}
 
 void
 move_request_ack(int idl, int idb, point_t new_pos)
@@ -33,7 +52,7 @@ move_request_ack(int idl, int idb, point_t new_pos)
     data.id_bus = idb;
     data.point = new_pos;
 
-    send(data);
+    w_write(data);
 }
 
 void
