@@ -8,6 +8,8 @@
 #define CD_MOVE_BUS 2
 #define CD_VALID_POS 3
 #define CD_INIT 4
+#define CD_MOVE_ACK 5
+#define CD_INSERT_ACK 6
 
 void
 m_init_core(){
@@ -79,8 +81,8 @@ receive_core()
 {
     int code;
     package_t data;
-    
-    data = w_read();
+
+//     data = w_read();
     switch(data.msg_id)
     {
         case CD_INSERT_BUS: code = insert_bus(data.id_line, data.id_bus, data.point);break;
@@ -96,8 +98,8 @@ receive_lines()
 {
     int code;
     package_t data;
-    
-    data = w_read();
+
+//     data = w_read();
     switch(data.msg_id)
     {
         case CD_INSERT_BUS: code = insert_ack(data.id_line);break;
@@ -106,4 +108,19 @@ receive_lines()
     }
 }
 
-
+void
+receive()
+{
+    data = w_read();
+    switch(data.msg_id)
+    {
+        case CD_INSERT_BUS:
+        case CD_MOVE_BUS:
+        case CD_VALID_POS:
+        case CD_INIT: receive_core(); break;
+        case CD_INSERT_BUS:
+        case CD_MOVE_BUS: receive_lines(); break;
+        default: /* */;
+    }
+}
+    
