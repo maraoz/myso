@@ -1,5 +1,6 @@
 #include<dirent.h>
-#include<fildes.h>
+// #include<fildes.h>
+#include<fcntl.h>
 #include<stdio.h>
 
 /*
@@ -14,7 +15,7 @@
 */
 
 #define MAXFILES 10
-#define ISNUM(a) ( (a) >= '0' || (a) <= '9' )
+#define ISNUM(a) ( (a) >= '0' && (a) <= '9' )
 
 DIR * direct;
 
@@ -26,11 +27,11 @@ DIR * direct;
 int
 readToInt(int fd)
 {
-    char vec;
+    int temp;
     int num = 0;
-    
-    while( ISNUM(read(fd, &vec, sizeof(char))) )
-	num = num * 10 + vec - '0';
+
+    while( read(fd, &temp, sizeof(char)) && ISNUM(temp) )
+	num = num * 10 + temp - '0';
     
     return num;
 }
@@ -46,7 +47,7 @@ openFiles(void)
     
     if(opdir)
     {
-	fd = open(opdir->d_name, O_RDONLY, 0);
+	fd = open(opdir->d_name, O_RDONLY);
 	return fd;
     }
 
@@ -66,6 +67,7 @@ get_path(int fd, point_t ** path)
     int cant;
 
     /* posiciono el cursor en cantidad de puntos*/
+    lseek(fd, 0, 0);
     
     cant = readToInt(fd);
 
