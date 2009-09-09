@@ -31,12 +31,17 @@ DIR * direct;
 int
 readToInt(int fd)
 {
-    int temp;
+    char temp;
     int num = 0;
 
-    while( read(fd, &temp, sizeof(char)) && ISNUM(temp) )
-	num = num * 10 + temp - '0';
-    
+    while( read(fd, &temp, sizeof(char)) )
+    {
+	if(ISNUM(temp))
+	    num = num * 10 + temp - '0';
+	else
+	    break;
+    }
+
     return num;
 }
 
@@ -66,31 +71,26 @@ openFiles(void)
 int
 get_path(int fd, point_t ** path)
 {
-    int i,j;
+    int i = 0;
     int num;
     char cant;
 
-    /* posiciono el cursor en cantidad de puntos*/
-    lseek(fd, 0, SEEK_SET);
-    
     cant = readToInt(fd);
 
     *path = malloc(cant * sizeof(point_t));
-    
-    /* posiciono el cursor en los puntos */
-    lseek(fd, sizeof('\n'), SEEK_CUR);
 
-    for(i=0, j=0; i < cant ; i++)
+    while( i < cant )
     {
 	num = readToInt(fd);
-    
-        if(i%2)
-            (*path)[j].x = num;
-        else
-            (*path)[j++].y = num;
+	(*path)[i].x = num;
+
+	num = readToInt(fd);
+        (*path)[i].y = num;
+
+	i++;
     }
 
-    return j;
+    return cant;
 }
 
 int
@@ -98,7 +98,7 @@ get_qty_buses(int fd)
 {
     int cant;
 
-    /* posiciono el cursor en cantidad de colectivos */
+    lseek(fd, 0, SEEK_SET);
     
     cant = readToInt(fd);
 
@@ -108,20 +108,16 @@ get_qty_buses(int fd)
 int *
 get_times(int fd)
 {
-    int i;
-    int cant;
-    int * times;
+    int i = 0;
+    int var;
+    int * times = NULL;
 
-    /* posiciono el cursor en cantidad de tiempos*/
-
-    cant = readToInt(fd);
-    
-    times = malloc(cant * sizeof(int));
-
-    /* posiciono el cursor en tiempos */
-
-    for(i=0; i < cant ; i++)
-	    times[i] = readToInt(fd);
+    do
+    {
+	    times = realloc(times, (i+1) * sizeof(int));
+	    var = readToInt(fd);
+	    times[i++] = var;
+    } while(var);
 
     return times;
 }
@@ -129,29 +125,25 @@ get_times(int fd)
 int
 get_stops(int fd, point_t ** stops)
 {
-    int i,j;
+    int i = 0;
     int cant;
     int num;
-
-    /* posiciono el cursor en cantidad de paradas*/
 
     cant = readToInt(fd);
 
     *stops = malloc(cant * sizeof(point_t));
-    
-    /* posiciono el cursor en las paradas */
 
-    for(i=0, j=0; i < cant; i++)
+    while( i < cant )
     {
 	num = readToInt(fd);
+        (*stops)[i].x = num;
+	num = readToInt(fd);
+        (*stops)[i].y = num;
 	
-        if(i%2)
-            (*stops)[j].x = num;
-        else
-            (*stops)[j++].y = num;
+	i++;
     }
 
-    return j;
+    return cant;
 }
 
 int
@@ -190,6 +182,9 @@ main(void)
     int cant;
     int sale;
     int i;
+    point_t * path;
+    point_t * stops;
+    int * tiempos;
 
     openDir();
 
@@ -198,26 +193,26 @@ main(void)
 
     fds = openFiles();
 
-   mostrarTodo(fds);
+//     mostrarTodo(fds);
 
-//     sale = lseek(fds, 0, SEEK_SET);
-//     cant = readToInt(fds);
-//     printf("salio con %d\n", sale);
-//     printf("%d\n", cant);
+    cant = get_qty_buses(fds);
+    printf("cantidad de colectivos = %d\n", cant);
     
-    for( i = 0 ; i<100 ; i++)
-    {
-	sale = lseek(fds, i, SEEK_SET);
-	cant = readToInt(fds);
-	printf("salio con %d\n", sale);
-	printf("%d\n", cant);
-    }
-/*    
-    sale = lseek(fds, 0, SEEK_SET);
-    cant = readToInt(fds);
-    printf("salio con %d\n", sale);
-    printf("%d\n", cant);*/
-    
+    cant = get_path(fds, &path);
+    printf("cantidad de recorridos = %d\n", cant);
+    for( i = 0 ; i < cant ; i++ )
+	printf("recorrido %d = %d %d\n", i, path[i].x, path[i].y);
+	
+    cant = get_stops(fds, &stops);
+    printf("cantidad de paradas = %d\n", cant);
+    for( i = 0 ; i < cant ; i++ )
+	printf("paradas %d = %d %d\n", i, stops[i].x, stops[i].y);
+	
+    tiempos = get_times(fds);
+    for( i = 0 ; tiempos[i] ; i++ )
+	printf("tiempos = %d\n", tiempos[i]);
+	
+
     closeFd(fds);
 
     closeDir();
