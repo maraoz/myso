@@ -8,6 +8,21 @@
 #define CD_INIT 4
 
 void
+m_init_core(){
+    w_init(MESSAGE_QUEUE, CORE);
+}
+
+void
+m_init_line(){
+    w_init(MESSAGE_QUEUE, LINE);
+}
+
+int
+openChannel(int channel){
+    w_open(channel);
+}
+
+void
 insert_request(int idl, int idb, point_t pos)
 {
     package_t data;
