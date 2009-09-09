@@ -106,9 +106,7 @@ init(void) {
 void *
 listen() {
     while(sim_on){
-
-	
-
+        receive();
     }
 }
 
@@ -146,6 +144,7 @@ insert_bus(int fd, int id, point_t pos){
     tiles[pos.y][pos.x] = TRUE;
     buses[fd][id] = pos;
     pthread_mutex_unlock(&map_mutex);
+    insert_bus_request_ack(fd,id);
     return id;
         
 }
@@ -214,6 +213,7 @@ move_bus(int fd, int id, point_t new_pos){
     tiles[actual_pos.y][actual_pos.x] = FALSE;
     tiles[new_pos.y][new_pos.x] = TRUE;
     pthread_mutex_unlock(&map_mutex);
+    move_bus_request_ack(fd,id);
     return id;
 }
 

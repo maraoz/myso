@@ -37,23 +37,24 @@ move_request_ack(int idl, int idb, point_t new_pos)
 }
 
 void
-receive(package_t data)
+receive()
 {
     int code;
-
+    package_t data;
+    
+    data = w_read();
     switch(data.msg_id)
     {
-	case CD_INSERT_BUS: code = insert_bus(data.id_line, data.id_bus, data.point);
-	case CD_MOVE_BUS: code = move_bus(data.id_line, data.id_bus, data.point);
-	case CD_VALID_POS: code = valid_pos(data.point);
-	case CD_INIT: code = init();
-	default: /* */
+        case CD_INSERT_BUS: code = insert_bus(data.id_line, data.id_bus, data.point);break;
+        case CD_MOVE_BUS: code = move_bus(data.id_line, data.id_bus, data.point);break;
+        case CD_VALID_POS: code = valid_pos(data.point);break;
+        case CD_INIT: code = init(); break;
+        default: /* */
     }
 }
 
 
-/*
-** Datos que tiene que albergar un archivo de linea:
+/*** Datos que tiene que albergar un archivo de linea:
 **	cantidad de colectivos. [ int ]
 **	horarios de salida. [ int* ]
 **	recorrido [ point_t* ]
