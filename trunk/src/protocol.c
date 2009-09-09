@@ -286,7 +286,7 @@ package_t w_read() {
  * TESTCASES
  */
 
-int main(void) {
+int wain(void) {
 
     w_init(MESSAGE_QUEUE, LINE);
     session_t sid = w_open(getpid());
