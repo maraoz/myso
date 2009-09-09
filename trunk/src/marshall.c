@@ -1,5 +1,6 @@
 #include "../inc/typedef.h"
 #include "../inc/protocol.h"
+#include "../inc/core.h"
 #include <dirent.h>
 
 #define CD_NO 0
@@ -33,7 +34,7 @@ insert_request(int idl, int idb, point_t pos)
     data.id_bus = idb;
     data.point = pos;
     
-    w_write(data);
+    w_write(idl, data);
 }
 
 void
@@ -44,7 +45,8 @@ insert_bus_ack(int idl, int idb){
     data.msg_id = CD_MOVE_BUS;
     data.id_line = idl;
     data.id_bus = idb;
-    data.point = new_pos;
+
+    w_write(idl, data);
 }
 
 void
@@ -55,11 +57,12 @@ move_request_ack(int idl, int idb){
     data.msg_id = CD_MOVE_BUS;
     data.id_line = idl;
     data.id_bus = idb;
-    data.point = new_pos;
+
+    w_write(idl, data);
 }
 
 void
-move_request_ack(int idl, int idb, point_t new_pos)
+move_request(int idl, int idb, point_t new_pos)
 {
     package_t data;
 
@@ -68,7 +71,7 @@ move_request_ack(int idl, int idb, point_t new_pos)
     data.id_bus = idb;
     data.point = new_pos;
 
-    w_write(data);
+    w_write(idl, data);
 }
 
 void
@@ -84,7 +87,7 @@ receive_core()
         case CD_MOVE_BUS: code = move_bus(data.id_line, data.id_bus, data.point);break;
         case CD_VALID_POS: code = valid_pos(data.point);break;
         case CD_INIT: code = init(); break;
-        default: /* */
+        default: /* */;
     }
 }
 
@@ -97,9 +100,9 @@ receive_lines()
     data = w_read();
     switch(data.msg_id)
     {
-        case CD_INSERT_BUS: code = insert_bus_ack(data.id_line);break;
-        case CD_MOVE_BUS: code = move_bus_ack(data.id_line, data.id_bus);break;
-        default: /* */
+        case CD_INSERT_BUS: code = insert_ack(data.id_line);break;
+        case CD_MOVE_BUS: code = move_ack(data.id_line, data.id_bus);break;
+        default: /* */;
     }
 }
 
