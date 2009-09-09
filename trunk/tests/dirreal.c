@@ -34,7 +34,7 @@ readToInt(int fd)
     char temp;
     int num = 0;
 
-    while( read(fd, &temp, sizeof(char)) )
+   while( read(fd, &temp, sizeof(char)) )
     {
 	if(ISNUM(temp))
 	    num = num * 10 + temp - '0';
@@ -174,6 +174,12 @@ mostrarTodo(int fd)
 	printf("%c\n", temp);
 }
 
+void
+ignore()
+{
+    openFiles();
+    openFiles();
+}
 
 int
 main(void)
@@ -188,8 +194,7 @@ main(void)
 
     openDir();
 
-    openFiles();
-    openFiles();
+    ignore();
 
     fds = openFiles();
 

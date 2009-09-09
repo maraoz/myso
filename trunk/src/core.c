@@ -2,6 +2,7 @@
 #include "../inc/core.h"
 #include "../inc/draw.h"
 #include "../inc/util.h"
+#include "../inc/files.h"
 #include <pthread.h>
 #include <stdio.h>
 #include <unistd.h>
@@ -20,6 +21,10 @@ pthread_mutex_t map_mutex = PTHREAD_MUTEX_INITIALIZER;
 int sim_on = 1;
 
 
+typedef struct {
+    int * buffer;
+    int qty;
+} Tfiles;
 
 int
 main(void) {
@@ -27,12 +32,19 @@ main(void) {
     pthread_t core_threads[2];
     pthread_attr_t attr;
     int aux_pthread_creation;
-    files_t * file;
+    Tfiles files;
     
     pthread_attr_init(&attr);
     pthread_attr_setdetachstate(&attr, PTHREAD_CREATE_DETACHED);
     
-    while((file = openFiles) != NULL) {
+    files.buffer = malloc(10,sizeof(int));
+    files.qty = 0;
+    if(files.buffer == NULL)
+	return 1;
+    
+    ignore();
+    
+    while((files.buffer[files.qty] = openFiles()) != NULL) {
         pid_t pid;
         int aux;
         char *args[] = {"./lineas", (char *) 0 };
@@ -43,10 +55,15 @@ main(void) {
                  return -1;
             }
             case -1: return 1;
-            default: break;
+            default: openChannel(pid); closeFd(file) break;
         }           
-        
+        files.qty++;
+	if(files.qty%10 == 0){
+	    files.buffer = realloc(files.buffer,(files.qty+10)*sizeof(int));
+	    // TODO: CHEQUEAR POR NULL
+	}
     }
+    closeDir();
     
     init();
     
@@ -59,6 +76,7 @@ main(void) {
         printf("No se pudo crear el thread pedido.\n");
     }
     pthread_attr_destroy(&attr);
+    
     while(sim_on){
         int i;
         usleep(1000);
@@ -97,7 +115,7 @@ init(void) {
             }
         }
     }
-
+    m_init_core();
     return 0;
 }
 
@@ -144,7 +162,7 @@ insert_bus(int fd, int id, point_t pos){
     tiles[pos.y][pos.x] = TRUE;
     buses[fd][id] = pos;
     pthread_mutex_unlock(&map_mutex);
-    insert_bus_request_ack(fd,id);
+    insert_bus_ack(fd,id);
     return id;
         
 }
@@ -167,7 +185,6 @@ move_bus(int fd, int id, point_t new_pos){
     
     if(!valid_pos(new_pos)){
         return NEW_POS_INVALID;
-  NEW_POS_INVALID;
     }
     
     if(dist(new_pos, actual_pos) > 1){
@@ -213,7 +230,7 @@ move_bus(int fd, int id, point_t new_pos){
     tiles[actual_pos.y][actual_pos.x] = FALSE;
     tiles[new_pos.y][new_pos.x] = TRUE;
     pthread_mutex_unlock(&map_mutex);
-    move_bus_request_ack(fd,id);
+    move_bus_ack(fd,id);
     return id;
 }
 
