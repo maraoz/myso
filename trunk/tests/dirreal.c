@@ -184,6 +184,7 @@ ignore()
 {
     openFiles();
     openFiles();
+    openFiles();
 }
 
 int
