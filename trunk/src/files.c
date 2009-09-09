@@ -1,7 +1,11 @@
 #include<dirent.h>
 // #include<fildes.h>
 #include<fcntl.h>
+#include<unistd.h>
 #include<stdio.h>
+#include<stdlib.h>
+#include<string.h>
+#include"../inc/typedef.h"
 
 /*
 ** formato del file:
@@ -27,65 +31,70 @@ DIR * direct;
 int
 readToInt(int fd)
 {
-    int temp;
+    char temp;
     int num = 0;
 
-    while( read(fd, &temp, sizeof(char)) && ISNUM(temp) )
-	num = num * 10 + temp - '0';
-    
+   while( read(fd, &temp, sizeof(char)) )
+    {
+	if(ISNUM(temp))
+	    num = num * 10 + temp - '0';
+	else
+	    break;
+    }
+
     return num;
 }
-
 
 int
 openFiles(void)
 {
     struct dirent *opdir;
     int fd;
+    char name[20];
 
     opdir = readdir(direct);
-    
-    if(opdir)
-    {
-	fd = open(opdir->d_name, O_RDONLY);
-	return fd;
-    }
 
+
+
+    if(opdir){
+	if(ISNUM(opdir->d_name[0]))
+	{
+	    strcpy(name, "../files");
+	    name[8]='/';
+	    strcpy(name+9, opdir->d_name);
+
+
+	    fd = open(name, O_RDONLY);
+
+	    return fd;
+	}
+    }
     return 0;
 }
-
-/*
-** me falta saber como mover el cursor dentro del file
-** descriptor para ir saltando de un lugar a otro.
-*/
 
 int
 get_path(int fd, point_t ** path)
 {
-    int i,j;
+    int i = 0;
     int num;
-    int cant;
+    char cant;
 
-    /* posiciono el cursor en cantidad de puntos*/
-    lseek(fd, 0, 0);
-    
     cant = readToInt(fd);
 
     *path = malloc(cant * sizeof(point_t));
-    
-    /* posiciono el cursor en los puntos */
 
-    for(i=0, j=0; i < cant ; i++)
+    while( i < cant )
     {
 	num = readToInt(fd);
-    
-        if(i%2)
-            (*path)[j].x = num;
-        else
-            (*path)[j++].y = num;
+	(*path)[i].x = num;
+
+	num = readToInt(fd);
+        (*path)[i].y = num;
+
+	i++;
     }
 
-    return j;
+    return cant;
 }
 
 int
@@ -93,7 +102,7 @@ get_qty_buses(int fd)
 {
     int cant;
 
-    /* posiciono el cursor en cantidad de colectivos */
+    lseek(fd, 0, SEEK_SET);
     
     cant = readToInt(fd);
 
@@ -103,20 +112,16 @@ get_qty_buses(int fd)
 int *
 get_times(int fd)
 {
-    int i;
-    int cant;
-    int * times;
+    int i = 0;
+    int var;
+    int * times = NULL;
 
-    /* posiciono el cursor en cantidad de tiempos*/
-
-    cant = readToInt(fd);
-    
-    times = malloc(cant * sizeof(int));
-
-    /* posiciono el cursor en tiempos */
-
-    for(i=0; i < cant ; i++)
-	    times[i] = readToInt(fd);
+    do
+    {
+	    times = realloc(times, (i+1) * sizeof(int));
+	    var = readToInt(fd);
+	    times[i++] = var;
+    } while(var);
 
     return times;
 }
@@ -124,29 +129,25 @@ get_times(int fd)
 int
 get_stops(int fd, point_t ** stops)
 {
-    int i,j;
+    int i = 0;
     int cant;
     int num;
-
-    /* posiciono el cursor en cantidad de paradas*/
 
     cant = readToInt(fd);
 
     *stops = malloc(cant * sizeof(point_t));
-    
-    /* posiciono el cursor en las paradas */
 
-    for(i=0, j=0; i < cant; i++)
+    while( i < cant )
     {
 	num = readToInt(fd);
+        (*stops)[i].x = num;
+	num = readToInt(fd);
+        (*stops)[i].y = num;
 	
-        if(i%2)
-            (*stops)[j].x = num;
-        else
-            (*stops)[j++].y = num;
+	i++;
     }
 
-    return j;
+    return cant;
 }
 
 int
@@ -160,6 +161,7 @@ openDir(void)
 {
     char * dir = "../files";
     direct = opendir(dir);
+
 }
 
 void
@@ -167,3 +169,22 @@ closeDir(void)
 {
     closedir(direct);
 }
+
+void
+mostrarTodo(int fd)
+{
+    int temp;
+
+    while( read(fd, &temp, sizeof(char)) && ( temp >= '0' || temp <= '9' ) )
+	printf("%c\n", temp);
+}
+
+void
+ignore()
+{
+    openFiles();
+    openFiles();
+    openFiles();
+}
+
+

@@ -54,17 +54,21 @@ openFiles(void)
 
     opdir = readdir(direct);
 
-    if(opdir)
+
+
+    if(opdir){
 	if(opdir->d_name[0]!='.')
 	{
 	    strcpy(name, "../files");
 	    name[8]='/';
 	    strcpy(name+9, opdir->d_name);
 
+
 	    fd = open(name, O_RDONLY);
+
 	    return fd;
 	}
-
+    }
     return 0;
 }
 
@@ -157,6 +161,7 @@ openDir(void)
 {
     char * dir = "../files";
     direct = opendir(dir);
+
 }
 
 void
@@ -197,6 +202,7 @@ main(void)
     ignore();
 
     fds = openFiles();
+
 
 //     mostrarTodo(fds);
 
