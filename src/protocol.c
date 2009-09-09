@@ -140,21 +140,22 @@ int f_w_write(session_t session_id, package_t package) {
 };
 
 package_t f_w_read(void) {
+    int session_id = 0;
     int fd_read = sessions[session_id][READ];
     int size = sizeof(package_t);
 
-    package_t buff
-    package_t * ret = &buff;
+    package_t buff;
+    package_t * buffp = &buff;
+    package_t * ret = buffp;
     int count;
     while(size){
-        count = read( fd_read, buff, size );
+        count = read( fd_read, buffp, size );
         size -= count;
-        buff += count;
+        buffp += count;
     }
     return *ret;
 }
 
-};
 /**
  * Sockets
  */
