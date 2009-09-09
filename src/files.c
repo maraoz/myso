@@ -57,7 +57,7 @@ openFiles(void)
 
 
     if(opdir){
-	if(ISNUM(opdir->d_name[0]))
+	if(opdir->d_name[0] != '.')
 	{
 	    strcpy(name, "../files");
 	    name[8]='/';
