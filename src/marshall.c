@@ -1,5 +1,6 @@
 #include "../inc/typedef.h"
-#include include <dirent.h>
+#include "../inc/protocol.h"
+#include <dirent.h>
 
 #define CD_NO 0
 #define CD_INSERT_BUS 1
@@ -71,7 +72,7 @@ move_request_ack(int idl, int idb, point_t new_pos)
 }
 
 void
-receive()
+receive_core()
 {
     int code;
     package_t data;
@@ -87,25 +88,19 @@ receive()
     }
 }
 
-
-/*** Datos que tiene que albergar un archivo de linea:
-**	cantidad de colectivos. [ int ]
-**	horarios de salida. [ int* ]
-**	recorrido [ point_t* ]
-**	cantidad de paradas. [ int ]
-**	posiciones de las paradas. [ point_t* ]
-*/
-
-int
-get_path(int fd_b, point_t *)
+void
+receive_lines()
 {
+    int code;
+    package_t data;
     
-
-
-
-
-
+    data = w_read();
+    switch(data.msg_id)
+    {
+        case CD_INSERT_BUS: code = insert_bus_ack(data.id_line);break;
+        case CD_MOVE_BUS: code = move_bus_ack(data.id_line, data.id_bus);break;
+        default: /* */
+    }
 }
-
 
 

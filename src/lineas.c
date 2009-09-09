@@ -1,9 +1,11 @@
 #include "../inc/typedef.h"
 #include "../inc/lineas.h"
+#include "../inc/files.h"
 #include <stdlib.h>
 #include <pthread.h>
 #include <stdio.h>
 #include <unistd.h>
+
 
 typedef struct {
     point_t * path;
@@ -27,12 +29,12 @@ main(void){
     pthread_attr_t attr;
     int index = 0;
     int aux = 0;
+    int tmp_qty_buses;
 
     m_init_line();
     my_pid = getpid();
     pthread_attr_init(&attr);
     pthread_attr_setdetachstate(&attr, PTHREAD_CREATE_DETACHED);
-
 
     buses.path_length = get_path(3, &buses.path);
     qty_buses = get_qty_buses(3);
@@ -64,9 +66,10 @@ main(void){
             aux = 0;
         }
     }
+    m_line_init();
     openChannel(1);
     while(sim_on){
-	listen();
+	receive_lines();
     }
 
     pthread_attr_destroy(&attr);
@@ -85,7 +88,6 @@ insert_ack(){
 
 void *
 new_bus(int index) {
-    init(host);
     int my_index = index;
     int i=0,j=0;
     insert_request(my_pid, index, buses.path[i]);
@@ -94,7 +96,7 @@ new_bus(int index) {
         usleep(500);
 	i = i%buses.path_length;
         move_request(my_pid, index, buses.path[i]);
-	if(&& movements[my_index] > i) {
+	if(movements[my_index] > i) {
 	    if(buses.path[i].x == buses.stops[j].x && buses.path[i].y == buses.stops[j].y ) {
 		j = j%buses.stops_length;
 		usleep(500);

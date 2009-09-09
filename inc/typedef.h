@@ -40,4 +40,10 @@ typedef struct {
     int state;
 }semaphore;
 
+typedef struct {
+    int * buffer;
+    int qty;
+} Tfiles;
+
+
 #endif

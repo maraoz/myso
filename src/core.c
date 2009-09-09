@@ -21,11 +21,6 @@ pthread_mutex_t map_mutex = PTHREAD_MUTEX_INITIALIZER;
 int sim_on = 1;
 
 
-typedef struct {
-    int * buffer;
-    int qty;
-} Tfiles;
-
 int
 main(void) {
     
@@ -42,7 +37,6 @@ main(void) {
     if(files.buffer == NULL)
 	return 1;
     
-    ignore();
     
     while((files.buffer[files.qty] = openFiles()) != NULL) {
         pid_t pid;
