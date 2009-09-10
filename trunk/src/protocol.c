@@ -208,7 +208,8 @@ int m_w_write(session_t session_id, package_t package) {
     q_msg_t queue_message;
     queue_message.mtype = msg_key;
     queue_message.content = package;
-    return msgsnd(msqid, &queue_message, sizeof(package_t), 0);
+    int aux = msgsnd(msqid, &queue_message, sizeof(package_t), 0);
+    return aux;
 }
 
 package_t m_w_read(void) {

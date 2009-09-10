@@ -11,6 +11,7 @@ extern pid_t my_pid;
 extern int sim_on;
 extern int * movements;
 extern int qty_buses;
+extern int tmp_qty_buses;
 
 int
 main(void){
@@ -21,24 +22,24 @@ main(void){
     pthread_attr_t attr;
     int index = 0;
     int aux = 0;
-    int tmp_qty_buses;
+//     int tmp_qty_buses;
 
-    m_init_line();
+
     my_pid = getpid();
     pthread_attr_init(&attr);
     pthread_attr_setdetachstate(&attr, PTHREAD_CREATE_DETACHED);
 
-    buses.path_length = get_path(3, &buses.path);
-    qty_buses = get_qty_buses(3);
-    buses_times = get_times(3);
+ //   buses.path_length = get_path(3, &buses.path);
+  //  qty_buses = get_qty_buses(3);
+  //  buses_times = get_times(3);
     
     
-/*    
+    
     
     buses.path_length = 12;
     buses.path = malloc(12*sizeof(point_t));
     buses.path[0].x = 0;
-    buses.path[0].y = 0;
+    buses.path[0].y = 1;
     buses.path[1].x = 0;
     buses.path[1].y = 1;
     buses.path[2].x = 0;
@@ -65,12 +66,11 @@ main(void){
     qty_buses = 3;
 
     buses_times = malloc(3*sizeof(int));
-    buses_times[0] = 0;
-    buses_times[1] = 10;
-    buses_times[2] = 15;
+    buses_times[0] = 110;
+    buses_times[1] = 1000;
+    buses_times[2] = 1500;
     
-*/
-    
+
     
     
     movements = calloc(sizeof(int),qty_buses);
@@ -82,10 +82,9 @@ main(void){
         printf("No hay suficiente memoria \n");
         return 1;
     }
-    buses.stops_length = get_stops(0, &buses.stops);
+//    buses.stops_length = get_stops(0, &buses.stops);
     
-    
-/*    
+   
     
     
     buses.stops_length = 2;
@@ -95,15 +94,17 @@ main(void){
     buses.stops[1].x = 3;
     buses.stops[1].y = 0;
     
-*/    
     
     
+
     aux = buses_times[0];
     tmp_qty_buses = qty_buses;
     while(qty_buses > 0) {
         usleep(aux);
+
         aux_pthread_creation = pthread_create(&buses_threads[index], &attr, (void*)(new_bus), (void *)index);
         if(!aux_pthread_creation){
+
 	    while(tmp_qty_buses == qty_buses);
 	    tmp_qty_buses--;
 	    index++;
@@ -115,8 +116,11 @@ main(void){
             aux = 0;
         }
     }
+
     m_init_line();
+
     openChannel(1);
+
     while(sim_on){
         receive();
     }

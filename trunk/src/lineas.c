@@ -12,6 +12,7 @@ pid_t my_pid;
 extern int sim_on;
 int * movements;
 int qty_buses;
+int tmp_qty_buses;
 
 
 void
@@ -30,6 +31,7 @@ new_bus(int index) {
     int i=0,j=0;
     insert_request(my_pid, index, buses.path[i]);
     i++;j++;
+    while(tmp_qty_buses == qty_buses);
     while(sim_on){
         usleep(10000);
 	i = i%buses.path_length;
