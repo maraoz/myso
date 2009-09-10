@@ -57,9 +57,9 @@ insert_request(int idl, int idb, point_t pos)
     result = w_write(idl, data);
     
     if(result == -1)
-	printf("ha fallado en insert request");
+	printf("ha fallado en insert request\n");
     else
-	printf("no ha fallado en insert request");
+	printf("no ha fallado en insert request\n");
 
 }
 
@@ -76,9 +76,9 @@ insert_bus_ack(int idl, int idb){
     result = w_write(idl, data);
     
     if(result == -1)
-	printf("ha fallado en insert bus ack");
+	printf("ha fallado en insert bus ack\n");
     else
-	printf("no ha fallado en insert bus ack");
+	printf("no ha fallado en insert bus ack\n");
 }
 
 void
@@ -93,9 +93,9 @@ move_request_ack(int idl, int idb){
     result = w_write(idl, data);
     
     if(result == -1)
-	printf("ha fallado en move request ack");
+	printf("ha fallado en move request ack\n");
     else
-	printf("no ha fallado en move request ack");
+	printf("no ha fallado en move request ack\n");
 }
 
 void
@@ -111,9 +111,9 @@ move_request(int idl, int idb, point_t new_pos)
     result = w_write(idl, data);
     
     if(result == -1)
-	printf("ha fallado en move request");
+	printf("ha fallado en move request\n");
     else
-	printf("no ha fallado en move request");
+	printf("no ha fallado en move request\n");
 
 }
 
