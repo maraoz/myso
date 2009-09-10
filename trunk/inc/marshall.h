@@ -4,7 +4,7 @@ int m_init_core();
 
 int m_init_line();
 
-int openChannel(int channel);
+session_t openChannel(int channel);
 
 int closeChanel(int channel);
 

@@ -18,6 +18,8 @@ extern int line_id;
 int
 main(int argc, char * argv[] ){
 
+    
+
     line_id = atoi(argv[1]);
     int * buses_times;
     pthread_t * buses_threads;
@@ -29,7 +31,7 @@ main(int argc, char * argv[] ){
 
     pthread_attr_init(&attr);
     pthread_attr_setdetachstate(&attr, PTHREAD_CREATE_DETACHED);
-
+    
  //   buses.path_length = get_path(3, &buses.path);
   //  qty_buses = get_qty_buses(3);
   //  buses_times = get_times(3);
@@ -79,6 +81,7 @@ main(int argc, char * argv[] ){
     return 1;
     }
     buses_threads = malloc(sizeof(pthread_t) * qty_buses);
+    
     if(buses_threads == NULL){
         printf("No hay suficiente memoria \n");
         return 1;
@@ -96,9 +99,11 @@ main(int argc, char * argv[] ){
     buses.stops[1].y = 0;
 
     
-
+    m_init_line();
     aux = buses_times[0];
     tmp_qty_buses = qty_buses;
+    session = openChannel(1);
+        
     while(qty_buses > 0) {
         usleep(aux);
 
@@ -117,11 +122,9 @@ main(int argc, char * argv[] ){
             aux = 0;
         }
     }
+    
 
-    m_init_line();
 
-
-    session = openChannel(1);
 
     while(sim_on){
         receive(session);
