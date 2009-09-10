@@ -15,8 +15,17 @@ typedef struct point_t {
     int y;
 } point_t;
 
+typedef struct {
+    point_t * path;
+    point_t * stops;
+    int path_length;
+    int stops_length;
+} buses_line;
+
+
 // protocol
 typedef int session_t;
+
 
 // marshall
 typedef struct
@@ -26,6 +35,8 @@ typedef struct
     int id_bus;			/*  */
     point_t point;		/* posible posicion del colectivo */
 } package_t;
+
+
 
 typedef struct
 {

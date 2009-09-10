@@ -6,14 +6,12 @@
 #include <stdio.h>
 #include <unistd.h>
 
-
-buses_line buses;
-pid_t my_pid;
+extern buses_line buses;
+extern pid_t my_pid;
 extern int sim_on;
-int * movements;
-int qty_buses;
+extern int * movements;
+extern int qty_buses;
 
-/*
 int
 main(void){
 
@@ -36,7 +34,7 @@ main(void){
     
     movements = calloc(sizeof(int),qty_buses);
     if(movements == NULL){
-	return 1;
+    return 1;
     }
     buses_threads = malloc(sizeof(pthread_t) * qty_buses);
     if(buses_threads == NULL){
@@ -51,7 +49,7 @@ main(void){
         usleep(aux);
         aux_pthread_creation = pthread_create(&buses_threads[index], &attr, (void*)(new_bus), (void *)index);
         if(!aux_pthread_creation){
-	    while(tmp_qty_buses == qty_buses);
+        while(tmp_qty_buses == qty_buses);
             tmp_qty_buses--;
             index++;
             aux = buses_times[index] - buses_times[index-1];
@@ -63,40 +61,9 @@ main(void){
     m_init_line();
     openChannel(1);
     while(sim_on){
-	receive_lines();
+        receive();
     }
 
     pthread_attr_destroy(&attr);
     free(movements);
-}*/
-
-void
-move_ack(int fd, int id){
-    movements[id]++;
-}
-
-void
-insert_ack(int id){
-    qty_buses--;
-}
-
-void *
-new_bus(int index) {
-    int my_index = index;
-    int i=0,j=0;
-    insert_request(my_pid, index, buses.path[i]);
-    i++;j++;
-    while(sim_on){
-        usleep(500);
-	i = i%buses.path_length;
-        move_request(my_pid, index, buses.path[i]);
-	if(movements[my_index] > i) {
-	    if(buses.path[i].x == buses.stops[j].x && buses.path[i].y == buses.stops[j].y ) {
-		j = j%buses.stops_length;
-		usleep(500);
-		j++;
-	    }
-	    i++;
-	}
-    }
 }
