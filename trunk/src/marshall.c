@@ -31,9 +31,9 @@ openChannel(int channel){
     result = w_open(channel);
     
     if(result == -1)
-	printf("ha fallado en open, el channel es %d", channel);
+	printf("ha fallado en open, el channel es %d\n", channel);
     else
-	printf("no ha fallado en open, el channel es %d", channel);
+	printf("no ha fallado en open\n", channel);
     
     return result;
 }
