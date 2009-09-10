@@ -2,6 +2,7 @@
 #include "../inc/protocol.h"
 #include "../inc/core.h"
 #include "../inc/marshall.h"
+#include <stdio.h>
 #include <dirent.h>
 #include <stdio.h>
 
@@ -32,52 +33,74 @@ void
 insert_request(int idl, int idb, point_t pos)
 {
     package_t data;
+    int result;
 
     data.msg_id = CD_INSERT_BUS;
     data.id_line = idl;
     data.id_bus = idb;
     data.point = pos;
+   
+    result = w_write(idl, data);
+    
+    if(result == -1)
+	printf("ha fallado");
+    else
+	printf("no ha fallado");
 
-
-    w_write(1, data);
-    printf("asdf\n");
 }
 
 void
 insert_bus_ack(int idl, int idb){
 
     package_t data;
-
+    int result;
+    
     data.msg_id = CD_MOVE_BUS;
     data.id_line = idl;
     data.id_bus = idb;
 
-    w_write(idl, data);
+    result = w_write(idl, data);
+    
+    if(result == -1)
+	printf("ha fallado");
+    else
+	printf("no ha fallado");
 }
 
 void
 move_request_ack(int idl, int idb){
 
     package_t data;
-
+    int result;
     data.msg_id = CD_MOVE_BUS;
     data.id_line = idl;
     data.id_bus = idb;
 
-    w_write(idl, data);
+    result = w_write(idl, data);
+    
+    if(result == -1)
+	printf("ha fallado");
+    else
+	printf("no ha fallado");
 }
 
 void
 move_request(int idl, int idb, point_t new_pos)
 {
     package_t data;
-
+    int result;
     data.msg_id = CD_MOVE_BUS;
     data.id_line = idl;
     data.id_bus = idb;
     data.point = new_pos;
 
-    w_write(1, data);
+    result = w_write(idl, data);
+    
+    if(result == -1)
+	printf("ha fallado");
+    else
+	printf("no ha fallado");
+
 }
 
 void
