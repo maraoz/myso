@@ -25,7 +25,7 @@ int w_init(int ipc_type, int mode);
 session_t w_open(int other);
 int w_close(session_t session);
 int w_write(session_t session_id, package_t package);
-package_t w_read();
+package_t w_read(session_t session_id);
 
 
 #endif

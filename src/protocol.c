@@ -32,6 +32,31 @@ int is_core;
 #define WRITE 1
 #define READ 2
 
+int digit_count(int n) {
+    int i;
+    if (n == 0)
+        return 1;
+    for (i=0; n != 0; i++) {
+        n /= 10;
+    }
+    return i;
+}
+
+char * itoa( int n) {
+    char * ret = calloc(11,sizeof(char));
+    if (n == 0) {
+        ret[0] = '0';
+        return ret;
+    }
+    int i;
+    int dc = digit_count(n);
+    for (i=0; n != 0; i++) {
+        ret[dc-i-1] = n % 10 + '0';
+        n /= 10;
+    }
+    return ret;
+}
+
 
 int sessions[SESSION_MAX][3]; // USED, WRITE, READ
 int msqid_singleton;
@@ -60,41 +85,20 @@ int commit_session(session_t session) {
  * Shared Memory
  */
 
-int s_w_init(void) {};
-session_t s_w_open(int other) {};
+int s_w_init(void) {}
+
+session_t s_w_open(int other) {
+int shmget(key_t key, size_t size, int shmflg);
+}
+
 int s_w_close(session_t session) {};
 int s_w_write(session_t session_id, package_t package) {};
-package_t s_w_read(void) {};
+package_t s_w_read(session_t session_id) {};
 
 /**
  * FIFOs
  */
 int f_w_init(void) {};
-
-int digit_count(int n) {
-    int i;
-    if (n == 0)
-        return 1;
-    for (i=0; n != 0; i++) {
-        n /= 10;
-    }
-    return i;
-}
-
-char * itoa( int n) {
-    char * ret = calloc(11,sizeof(char));
-    if (n == 0) {
-        ret[0] = '0';
-        return ret;
-    }
-    int i;
-    int dc = digit_count(n);
-    for (i=0; n != 0; i++) {
-        ret[dc-i-1] = n % 10 + '0';
-        n /= 10;
-    }
-    return ret;
-}
 
 session_t f_w_open(int other) {
     char name1[31];
@@ -139,8 +143,7 @@ int f_w_write(session_t session_id, package_t package) {
     return write(fd_write, package, sizeof(package));
 };
 
-package_t f_w_read(void) {
-    int session_id = 0;
+package_t f_w_read(session_t session_id) {
     int fd_read = sessions[session_id][READ];
     int size = sizeof(package_t);
 
@@ -163,7 +166,7 @@ int k_w_init(void) {};
 session_t k_w_open(int other) {};
 int k_w_close(session_t session) {};
 int k_w_write(session_t session_id, package_t package) {};
-package_t k_w_read(void) {};
+package_t k_w_read(session_t session_id) {};
 
 /**
  * Message Queue
@@ -212,7 +215,7 @@ int m_w_write(session_t session_id, package_t package) {
     return aux;
 }
 
-package_t m_w_read(void) {
+package_t m_w_read(session_t session_id) {
     package_t ret;
     int msqid = msqid_singleton;
     q_msg_t q_message;
@@ -276,9 +279,9 @@ int w_write(session_t session_id, package_t package) {
     return m_w_write(session_id, package);
 }
 
-package_t w_read() {
+package_t w_read(session_t session_id) {
     // TODO: contemplate other IPCS
-    return m_w_read();
+    return m_w_read(session_id);
 }
 
 
@@ -287,7 +290,7 @@ package_t w_read() {
  * TESTCASES
  */
 
-int wain(void) {
+int main(void) {
 
     w_init(MESSAGE_QUEUE, LINE);
     session_t sid = w_open(getpid());
@@ -307,13 +310,13 @@ int wain(void) {
     pck.point.x = pck.point.y = 10;
     w_write(sid, pck);
 
-    package_t rcv = w_read(getpid());
+    package_t rcv = w_read(sid);
     printf("recibido msg_id = %d,\nid_line %d,\nid_bus %d,\n(%d, %d)\n",
         rcv.msg_id, rcv.id_line, rcv.id_bus, rcv.point.x, rcv.point.y );
-    rcv = w_read(getpid());
+    rcv = w_read(sid);
     printf("recibido msg_id = %d,\nid_line %d,\nid_bus %d,\n(%d, %d)\n",
         rcv.msg_id, rcv.id_line, rcv.id_bus, rcv.point.x, rcv.point.y );
-    rcv = w_read(getpid());
+    rcv = w_read(sid);
     printf("recibido msg_id = %d,\nid_line %d,\nid_bus %d,\n(%d, %d)\n",
         rcv.msg_id, rcv.id_line, rcv.id_bus, rcv.point.x, rcv.point.y );
 
