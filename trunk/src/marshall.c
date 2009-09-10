@@ -31,9 +31,9 @@ openChannel(int channel){
     result = w_open(channel);
     
     if(result == -1)
-	printf("ha fallado");
+	printf("ha fallado en open");
     else
-	printf("no ha fallado");
+	printf("no ha fallado en open");
     
     return result;
 }
@@ -57,9 +57,9 @@ insert_request(int idl, int idb, point_t pos)
     result = w_write(idl, data);
     
     if(result == -1)
-	printf("ha fallado");
+	printf("ha fallado en insert request");
     else
-	printf("no ha fallado");
+	printf("no ha fallado en insert request");
 
 }
 
@@ -76,9 +76,9 @@ insert_bus_ack(int idl, int idb){
     result = w_write(idl, data);
     
     if(result == -1)
-	printf("ha fallado");
+	printf("ha fallado en insert bus ack");
     else
-	printf("no ha fallado");
+	printf("no ha fallado en insert bus ack");
 }
 
 void
@@ -93,9 +93,9 @@ move_request_ack(int idl, int idb){
     result = w_write(idl, data);
     
     if(result == -1)
-	printf("ha fallado");
+	printf("ha fallado en move request ack");
     else
-	printf("no ha fallado");
+	printf("no ha fallado en move request ack");
 }
 
 void
@@ -111,9 +111,9 @@ move_request(int idl, int idb, point_t new_pos)
     result = w_write(idl, data);
     
     if(result == -1)
-	printf("ha fallado");
+	printf("ha fallado en move request");
     else
-	printf("no ha fallado");
+	printf("no ha fallado en move request");
 
 }
 
