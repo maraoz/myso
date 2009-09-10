@@ -33,30 +33,7 @@ int is_core;
 #define WRITE 1
 #define READ 2
 
-int digit_count(int n) {
-    int i;
-    if (n == 0)
-        return 1;
-    for (i=0; n != 0; i++) {
-        n /= 10;
-    }
-    return i;
-}
 
-char * itoa( int n) {
-    char * ret = calloc(11,sizeof(char));
-    if (n == 0) {
-        ret[0] = '0';
-        return ret;
-    }
-    int i;
-    int dc = digit_count(n);
-    for (i=0; n != 0; i++) {
-        ret[dc-i-1] = n % 10 + '0';
-        n /= 10;
-    }
-    return ret;
-}
 
 
 int sessions[SESSION_MAX][3]; // USED, WRITE, READ
@@ -97,13 +74,18 @@ int s_w_init(void) {}
 session_t s_w_open(int other) {
     session_t new_session = get_session();
 
-    sessions[new_session][READ] = other;
-    sessions[new_session][WRITE] = other;
+    char * name = itoa(other);
+    key_t key = ftok(name, 'R');
+    int shmid = shmget(key, 100, 0);
+
+    sessions[new_session][READ] = shmid;
+    sessions[new_session][WRITE] = shmid;
     if (commit_session(new_session) != -1)
         return new_session;
     else
         return -1;
-    shmget(key_t key, size_t size, int shmflg);
+
+
 }
 
 int s_w_close(session_t session) {};
@@ -132,6 +114,8 @@ session_t f_w_open(int other) {
     if (mknod(name2, S_IFIFO | 0666 , 0) == -1) {
         printf("error al crear un fifo\n");
     }
+
+    free(name1);free(name2);
 
     fd_write = open(is_core?name1:name2, O_WRONLY);
     fd_read = open(is_core?name2:name1, O_RDONLY);
