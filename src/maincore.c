@@ -53,7 +53,9 @@ main(void) {
                  return -1;
             }
             case -1: return 1;
-            default: openChannel(pid); closeFd(files.buffer[files.qty]); break;
+            default: preparefd(files.buffer[files.qty]); 
+			openChannel(pid); 
+			closeFd(files.buffer[files.qty]); break;
         }           
         files.qty++;
         if(files.qty%10 == 0){
@@ -67,6 +69,7 @@ main(void) {
     init();
     
     initscr();
+
     aux_pthread_creation = pthread_create(&core_threads[0], &attr, (void*)(draw), NULL);
     if(aux_pthread_creation){
         printf("No se pudo crear el thread pedido.\n");
@@ -79,7 +82,7 @@ main(void) {
     
     while(sim_on){
         int i;
-        usleep(100000);
+        usleep(1000000);
         pthread_mutex_lock(&semaphore_mutex);
         for(i = 0; i<(CUADRAS+1)*(CUADRAS+1) - 4 ; i++)
             switch_semaphore(&semps[i]);

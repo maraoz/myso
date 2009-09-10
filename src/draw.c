@@ -16,7 +16,7 @@ void *
 draw(void) {
     int i,j;
     while(sim_on) {
-        usleep(100);
+        usleep(1);
         pthread_mutex_lock(&map_mutex);
         
         erase();
