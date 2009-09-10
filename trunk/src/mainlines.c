@@ -7,15 +7,18 @@
 #include <unistd.h>
 
 extern buses_line buses;
-extern session_t my_id;
+extern pid_t my_pid;
 extern int sim_on;
 extern int * movements;
 extern int qty_buses;
 extern int tmp_qty_buses;
+extern session_t session;
+extern int line_id;
 
 int
-main(void){
+main(int argc, char * argv[] ){
 
+    line_id = atoi(argv[1]);
     int * buses_times;
     pthread_t * buses_threads;
     int aux_pthread_creation;
@@ -118,10 +121,10 @@ main(void){
     m_init_line();
 
 
-    my_id = openChannel(1);
+    session = openChannel(1);
 
     while(sim_on){
-        receive();
+        receive(session);
     }
 
     pthread_attr_destroy(&attr);

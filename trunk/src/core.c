@@ -20,13 +20,15 @@ pthread_mutex_t semaphore_mutex = PTHREAD_MUTEX_INITIALIZER;
 pthread_mutex_t map_mutex = PTHREAD_MUTEX_INITIALIZER;
 int sim_on = 1;
 
+
+int session_line;
+
 int
 init(void) {
     
     int i,j;
     point_t aux;
     int index = 0;
-    
     
     /* LLeno la matriz de la ciudad, donde hay una manzana pongo TRUE, asi siempre
     esta ocupada y no se puede pasar por encima de una manzana. */
@@ -55,16 +57,16 @@ init(void) {
 void *
 listen() {
     while(sim_on){
-        receive();
+        receive(session_line);
     }
 }
 
 
 
 int
-insert_bus(session_t session, int id, point_t pos){
+insert_bus(int fd, int id, point_t pos){
         
-    if(session >= XDIM*YDIM || session < 0) {
+    if(fd >= XDIM*YDIM || fd < 0) {
         printf("Linea no soportada por el sistema.\n");
         return FD_TOO_LARGE;
     }
@@ -91,20 +93,20 @@ insert_bus(session_t session, int id, point_t pos){
     pthread_mutex_lock(&map_mutex);
     
     tiles[pos.y][pos.x] = TRUE;
-    buses[session][id] = pos;
+    buses[fd][id] = pos;
     pthread_mutex_unlock(&map_mutex);
-    insert_bus_ack(session,id);
+    insert_bus_ack(session_line,fd,id);
     return id;
         
 }
 
 
 int
-move_bus(session_t session, int id, point_t new_pos){
-    point_t actual_pos = buses[session][id];
+move_bus(int fd, int id, point_t new_pos){
+    point_t actual_pos = buses[fd][id];
     int aux; 
     
-    if(session >= XDIM*YDIM || session < 0) {
+    if(fd >= XDIM*YDIM || fd < 0) {
         printf("Linea no soportada por el sistema.\n");
         return FD_TOO_LARGE;
     }
@@ -156,12 +158,12 @@ move_bus(session_t session, int id, point_t new_pos){
         }
     }
 	
-    buses[session][id] = new_pos;
+    buses[fd][id] = new_pos;
     pthread_mutex_unlock(&map_mutex);
     tiles[actual_pos.y][actual_pos.x] = FALSE;
     tiles[new_pos.y][new_pos.x] = TRUE;
     pthread_mutex_unlock(&map_mutex);
-    move_request_ack(session,id);
+    move_request_ack(session_line,fd,id);
     return id;
 }
 
