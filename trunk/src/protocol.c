@@ -61,6 +61,12 @@ char * itoa( int n) {
 int sessions[SESSION_MAX][3]; // USED, WRITE, READ
 int msqid_singleton;
 
+void init_sessions(void) {
+    int i;
+    for (i=0; i<SESSION_MAX; i++) {
+        sessions[i][USED] = FALSE;
+    }
+}
 
 session_t get_session(void) {
     session_t i;
@@ -88,7 +94,14 @@ int commit_session(session_t session) {
 int s_w_init(void) {}
 
 session_t s_w_open(int other) {
-int shmget(key_t key, size_t size, int shmflg);
+//     session_t new_session = get_session();
+//     sessions[new_session][READ] = other;
+//     sessions[new_session][WRITE] = other;
+//     if (commit_session(new_session) != -1)
+//         return new_session;
+//     else
+//         return -1;
+//     shmget(key_t key, size_t size, int shmflg);
 }
 
 int s_w_close(session_t session) {};
@@ -137,6 +150,7 @@ int f_w_close(session_t session) {
     close(fd_read);
     close(fd_write);
     sessions[session][USED] = FALSE;
+    return 0;
 };
 int f_w_write(session_t session_id, package_t package) {
     int fd_write = sessions[session_id][WRITE];
@@ -179,6 +193,9 @@ typedef struct msg {
 
 
 int m_w_init(void) {
+
+    
+
     key_t key;
     int msgflg, msqid;
     key = 1928;
@@ -203,6 +220,7 @@ session_t m_w_open(int other) {
 
 int m_w_close(session_t session) {
     sessions[session][USED] = FALSE;
+    return 0;
 }
 
 int m_w_write(session_t session_id, package_t package) {
@@ -290,7 +308,7 @@ package_t w_read(session_t session_id) {
  * TESTCASES
  */
 
-int main(void) {
+int _main(void) {
 
     w_init(MESSAGE_QUEUE, LINE);
     session_t sid = w_open(getpid());
