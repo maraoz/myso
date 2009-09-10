@@ -7,7 +7,7 @@
 #include <unistd.h>
 
 extern buses_line buses;
-extern pid_t my_pid;
+extern session_t my_id;
 extern int sim_on;
 extern int * movements;
 extern int qty_buses;
@@ -24,8 +24,6 @@ main(void){
     int aux = 0;
 //     int tmp_qty_buses;
 
-
-    my_pid = getpid();
     pthread_attr_init(&attr);
     pthread_attr_setdetachstate(&attr, PTHREAD_CREATE_DETACHED);
 
@@ -34,12 +32,13 @@ main(void){
   //  buses_times = get_times(3);
     
     
+
     
     
     buses.path_length = 12;
     buses.path = malloc(12*sizeof(point_t));
     buses.path[0].x = 0;
-    buses.path[0].y = 1;
+    buses.path[0].y = 0;
     buses.path[1].x = 0;
     buses.path[1].y = 1;
     buses.path[2].x = 0;
@@ -107,6 +106,7 @@ main(void){
 	    tmp_qty_buses--;
 	    index++;
 	    if(qty_buses > 0){
+
 		aux = buses_times[index] - buses_times[index-1];
 	    }
         } else {
@@ -117,7 +117,8 @@ main(void){
 
     m_init_line();
 
-    openChannel(1);
+
+    my_id = openChannel(1);
 
     while(sim_on){
         receive();

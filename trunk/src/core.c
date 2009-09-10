@@ -20,69 +20,6 @@ pthread_mutex_t semaphore_mutex = PTHREAD_MUTEX_INITIALIZER;
 pthread_mutex_t map_mutex = PTHREAD_MUTEX_INITIALIZER;
 int sim_on = 1;
 
-/*
-int
-main(void) {
-    
-    pthread_t core_threads[2];
-    pthread_attr_t attr;
-    int aux_pthread_creation;
-    Tfiles files;
-    
-    pthread_attr_init(&attr);
-    pthread_attr_setdetachstate(&attr, PTHREAD_CREATE_DETACHED);
-    
-    files.buffer = malloc(10,sizeof(int));
-    files.qty = 0;
-    if(files.buffer == NULL)
-	return 1;
-    
-    
-    while((files.buffer[files.qty] = openFiles()) != NULL) {
-        pid_t pid;
-        int aux;
-        char *args[] = {"./lineas", (char *) 0 };
-        pid = fork();
-        switch(pid){
-            case 0: aux = execv("../bin/", args);
-            if(aux == -1){
-                 return -1;
-            }
-            case -1: return 1;
-            default: openChannel(pid); closeFd(file) break;
-        }           
-        files.qty++;
-	if(files.qty%10 == 0){
-	    files.buffer = realloc(files.buffer,(files.qty+10)*sizeof(int));
-	    // TODO: CHEQUEAR POR NULL
-	}
-    }
-    closeDir();
-    
-    init();
-    
-    aux_pthread_creation = pthread_create(&core_threads[0], &attr, (void*)(draw), NULL);
-    if(aux_pthread_creation){
-        printf("No se pudo crear el thread pedido.\n");
-    }
-    aux_pthread_creation = pthread_create(&core_threads[1], &attr, (void*)(listen), NULL);
-    if(aux_pthread_creation){
-        printf("No se pudo crear el thread pedido.\n");
-    }
-    pthread_attr_destroy(&attr);
-    
-    while(sim_on){
-        int i;
-        usleep(1000);
-        pthread_mutex_lock(&semaphore_mutex);
-        for(i = 0; i<(CUADRAS+1)*(CUADRAS+1) - 4 ; i++)
-            switch_semaphore(&semps[i]);
-        pthread_mutex_unlock(&semaphore_mutex);
-
-    }
-    
-}*/
-
 int
 init(void) {
     
@@ -125,9 +62,9 @@ listen() {
 
 
 int
-insert_bus(int fd, int id, point_t pos){
+insert_bus(session_t session, int id, point_t pos){
         
-    if(fd >= XDIM*YDIM || fd < 0) {
+    if(session >= XDIM*YDIM || session < 0) {
         printf("Linea no soportada por el sistema.\n");
         return FD_TOO_LARGE;
     }
@@ -154,20 +91,20 @@ insert_bus(int fd, int id, point_t pos){
     pthread_mutex_lock(&map_mutex);
     
     tiles[pos.y][pos.x] = TRUE;
-    buses[fd][id] = pos;
+    buses[session][id] = pos;
     pthread_mutex_unlock(&map_mutex);
-    insert_bus_ack(fd,id);
+    insert_bus_ack(session,id);
     return id;
         
 }
 
 
 int
-move_bus(int fd, int id, point_t new_pos){
-    point_t actual_pos = buses[fd][id];
+move_bus(session_t session, int id, point_t new_pos){
+    point_t actual_pos = buses[session][id];
     int aux; 
     
-    if(fd >= XDIM*YDIM || fd < 0) {
+    if(session >= XDIM*YDIM || session < 0) {
         printf("Linea no soportada por el sistema.\n");
         return FD_TOO_LARGE;
     }
@@ -219,12 +156,12 @@ move_bus(int fd, int id, point_t new_pos){
         }
     }
 	
-    buses[fd][id] = new_pos;
+    buses[session][id] = new_pos;
     pthread_mutex_unlock(&map_mutex);
     tiles[actual_pos.y][actual_pos.x] = FALSE;
     tiles[new_pos.y][new_pos.x] = TRUE;
     pthread_mutex_unlock(&map_mutex);
-    move_request_ack(fd,id);
+    move_request_ack(session,id);
     return id;
 }
 

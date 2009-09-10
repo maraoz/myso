@@ -224,14 +224,14 @@ int m_w_close(session_t session) {
 }
 
 int m_w_write(session_t session_id, package_t package) {
-    printf("%d", session_id)
+    printf("%d", session_id);
     int msqid = msqid_singleton;
     long msg_key = sessions[session_id][WRITE];
     q_msg_t queue_message;
     queue_message.mtype = msg_key;
     queue_message.content = package;
     int aux = msgsnd(msqid, &queue_message, sizeof(package_t), 0);
-    printf("%d", errno);
+//     printf("%d", errno);
     return aux;
 }
 
@@ -311,7 +311,7 @@ package_t w_read(session_t session_id) {
 /**
  * TESTCASES
  */
-
+/*
 int _main(void) {
 
     w_init(MESSAGE_QUEUE, LINE);
@@ -348,4 +348,4 @@ int _main(void) {
 
 
 
-
+*/

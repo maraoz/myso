@@ -53,9 +53,9 @@ insert_request(int idl, int idb, point_t pos)
     data.id_line = idl;
     data.id_bus = idb;
     data.point = pos;
-   
+
     result = w_write(idl, data);
-    
+
     if(result == -1)
 	printf("ha fallado en insert request\n");
     else
