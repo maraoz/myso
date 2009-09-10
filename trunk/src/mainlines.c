@@ -49,10 +49,12 @@ main(void){
         usleep(aux);
         aux_pthread_creation = pthread_create(&buses_threads[index], &attr, (void*)(new_bus), (void *)index);
         if(!aux_pthread_creation){
-        while(tmp_qty_buses == qty_buses);
-            tmp_qty_buses--;
-            index++;
-            aux = buses_times[index] - buses_times[index-1];
+	    while(tmp_qty_buses == qty_buses);
+	    tmp_qty_buses--;
+	    index++;
+	    if(qty_buses > 0){
+		aux = buses_times[index] - buses_times[index-1];
+	    }
         } else {
             printf("No se puedo crear el colectivo \n");
             aux = 0;

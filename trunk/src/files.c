@@ -70,6 +70,11 @@ openFiles(void)
     return 0;
 }
 
+int 
+preparefd(int fd){
+    return dup2(fd,3);
+}
+
 int
 get_path(int fd, point_t ** path)
 {

@@ -8,6 +8,8 @@ int * get_times(int fd);
 
 int get_stops(int fd, point_t ** stops);
 
+int preparefd(int fd);
+
 int closeFd(int fd);
 
 void closeDir(void);
