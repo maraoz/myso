@@ -26,7 +26,12 @@ m_init_line(){
 
 int
 openChannel(int channel){
-    w_open(channel);
+    return w_open(channel);
+}
+
+void
+closeChanel(int channel){
+    w_close(channel);
 }
 
 void
