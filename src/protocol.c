@@ -94,14 +94,14 @@ int commit_session(session_t session) {
 int s_w_init(void) {}
 
 session_t s_w_open(int other) {
-//     session_t new_session = get_session();
-//     sessions[new_session][READ] = other;
-//     sessions[new_session][WRITE] = other;
-//     if (commit_session(new_session) != -1)
-//         return new_session;
-//     else
-//         return -1;
-//     shmget(key_t key, size_t size, int shmflg);
+    session_t new_session = get_session();
+    sessions[new_session][READ] = other;
+    sessions[new_session][WRITE] = other;
+    if (commit_session(new_session) != -1)
+        return new_session;
+    else
+        return -1;
+    shmget(key_t key, size_t size, int shmflg);
 }
 
 int s_w_close(session_t session) {};
@@ -194,7 +194,7 @@ typedef struct msg {
 
 int m_w_init(void) {
 
-    
+    init_sessions();
 
     key_t key;
     int msgflg, msqid;
