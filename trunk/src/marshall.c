@@ -26,7 +26,16 @@ m_init_line(){
 
 int
 openChannel(int channel){
-    return w_open(channel);
+    int result;
+    
+    result = w_open(channel);
+    
+    if(result == -1)
+	printf("ha fallado");
+    else
+	printf("no ha fallado");
+    
+    return result;
 }
 
 int
