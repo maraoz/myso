@@ -94,14 +94,17 @@ int commit_session(session_t session) {
 int s_w_init(void) {}
 
 session_t s_w_open(int other) {
-    session_t new_session = get_session();
-    sessions[new_session][READ] = other;
-    sessions[new_session][WRITE] = other;
-    if (commit_session(new_session) != -1)
-        return new_session;
-    else
-        return -1;
-    shmget(key_t key, size_t size, int shmflg);
+//     session_t new_session = get_session();
+// 
+//     
+// 
+//     sessions[new_session][READ] = other;
+//     sessions[new_session][WRITE] = other;
+//     if (commit_session(new_session) != -1)
+//         return new_session;
+//     else
+//         return -1;
+//     shmget(key_t key, size_t size, int shmflg);
 }
 
 int s_w_close(session_t session) {};
@@ -193,9 +196,6 @@ typedef struct msg {
 
 
 int m_w_init(void) {
-
-    init_sessions();
-
     key_t key;
     int msgflg, msqid;
     key = 1928;
@@ -224,12 +224,14 @@ int m_w_close(session_t session) {
 }
 
 int m_w_write(session_t session_id, package_t package) {
+    printf("%d", session_id)
     int msqid = msqid_singleton;
     long msg_key = sessions[session_id][WRITE];
     q_msg_t queue_message;
     queue_message.mtype = msg_key;
     queue_message.content = package;
     int aux = msgsnd(msqid, &queue_message, sizeof(package_t), 0);
+    printf("%d", errno);
     return aux;
 }
 
@@ -267,6 +269,8 @@ int w_init(int ipc_type, int mode) {
     program_ipc_method = ipc_type;
 
     is_core = (mode == CORE);
+
+    init_sessions();
 
     switch(program_ipc_method) {
         case SHARED_MEMORY:
