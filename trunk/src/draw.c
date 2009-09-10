@@ -35,7 +35,7 @@ draw(void) {
                         } else {
                             mvprintw(j, i, "|",tiles[i][j]?'c':' ');
                         }
-                    } else {
+                    } else{
                         mvprintw(j, i, "%c",tiles[i][j]?'c':' ');
                     }
                 }
