@@ -66,7 +66,7 @@ main(void) {
 	    // TODO: CHEQUEAR POR NULL
         }
     }
-    
+
     closeDir();
     
     init();
