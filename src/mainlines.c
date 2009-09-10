@@ -70,7 +70,6 @@ main(void){
     buses_times[1] = 1000;
     buses_times[2] = 1500;
     
-
     
     
     movements = calloc(sizeof(int),qty_buses);
@@ -93,8 +92,7 @@ main(void){
     buses.stops[0].y = 3;
     buses.stops[1].x = 3;
     buses.stops[1].y = 0;
-    
-    
+
     
 
     aux = buses_times[0];
