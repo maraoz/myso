@@ -29,9 +29,9 @@ openChannel(int channel){
     return w_open(channel);
 }
 
-void
+int
 closeChanel(int channel){
-    w_close(channel);
+    return w_close(channel);
 }
 
 void

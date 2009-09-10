@@ -6,7 +6,7 @@ void m_init_line();
 
 int openChannel(int channel);
 
-void closeChanel(int channel);
+int closeChanel(int channel);
 
 void insert_request(int idl, int idb, point_t pos);
 
