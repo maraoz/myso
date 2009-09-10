@@ -118,7 +118,7 @@ init(void) {
 void *
 listen() {
     while(sim_on){
-        receive_core();
+        receive();
     }
 }
 
@@ -241,9 +241,9 @@ valid_pos(point_t pos){
 
 int
 hasSemaphore(point_t pos){
-    if( !((pos.y == 0 || pos.y == CUADRAS*TILES_CUADRAS+1) 
-	&& (pos.x == 0 || pos.x == CUADRAS*TILES_CUADRAS+1))
-	&& ((pos.y % TILES_CUADRAS == 0) && (pos.x % TILES_CUADRAS == 0)))
+    if( !((pos.y == 0 || pos.y == CUADRAS*(TILES_CUADRAS+1))
+	&& (pos.x == 0 || pos.x == CUADRAS*(TILES_CUADRAS+1)))
+	&& ((pos.y % (TILES_CUADRAS+1) == 0) && (pos.x % (TILES_CUADRAS+1) == 0)))
 	    return 1;
     return 0;
 }

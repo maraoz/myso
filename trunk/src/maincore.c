@@ -6,6 +6,7 @@
 #include <pthread.h>
 #include <stdio.h>
 #include <unistd.h>
+#include <stdlib.h>
 
 
 
@@ -32,13 +33,14 @@ main(void) {
     pthread_attr_init(&attr);
     pthread_attr_setdetachstate(&attr, PTHREAD_CREATE_DETACHED);
     
-    files.buffer = malloc(10,sizeof(int));
+    files.buffer = malloc(10*sizeof(int));
     files.qty = 0;
     if(files.buffer == NULL)
-	return 1;
+        return 1;
     
+    openDir();
     
-    while((files.buffer[files.qty] = openFiles()) != NULL) {
+    while((files.buffer[files.qty] = openFiles()) != 0) {
         pid_t pid;
         int aux;
         char *args[] = {"./lineas", (char *) 0 };
@@ -49,18 +51,19 @@ main(void) {
                  return -1;
             }
             case -1: return 1;
-            default: openChannel(pid); closeFd(file) break;
+            default: openChannel(pid); closeFd(files.buffer[files.qty]); break;
         }           
         files.qty++;
-	if(files.qty%10 == 0){
-	    files.buffer = realloc(files.buffer,(files.qty+10)*sizeof(int));
+        if(files.qty%10 == 0){
+            files.buffer = realloc(files.buffer,(files.qty+10)*sizeof(int));
 	    // TODO: CHEQUEAR POR NULL
-	}
+        }
     }
     closeDir();
     
     init();
     
+    initscr();
     aux_pthread_creation = pthread_create(&core_threads[0], &attr, (void*)(draw), NULL);
     if(aux_pthread_creation){
         printf("No se pudo crear el thread pedido.\n");
@@ -73,7 +76,7 @@ main(void) {
     
     while(sim_on){
         int i;
-        usleep(1000);
+        usleep(100000);
         pthread_mutex_lock(&semaphore_mutex);
         for(i = 0; i<(CUADRAS+1)*(CUADRAS+1) - 4 ; i++)
             switch_semaphore(&semps[i]);

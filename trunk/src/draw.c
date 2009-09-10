@@ -16,9 +16,9 @@ void *
 draw(void) {
     int i,j;
     while(sim_on) {
-        usleep(1000);
+        usleep(100);
         pthread_mutex_lock(&map_mutex);
-        initscr();
+        
         erase();
         for(i = 0 ; i < YDIM ; i++){
             for( j = 0 ; j < XDIM ; j++) {
@@ -42,7 +42,7 @@ draw(void) {
             }
         }
         refresh();
-        endwin();
+        //endwin();
         pthread_mutex_unlock(&map_mutex);
         
     }

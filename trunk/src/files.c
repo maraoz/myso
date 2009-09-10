@@ -36,10 +36,10 @@ readToInt(int fd)
 
    while( read(fd, &temp, sizeof(char)) )
     {
-	if(ISNUM(temp))
-	    num = num * 10 + temp - '0';
-	else
-	    break;
+        if(ISNUM(temp))
+            num = num * 10 + temp - '0';
+        else
+            break;
     }
 
     return num;
@@ -55,19 +55,17 @@ openFiles(void)
     opdir = readdir(direct);
 
 
-
     if(opdir){
-	if(opdir->d_name[0] != '.')
-	{
-	    strcpy(name, "../files");
-	    name[8]='/';
-	    strcpy(name+9, opdir->d_name);
+        if(opdir->d_name[0] != '.')
+        {
+            strcpy(name, "../files");
+            name[8]='/';
+            strcpy(name+9, opdir->d_name);
+    
+            fd = open(name, O_RDONLY);
 
-
-	    fd = open(name, O_RDONLY);
-
-	    return fd;
-	}
+            return fd;
+        }
     }
     return 0;
 }
@@ -85,13 +83,13 @@ get_path(int fd, point_t ** path)
 
     while( i < cant )
     {
-	num = readToInt(fd);
-	(*path)[i].x = num;
+        num = readToInt(fd);
+        (*path)[i].x = num;
 
-	num = readToInt(fd);
-        (*path)[i].y = num;
+        num = readToInt(fd);
+            (*path)[i].y = num;
 
-	i++;
+        i++;
     }
 
     return cant;
@@ -139,12 +137,12 @@ get_stops(int fd, point_t ** stops)
 
     while( i < cant )
     {
-	num = readToInt(fd);
+        num = readToInt(fd);
         (*stops)[i].x = num;
-	num = readToInt(fd);
+        num = readToInt(fd);
         (*stops)[i].y = num;
 	
-	i++;
+        i++;
     }
 
     return cant;

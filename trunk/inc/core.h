@@ -3,8 +3,8 @@
 
 #define CUADRAS 6
 #define TILES_CUADRAS 2
-#define XDIM 3*CUADRAS
-#define YDIM 3*CUADRAS
+#define XDIM (TILES_CUADRAS+1)*CUADRAS+1
+#define YDIM (TILES_CUADRAS+1)*CUADRAS+1
 #define TRUE 1
 #define FALSE 0
 #define V_GREEN 1
