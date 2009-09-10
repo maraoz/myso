@@ -194,8 +194,9 @@ session_t m_w_open(int other) {
     session_t new_session = get_session();
     sessions[new_session][READ] = other;
     sessions[new_session][WRITE] = other;
-    if (commit_session(new_session) != -1)
+    if (commit_session(new_session) != -1) {
         return new_session;
+    }
     else
         return -1;
 }
@@ -206,16 +207,23 @@ int m_w_close(session_t session) {
 }
 
 int m_w_write(session_t session_id, package_t package) {
+    
     int msqid = msqid_singleton;
     long msg_key = sessions[session_id][WRITE];
+    
     q_msg_t queue_message;
     queue_message.mtype = msg_key;
     queue_message.content = package;
+
     int aux = msgsnd(msqid, &queue_message, sizeof(package_t), 0);
     if (aux == -1)
         perror("m_w_write");
     return aux;
 }
+
+// int m_w_write(session_t session_id
+
+
 
 package_t m_w_read(session_t session_id) {
     package_t ret;

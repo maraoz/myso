@@ -22,8 +22,7 @@ m_init_core(){
 
     if(result == -1)
 	printf("ha fallado en init core\n");
-    else
-	printf("NOOOOOOOOOOO ha fallado init core\n");
+
     
     return result;
 }
@@ -36,22 +35,21 @@ m_init_line(){
 
     if(result == -1)
 	printf("ha fallado init line\n");
-    else
-	printf("NOOOOOOOOOOO ha fallado init line\n");
+
     
     return result;
 }
 
-int
-openChannel(session_t channel){
+session_t
+openChannel(int channel){
     int result;
+    
     
     result = w_open(channel);
     
     if(result == -1)
 	printf("ha fallado en open, el channel es %d\n", channel);
-    else
-	printf("no ha fallado en open\n", channel);
+
     
     return result;
 }
@@ -77,8 +75,7 @@ insert_request(session_t session, int idl, int idb, point_t pos)
 
     if(result == -1)
 	printf("ha fallado en insert request\n");
-    else
-	printf("no ha fallado en insert request\n");
+
 
 }
 
@@ -96,8 +93,7 @@ insert_bus_ack(session_t session, int idl, int idb){
     
     if(result == -1)
 	printf("ha fallado en insert bus ack\n");
-    else
-	printf("no ha fallado en insert bus ack\n");
+
 }
 
 void
@@ -113,8 +109,7 @@ move_request_ack(session_t session, int idl, int idb){
     
     if(result == -1)
 	printf("ha fallado en move request ack\n");
-    else
-	printf("no ha fallado en move request ack\n");
+
 }
 
 void
@@ -131,8 +126,7 @@ move_request(session_t session, int idl, int idb, point_t new_pos)
     
     if(result == -1)
 	printf("ha fallado en move request\n");
-    else
-	printf("no ha fallado en move request\n");
+
 
 }
 
@@ -174,7 +168,7 @@ receive(session_t session)
     package_t data;
 
     data = w_read(session);
-    printf("anda bien despues del read en receive, o no se si anda bien pero al menos sale\n");
+    
     switch(data.msg_id)
     {
         case CD_INSERT_BUS:
