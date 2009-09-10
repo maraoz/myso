@@ -155,7 +155,7 @@ receive()
     package_t data;
 
     data = w_read();
-    printf("%d\n",data.msg_id);
+    printf("anda bien despues del read en receive, o no se si anda bien pero al menos sale\n");
     switch(data.msg_id)
     {
         case CD_INSERT_BUS:
