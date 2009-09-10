@@ -1,6 +1,7 @@
 #include "../inc/typedef.h"
 #include "../inc/protocol.h"
 #include "../inc/core.h"
+#include "../inc/marshall.h"
 #include <dirent.h>
 
 #define CD_NO 0

@@ -40,6 +40,8 @@ main(void) {
     
     openDir();
     
+    
+    
     while((files.buffer[files.qty] = openFiles()) != 0) {
         pid_t pid;
         int aux;
@@ -59,6 +61,7 @@ main(void) {
 	    // TODO: CHEQUEAR POR NULL
         }
     }
+    
     closeDir();
     
     init();
