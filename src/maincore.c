@@ -21,6 +21,8 @@ extern pthread_mutex_t semaphore_mutex;
 extern pthread_mutex_t map_mutex;
 extern int sim_on;
 
+extern session_t session_line;
+
 
 int
 main(void) {
@@ -29,6 +31,7 @@ main(void) {
     pthread_attr_t attr;
     int aux_pthread_creation;
     Tfiles files;
+    
     
     pthread_attr_init(&attr);
     pthread_attr_setdetachstate(&attr, PTHREAD_CREATE_DETACHED);
@@ -39,16 +42,20 @@ main(void) {
         return 1;
     	
 
-    
+    init();
 
     openDir();
 
     ignore();
 
+
+
     while((files.buffer[files.qty] = openFiles()) != 0) {
         pid_t pid;
         int aux;
-        char *args[] = {"lineas", (char *) 0 };
+	char * line_id;
+	line_id = itoa(files.qty);
+        char *args[] = {"lineas", line_id ,(char *) 0 };
         pid = fork();
         switch(pid){
             case 0: aux = execv("../bin/lineas", args);
@@ -57,7 +64,7 @@ main(void) {
             }
             case -1: return 1;
             default: preparefd(files.buffer[files.qty]); 
-			openChannel(pid); 
+			session_line = openChannel(pid); 
 			closeFd(files.buffer[files.qty]); break;
         }           
         files.qty++;
@@ -69,7 +76,7 @@ main(void) {
 
     closeDir();
     
-    init();
+    
     
     initscr();
 

@@ -8,11 +8,13 @@
 
 
 buses_line buses;
-session_t my_id;
+session_t session;
 extern int sim_on;
 int * movements;
 int qty_buses;
 int tmp_qty_buses;
+pid_t my_pid;
+int line_id;
 
 
 void
@@ -31,14 +33,14 @@ new_bus(int index) {
     int i=0,j=0;
 
 /*    while(tmp_qty_buses == qty_buses)*/{
-	insert_request(my_id, index, buses.path[i]);
+	insert_request(session, line_id, index, buses.path[i]);
 	i++;j++;
     }
     
     while(sim_on){
-        usleep(10000);
+        usleep(10000000);
 	i = i%buses.path_length;
-        move_request(my_id, index, buses.path[i]);
+        move_request(session, line_id, index, buses.path[i]);
 	if(movements[my_index] > i) {
 	    if(buses.path[i].x == buses.stops[j].x && buses.path[i].y == buses.stops[j].y ) {
 		j = j%buses.stops_length;

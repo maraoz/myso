@@ -21,9 +21,9 @@ m_init_core(){
     result = w_init(MESSAGE_QUEUE, CORE);
 
     if(result == -1)
-	printf("ha fallado en open, el channel es %d\n", channel);
+	printf("ha fallado en init core\n");
     else
-	printf("no ha fallado en open\n", channel);
+	printf("NOOOOOOOOOOO ha fallado init core\n");
     
     return result;
 }
@@ -35,15 +35,15 @@ m_init_line(){
     result = w_init(MESSAGE_QUEUE, LINE);
 
     if(result == -1)
-	printf("ha fallado en open, el channel es %d\n", channel);
+	printf("ha fallado init line\n");
     else
-	printf("no ha fallado en open\n", channel);
+	printf("NOOOOOOOOOOO ha fallado init line\n");
     
     return result;
 }
 
 int
-openChannel(int channel){
+openChannel(session_t channel){
     int result;
     
     result = w_open(channel);
@@ -62,7 +62,7 @@ closeChanel(int channel){
 }
 
 void
-insert_request(int idl, int idb, point_t pos)
+insert_request(session_t session, int idl, int idb, point_t pos)
 {
     package_t data;
     int result;
@@ -71,8 +71,9 @@ insert_request(int idl, int idb, point_t pos)
     data.id_line = idl;
     data.id_bus = idb;
     data.point = pos;
+    
 
-    result = w_write(idl, data);
+    result = w_write(session, data);
 
     if(result == -1)
 	printf("ha fallado en insert request\n");
@@ -82,7 +83,7 @@ insert_request(int idl, int idb, point_t pos)
 }
 
 void
-insert_bus_ack(int idl, int idb){
+insert_bus_ack(session_t session, int idl, int idb){
 
     package_t data;
     int result;
@@ -91,7 +92,7 @@ insert_bus_ack(int idl, int idb){
     data.id_line = idl;
     data.id_bus = idb;
 
-    result = w_write(idl, data);
+    result = w_write(session, data);
     
     if(result == -1)
 	printf("ha fallado en insert bus ack\n");
@@ -100,7 +101,7 @@ insert_bus_ack(int idl, int idb){
 }
 
 void
-move_request_ack(int idl, int idb){
+move_request_ack(session_t session, int idl, int idb){
 
     package_t data;
     int result;
@@ -108,7 +109,7 @@ move_request_ack(int idl, int idb){
     data.id_line = idl;
     data.id_bus = idb;
 
-    result = w_write(idl, data);
+    result = w_write(session, data);
     
     if(result == -1)
 	printf("ha fallado en move request ack\n");
@@ -117,7 +118,7 @@ move_request_ack(int idl, int idb){
 }
 
 void
-move_request(int idl, int idb, point_t new_pos)
+move_request(session_t session, int idl, int idb, point_t new_pos)
 {
     package_t data;
     int result;
@@ -126,7 +127,7 @@ move_request(int idl, int idb, point_t new_pos)
     data.id_bus = idb;
     data.point = new_pos;
 
-    result = w_write(idl, data);
+    result = w_write(session, data);
     
     if(result == -1)
 	printf("ha fallado en move request\n");
@@ -168,11 +169,11 @@ receive_lines(package_t data)
 }
 
 void
-receive()
+receive(session_t session)
 {
     package_t data;
 
-    data = w_read();
+    data = w_read(session);
     printf("anda bien despues del read en receive, o no se si anda bien pero al menos sale\n");
     switch(data.msg_id)
     {
