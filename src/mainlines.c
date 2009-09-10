@@ -32,6 +32,47 @@ main(void){
     qty_buses = get_qty_buses(3);
     buses_times = get_times(3);
     
+    
+/*    
+    
+    buses.path_length = 12;
+    buses.path = malloc(12*sizeof(point_t));
+    buses.path[0].x = 0;
+    buses.path[0].y = 0;
+    buses.path[1].x = 0;
+    buses.path[1].y = 1;
+    buses.path[2].x = 0;
+    buses.path[2].y = 2;
+    buses.path[3].x = 0;
+    buses.path[3].y = 3;
+    buses.path[4].x = 1;
+    buses.path[4].y = 3;
+    buses.path[5].x = 2;
+    buses.path[5].y = 3;
+    buses.path[6].x = 3;
+    buses.path[6].y = 3;
+    buses.path[7].x = 3;
+    buses.path[7].y = 2;
+    buses.path[8].x = 3;
+    buses.path[8].y = 1;
+    buses.path[9].x = 3;
+    buses.path[9].y = 0;
+    buses.path[10].x = 2;
+    buses.path[10].y = 0;
+    buses.path[11].x = 1;
+    buses.path[11].y = 0;
+
+    qty_buses = 3;
+
+    buses_times = malloc(3*sizeof(int));
+    buses_times[0] = 0;
+    buses_times[1] = 10;
+    buses_times[2] = 15;
+    
+*/
+    
+    
+    
     movements = calloc(sizeof(int),qty_buses);
     if(movements == NULL){
     return 1;
@@ -42,6 +83,20 @@ main(void){
         return 1;
     }
     buses.stops_length = get_stops(0, &buses.stops);
+    
+    
+/*    
+    
+    
+    buses.stops_length = 2;
+    buses.stops = malloc(2*sizeof(point_t));
+    buses.stops[0].x = 0;
+    buses.stops[0].y = 3;
+    buses.stops[1].x = 3;
+    buses.stops[1].y = 0;
+    
+*/    
+    
     
     aux = buses_times[0];
     tmp_qty_buses = qty_buses;
