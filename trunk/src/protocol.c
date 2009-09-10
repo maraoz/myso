@@ -76,11 +76,16 @@ session_t s_w_open(int other) {
     session_t new_session = get_session();
 
     char * name = itoa(other);
-    key_t key = ftok(name, 'R');
-    int shmid = shmget(key, 100, 0);
+    key_t key = ftok(name, 'W');
+    int shmid_r = shmget(key, 1000, 0);
+    int shmid_w = shmget(key+1, 1000, 0);
 
-    sessions[new_session][READ] = shmid;
-    sessions[new_session][WRITE] = shmid;
+    if (shmid_r == -1 | shmid_w == -1) {
+        return -1;
+    }
+
+    sessions[new_session][READ] = shmid_r;
+    sessions[new_session][WRITE] = shmid_w;
     if (commit_session(new_session) != -1)
         return new_session;
     else
