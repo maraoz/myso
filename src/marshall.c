@@ -3,6 +3,7 @@
 #include "../inc/core.h"
 #include "../inc/marshall.h"
 #include <dirent.h>
+#include <stdio.h>
 
 #define CD_NO 0
 #define CD_INSERT_BUS 1
@@ -36,8 +37,10 @@ insert_request(int idl, int idb, point_t pos)
     data.id_line = idl;
     data.id_bus = idb;
     data.point = pos;
-    
-    w_write(idl, data);
+
+
+    w_write(1, data);
+    printf("asdf\n");
 }
 
 void
@@ -74,7 +77,7 @@ move_request(int idl, int idb, point_t new_pos)
     data.id_bus = idb;
     data.point = new_pos;
 
-    w_write(idl, data);
+    w_write(1, data);
 }
 
 void
@@ -113,8 +116,9 @@ void
 receive()
 {
     package_t data;
-    data = w_read();
 
+    data = w_read();
+    printf("%d\n",data.msg_id);
     switch(data.msg_id)
     {
         case CD_INSERT_BUS:

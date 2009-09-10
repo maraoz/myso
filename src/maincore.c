@@ -37,18 +37,21 @@ main(void) {
     files.qty = 0;
     if(files.buffer == NULL)
         return 1;
+    	
+
     
+
     openDir();
-    
-    
-    
+
+    ignore();
+
     while((files.buffer[files.qty] = openFiles()) != 0) {
         pid_t pid;
         int aux;
-        char *args[] = {"./lineas", (char *) 0 };
+        char *args[] = {"lineas", (char *) 0 };
         pid = fork();
         switch(pid){
-            case 0: aux = execv("../bin/", args);
+            case 0: aux = execv("../bin/lineas", args);
             if(aux == -1){
                  return -1;
             }
@@ -72,7 +75,7 @@ main(void) {
 
     aux_pthread_creation = pthread_create(&core_threads[0], &attr, (void*)(draw), NULL);
     if(aux_pthread_creation){
-        printf("No se pudo crear el thread pedido.\n");
+       printf("No se pudo crear el thread pedido.\n");
     }
     aux_pthread_creation = pthread_create(&core_threads[1], &attr, (void*)(listen), NULL);
     if(aux_pthread_creation){
