@@ -14,14 +14,32 @@
 #define CD_MOVE_ACK 5
 #define CD_INSERT_ACK 6
 
-void
+int
 m_init_core(){
-    w_init(MESSAGE_QUEUE, CORE);
+    int result;
+    
+    result = w_init(MESSAGE_QUEUE, CORE);
+
+    if(result == -1)
+	printf("ha fallado en open, el channel es %d\n", channel);
+    else
+	printf("no ha fallado en open\n", channel);
+    
+    return result;
 }
 
-void
+int
 m_init_line(){
-    w_init(MESSAGE_QUEUE, LINE);
+    int result;
+    
+    result = w_init(MESSAGE_QUEUE, LINE);
+
+    if(result == -1)
+	printf("ha fallado en open, el channel es %d\n", channel);
+    else
+	printf("no ha fallado en open\n", channel);
+    
+    return result;
 }
 
 int

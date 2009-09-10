@@ -1,8 +1,8 @@
 
 
-void m_init_core();
+int m_init_core();
 
-void m_init_line();
+int m_init_line();
 
 int openChannel(int channel);
 
