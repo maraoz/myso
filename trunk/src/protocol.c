@@ -19,6 +19,7 @@
 
 #include "../inc/typedef.h"
 #include "../inc/protocol.h"
+#include "../inc/util.h"
 
 
 /**
@@ -84,8 +85,6 @@ session_t s_w_open(int other) {
         return new_session;
     else
         return -1;
-
-
 }
 
 int s_w_close(session_t session) {};
