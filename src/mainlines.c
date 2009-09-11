@@ -44,8 +44,8 @@ main(int argc, char * argv[] ){
     
     
 
-    buses.path_length = 12;
-//     printf("cantidad de recorridos = %d\n", buses.path_length);
+   buses.path_length = 12;
+    printf("cantidad de recorridos = %d\n", buses.path_length);
     buses.path = malloc(12*sizeof(point_t));
     buses.path[0].x = 0;
     buses.path[0].y = 0;
