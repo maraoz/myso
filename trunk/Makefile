@@ -14,11 +14,13 @@ SOURCES2 = ./src/draw.c ./src/core.c ./src/marshall.c ./src/protocol.c\
 ./src/util.c ./src/lineas.c ./src/mainlines.c ./src/files.c
 CFLAGS = -Wall -O -Wuninitialized
 
+.SILENT:
 $(TARGET2): $(OBJS2)
 	    gcc -o$(TARGET2) $(OBJS2) -lm -pthread -lncurses
 	    mv $(TARGET2) ./bin
 	    echo "Linkeando los archivos $(OBJS) para obtener $(TARGET)... "
 
+.SILENT:
 $(TARGET1): $(OBJS1)
 	gcc -o$(TARGET1) $(OBJS1) -lm -pthread -lncurses
 	mv $(TARGET1) ./bin
@@ -47,11 +49,13 @@ $(TARGET1): $(OBJS1)
 
 ./obj/util.o: ./inc/typedef.h
 
+.SILENT:
 $(OBJS1) : $(SOURCES1) ./inc/typedef.h
 	gcc -c $(SOURCES1)
 	mv *.o ./obj
 	echo "Compilando los archivos $(SOURCES) ... "
 
+.SILENT:
 $(OBJS2) : $(SOURCES2) ./inc/typedef.h
 	gcc -c $(SOURCES2)
 	mv *.o ./obj
