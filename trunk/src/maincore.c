@@ -47,7 +47,7 @@ main(void) {
     openDir();
 
     files.buffer[files.qty] = 3;
-    while((files.buffer[files.qty] = openFiles()) != 0) {
+    while((files.buffer[files.qty]/* = openFiles()*/) != 0) {
 
     if(files.buffer[files.qty] != -1){
         pid_t pid;
@@ -92,7 +92,7 @@ main(void) {
 
     while(sim_on){
         int i;
-        usleep(1000000);
+        sleep(10);
         pthread_mutex_lock(&semaphore_mutex);
         for(i = 0; i<(CUADRAS+1)*(CUADRAS+1) - 4 ; i++)
             switch_semaphore(&semps[i]);

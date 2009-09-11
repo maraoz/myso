@@ -158,10 +158,10 @@ receive_lines(package_t data)
 //     package_t data;
 
 //     data = w_read();
+
     switch(data.msg_id)
     {
-        printf("aca\n");
-        case CD_INSERT_ACK: code = insert_ack(data.id_line);break;
+        case CD_INSERT_ACK: code = insert_ack(data.id_line, data.id_bus);break;
         case CD_MOVE_ACK: code = move_ack(data.id_line, data.id_bus);break;
         default: /* */;
     }

@@ -5,8 +5,8 @@ void * line_listener();
 
 void * new_bus(int index);
 
-void move_ack(session_t session, int id); 
+void move_ack(int fd, int id); 
 
-void insert_ack(int id);
+void insert_ack(int fd, int id);
 
 #endif
