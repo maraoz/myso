@@ -19,9 +19,9 @@ int semps_hash[(CUADRAS+1)][(CUADRAS+1)];
 pthread_mutex_t semaphore_mutex = PTHREAD_MUTEX_INITIALIZER;
 pthread_mutex_t map_mutex = PTHREAD_MUTEX_INITIALIZER;
 int sim_on = 1;
+Tfiles files;
 
-
-int session_line;
+// int session_line;
 
 int
 init(void) {
@@ -55,9 +55,9 @@ init(void) {
     
 
 void *
-listen() {
+listen(int index) {
     while(sim_on){
-        receive(session_line);
+        receive(files.buffer[index]);
     }
 }
 
@@ -86,16 +86,16 @@ insert_bus(int fd, int id, point_t pos){
         return BLOCKED_SLOT;
     }
 
-//     if(tiles[pos.y][pos.x]){
-// //        printf("Hay un bus en ese lugar, intentar luego.\n");
-//         return BUS_ALREADY_IN_SLOT;
-//     }
+    if(tiles[pos.y][pos.x]){
+//        printf("Hay un bus en ese lugar, intentar luego.\n");
+        return BUS_ALREADY_IN_SLOT;
+    }
 
     pthread_mutex_lock(&map_mutex);
     tiles[pos.y][pos.x] = TRUE;
     buses[fd][id] = pos;
     pthread_mutex_unlock(&map_mutex);
-    insert_bus_ack(session_line,fd,id);
+    insert_bus_ack(files.buffer[fd],fd,id);
     if(DEBUG_MODE)
     printf("TRACE: COLECTIVO INSERTADO\n");
     return id;
@@ -176,7 +176,7 @@ move_bus(int fd, int id, point_t new_pos){
     pthread_mutex_unlock(&map_mutex);
     if(DEBUG_MODE)
     printf("TRACE: SE MOVIO\n");
-    move_request_ack(session_line,fd,id);
+    move_request_ack(files.buffer[fd],fd,id);
     
     return id;
 }

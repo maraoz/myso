@@ -21,16 +21,16 @@ extern pthread_mutex_t semaphore_mutex;
 extern pthread_mutex_t map_mutex;
 extern int sim_on;
 
-extern session_t session_line;
-
+// extern session_t session_line;
+extern Tfiles files;
 
 int
 main(void) {
     
-    pthread_t core_threads[2];
+    pthread_t * core_threads;
     pthread_attr_t attr;
     int aux_pthread_creation;
-    Tfiles files;
+    int i;
     
     
     pthread_attr_init(&attr);
@@ -46,8 +46,8 @@ main(void) {
 
     openDir();
 
-    files.buffer[files.qty] = 3;
-    while((files.buffer[files.qty]/* = openFiles()*/) != 0) {
+//     files.buffer[files.qty] = 3;
+    while((files.buffer[files.qty] = openFiles()) != 0) {
 
     if(files.buffer[files.qty] != -1){
         pid_t pid;
@@ -63,11 +63,10 @@ main(void) {
                  return -1;
             }
             case -1: return 1;
-            default:    session_line = openChannel(pid); 
-			closeFd(files.buffer[files.qty]); break;
+            default: closeFd(files.buffer[files.qty]); files.buffer[files.qty] = openChannel(pid); break;
         }           
         files.qty++;
-        files.buffer[files.qty] = 0;
+//         files.buffer[files.qty] = 0;
         if(files.qty%10 == 0){
             files.buffer = realloc(files.buffer,(files.qty+10)*sizeof(int));
 	    // TODO: CHEQUEAR POR NULL
@@ -79,14 +78,17 @@ main(void) {
     
     initscr();
 
+    core_threads = malloc(files.qty * sizeof(pthread_t)+1);
     
     aux_pthread_creation = pthread_create(&core_threads[0], &attr, (void*)(draw), NULL);
     if(aux_pthread_creation){
        printf("No se pudo crear el thread pedido.\n");
     }
-    aux_pthread_creation = pthread_create(&core_threads[1], &attr, (void*)(listen), NULL);
-    if(aux_pthread_creation){
-        printf("No se pudo crear el thread pedido.\n");
+    for(i=0;i<files.qty;i++){
+        aux_pthread_creation = pthread_create(&core_threads[i+1], &attr, (void*)(listen), (void*)i);
+        if(aux_pthread_creation){
+            printf("No se pudo crear el thread pedido.\n");
+        }   
     }
     pthread_attr_destroy(&attr);
 
