@@ -187,12 +187,4 @@ mostrarTodo(int fd)
 	printf("%c\n", temp);
 }
 
-void
-ignore()
-{
-    openFiles();
-    openFiles();
-    openFiles();
-}
-
 
