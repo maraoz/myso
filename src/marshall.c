@@ -178,7 +178,7 @@ receive(session_t session)
     printf("TRACE: LLEGUE HASTA ANTES DEL SWITCH\n");
     if(DEBUG_MODE)
     printf("TRACE: MSG_ID = %d\n",data.msg_id);
-    if(data.msg_id == CD_INSERT_ACK){
+    if(data.msg_id == CD_MOVE_ACK){
         if(DEBUG_MODE)
         printf("TRACE: EL MENSAJE ES EL ESPERADO\n");
     }
