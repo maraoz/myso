@@ -138,6 +138,7 @@ int s_w_close(session_t session) {
         printf("fallo el shm_deattatch");
         return -1;
     }
+
     shmctl(desc_r->shmid, IPC_RMID, NULL);
     semctl(desc_r->semaphore_id, 0, IPC_RMID);
     shmctl(desc_w->shmid, IPC_RMID, NULL);
@@ -147,6 +148,8 @@ int s_w_close(session_t session) {
 
 };
 int s_w_write(session_t session_id, package_t package) {
+    struct sembuf sb = {0, 1, 0};
+
     shm_descriptor_t * shmdp = (shm_descriptor_t *) sessions[session_id][WRITE];
     sh_package_t * mem_zone = shmdp->data;
 
@@ -165,18 +168,31 @@ int s_w_write(session_t session_id, package_t package) {
     }
 
     // if a free memory zone was found put the package in there and return
-    mem_zone[i].used = TRUE;
     mem_zone[i].package = package;
+    mem_zone[i].used = TRUE;
+    // and set the resource as available
+    if (semop(shmdp->semaphore_id, &sb, 1) == -1) {
+        perror("semop");
+        exit(1);
+    }
+
     return 0;
 };
 
 package_t s_w_read(session_t session_id) {
+    struct sembuf sb = {0, -1, 0};
+
     shm_descriptor_t * shmdp = (shm_descriptor_t *) sessions[session_id][READ];
     sh_package_t * mem_zone = shmdp->data;
     package_t ret;
     // search for a used space to get a package from it
     int i;
     int found_free_zone = FALSE;
+    // only if there is one such resource available
+    if (semop(shmdp->semaphore_id, &sb, 1) == -1) {
+        perror("semop");
+        exit(1);
+    }
     for(i=0; i<SH_PACKAGE_MAX; i++) {
         if (mem_zone[i].used == TRUE) {
             mem_zone[i].used = FALSE;
