@@ -38,47 +38,66 @@ main(int argc, char * argv[] ){
     pthread_attr_init(&attr);
     pthread_attr_setdetachstate(&attr, PTHREAD_CREATE_DETACHED);
     
- //   buses.path_length = get_path(3, &buses.path);
+   buses.path_length = get_path(3, &buses.path);
   //  qty_buses = get_qty_buses(3);
   //  buses_times = get_times(3);
     
     
+    
+
+int mycont;
+    
+
+	
+
+
+	
+
+
+
+
+
 
     
-    
-    buses.path_length = 12;
-    buses.path = malloc(12*sizeof(point_t));
-    buses.path[0].x = 0;
-    buses.path[0].y = 0;
-    buses.path[1].x = 1;
-    buses.path[1].y = 0;
-    buses.path[2].x = 2;
-    buses.path[2].y = 0;
-    buses.path[3].x = 3;
-    buses.path[3].y = 0;
-    buses.path[4].x = 3;
-    buses.path[4].y = 1;
-    buses.path[5].x = 3;
-    buses.path[5].y = 2;
-    buses.path[6].x = 3;
-    buses.path[6].y = 3;
-    buses.path[7].x = 2;
-    buses.path[7].y = 3;
-    buses.path[8].x = 1;
-    buses.path[8].y = 3;
-    buses.path[9].x = 0;
-    buses.path[9].y = 3;
-    buses.path[10].x = 0;
-    buses.path[10].y = 2;
-    buses.path[11].x = 0;
-    buses.path[11].y = 1;
+//     buses.path_length = 12;
+    printf("cantidad de recorridos = %d\n", buses.path_length);
+//     buses.path = malloc(12*sizeof(point_t));
+//     buses.path[0].x = 0;
+//     buses.path[0].y = 0;
+//     buses.path[1].x = 1;
+//     buses.path[1].y = 0;
+//     buses.path[2].x = 2;
+//     buses.path[2].y = 0;
+//     buses.path[3].x = 3;
+//     buses.path[3].y = 0;
+//     buses.path[4].x = 3;
+//     buses.path[4].y = 1;
+//     buses.path[5].x = 3;
+//     buses.path[5].y = 2;
+//     buses.path[6].x = 3;
+//     buses.path[6].y = 3;
+//     buses.path[7].x = 2;
+//     buses.path[7].y = 3;
+//     buses.path[8].x = 1;
+//     buses.path[8].y = 3;
+//     buses.path[9].x = 0;
+//     buses.path[9].y = 3;
+//     buses.path[10].x = 0;
+//     buses.path[10].y = 2;
+//     buses.path[11].x = 0;
+//     buses.path[11].y = 1;
+    for( mycont = 0 ; mycont < buses.path_length ; mycont++ )
+	printf("recorrido %d = %d %d\n", mycont, buses.path[mycont].x, buses.path[mycont].y);
 
     qty_buses = 3;
+    printf("cantidad de colectivos = %d\n", qty_buses);
 
     buses_times = malloc(3*sizeof(int));
     buses_times[0] = 1000;
     buses_times[1] = 1000000;
     buses_times[2] = 2000000;
+    for( mycont = 0 ; buses_times[mycont] ; mycont++ )
+	printf("tiempos = %d\n", buses_times[mycont]);
     
     
     
@@ -101,11 +120,16 @@ main(int argc, char * argv[] ){
     
     
     buses.stops_length = 2;
+    printf("cantidad de paradas = %d\n", buses.stops_length);
+
     buses.stops = malloc(2*sizeof(point_t));
     buses.stops[0].x = 2;
     buses.stops[0].y = 0;
     buses.stops[1].x = 3;
     buses.stops[1].y = 1;
+    for( mycont = 0 ; mycont < buses.stops_length ; mycont++ )
+	printf("paradas %d = %d %d\n", mycont, buses.stops[mycont].x, buses.stops[mycont].y);
+
 
     
     aux = buses_times[0];

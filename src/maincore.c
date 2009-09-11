@@ -49,13 +49,14 @@ main(void) {
     ignore();
 
     files.buffer[files.qty] = 3;
-    while((files.buffer[files.qty]/* = openFiles()*/) != 0) {
+    while((files.buffer[files.qty] = openFiles()) != 0) {
 
 
         pid_t pid;
         int aux;
         char * line_id;
         line_id = itoa(files.qty);
+        preparefd(files.buffer[files.qty]); 
         char *args[] = {"lineas", line_id ,(char *) 0 };
         pid = fork();
         switch(pid){
@@ -64,8 +65,7 @@ main(void) {
                  return -1;
             }
             case -1: return 1;
-            default: preparefd(files.buffer[files.qty]); 
-			session_line = openChannel(pid); 
+            default:    session_line = openChannel(pid); 
 			closeFd(files.buffer[files.qty]); break;
         }           
         files.qty++;

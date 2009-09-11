@@ -84,6 +84,8 @@ get_path(int fd, point_t ** path)
     int num;
     char cant;
 
+    lseek(fd, 0, SEEK_SET);
+
     cant = readToInt(fd);
 
     *path = malloc(cant * sizeof(point_t));
@@ -107,8 +109,6 @@ get_qty_buses(int fd)
 {
     int cant;
 
-    lseek(fd, 0, SEEK_SET);
-    
     cant = readToInt(fd);
 
     return cant;
