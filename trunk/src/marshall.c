@@ -70,7 +70,7 @@ insert_request(session_t session, int idl, int idb, point_t pos)
     data.id_bus = idb;
     data.point = pos;
     
-
+    
     result = w_write(session, data);
 
     if(result == -1)
@@ -85,10 +85,12 @@ insert_bus_ack(session_t session, int idl, int idb){
     package_t data;
     int result;
     
-    data.msg_id = CD_MOVE_BUS;
+    data.msg_id = CD_INSERT_ACK;
     data.id_line = idl;
     data.id_bus = idb;
 
+    if(DEBUG_MODE)
+    printf("TRACE: ESTOY POR ESCRIBIR EL APROBADO DEL INSERT\n");
     result = w_write(session, data);
     
     if(result == -1)
@@ -101,10 +103,12 @@ move_request_ack(session_t session, int idl, int idb){
 
     package_t data;
     int result;
-    data.msg_id = CD_MOVE_BUS;
+    data.msg_id = CD_MOVE_ACK;
     data.id_line = idl;
     data.id_bus = idb;
 
+    if(DEBUG_MODE)
+    printf("TRACE: ESTOY POR ESCRIBIR EL APROBADO DEL MOVE\n");
     result = w_write(session, data);
     
     if(result == -1)
@@ -156,6 +160,7 @@ receive_lines(package_t data)
 //     data = w_read();
     switch(data.msg_id)
     {
+        printf("aca\n");
         case CD_INSERT_ACK: code = insert_ack(data.id_line);break;
         case CD_MOVE_ACK: code = move_ack(data.id_line, data.id_bus);break;
         default: /* */;
@@ -166,9 +171,17 @@ void
 receive(session_t session)
 {
     package_t data;
-
+                
     data = w_read(session);
-    
+
+    if(DEBUG_MODE)
+    printf("TRACE: LLEGUE HASTA ANTES DEL SWITCH\n");
+    if(DEBUG_MODE)
+    printf("TRACE: MSG_ID = %d\n",data.msg_id);
+    if(data.msg_id == CD_INSERT_ACK){
+        if(DEBUG_MODE)
+        printf("TRACE: EL MENSAJE ES EL ESPERADO\n");
+    }
     switch(data.msg_id)
     {
         case CD_INSERT_BUS:
@@ -176,7 +189,7 @@ receive(session_t session)
         case CD_VALID_POS:
         case CD_INIT: receive_core(data); break;
         case CD_INSERT_ACK:
-        case CD_MOVE_ACK: receive_lines(data); break;
+        case CD_MOVE_ACK: if(DEBUG_MODE) printf("TRACE: LLEGUE HASTA EL SWITCH\n");receive_lines(data); break;
         default: /* */;
     }
 }

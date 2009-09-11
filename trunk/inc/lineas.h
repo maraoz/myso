@@ -1,6 +1,8 @@
 #ifndef __LINEAS_H__
 #define __LINEAS_H__
 
+void * line_listener(); 
+
 void * new_bus(int index);
 
 void move_ack(session_t session, int id); 

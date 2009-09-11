@@ -52,12 +52,14 @@ openFiles(void)
     int fd;
     char name[20];
 
+
     opdir = readdir(direct);
 
-
+              
     if(opdir){
         if(opdir->d_name[0] != '.')
         {
+
             strcpy(name, "../files");
             name[8]='/';
             strcpy(name+9, opdir->d_name);
