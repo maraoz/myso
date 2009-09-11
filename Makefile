@@ -1,3 +1,5 @@
+all: lineas core
+
 TARGET1 = core
 OBJS1 = ./obj/draw.o ./obj/core.o ./obj/marshall.o ./obj/protocol.o\
 ./obj/util.o ./obj/lineas.o ./obj/maincore.o ./obj/files.o
@@ -70,8 +72,3 @@ garbage:
 	- rm -f ./*~
 	- rm -f ./tests/*~
 	echo "Borrando molestos archivos temporales ..."
-
-prog1:
-	$(TARGET1)
-prog2:
-	$(TARGET2)
