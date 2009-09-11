@@ -42,7 +42,7 @@ int isVRedHGreen(semaphore s);
 /* funcion que retorna TRUE si en pos hay un semaforo y FALSE caso contrario */
 int hasSemaphore(point_t pos);
 
-void * listen(void);
+void * listen(int index);
 
 void switch_semaphore(semaphore *s);
 
