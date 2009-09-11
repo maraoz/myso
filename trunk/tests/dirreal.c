@@ -28,6 +28,13 @@ DIR * direct;
 ** numero que estaba en el archivo.
 */
 
+DIR * direct;
+
+/*
+** readtoint recibe un fd y retorna en formato int el 
+** numero que estaba en el archivo.
+*/
+
 int
 readToInt(int fd)
 {
@@ -36,10 +43,10 @@ readToInt(int fd)
 
    while( read(fd, &temp, sizeof(char)) )
     {
-	if(ISNUM(temp))
-	    num = num * 10 + temp - '0';
-	else
-	    break;
+        if(ISNUM(temp))
+            num = num * 10 + temp - '0';
+        else
+            break;
     }
 
     return num;
@@ -52,24 +59,29 @@ openFiles(void)
     int fd;
     char name[20];
 
+
     opdir = readdir(direct);
 
-
-
+              
     if(opdir){
-	if(opdir->d_name[0]!='.')
-	{
-	    strcpy(name, "../files");
-	    name[8]='/';
-	    strcpy(name+9, opdir->d_name);
+        if(opdir->d_name[0] != '.')
+        {
 
+            strcpy(name, "../files");
+            name[8]='/';
+            strcpy(name+9, opdir->d_name);
+    
+            fd = open(name, O_RDONLY);
 
-	    fd = open(name, O_RDONLY);
-
-	    return fd;
-	}
+            return fd;
+        }
     }
     return 0;
+}
+
+int 
+preparefd(int fd){
+    return dup2(fd,3);
 }
 
 int
@@ -79,19 +91,21 @@ get_path(int fd, point_t ** path)
     int num;
     char cant;
 
+    lseek(fd, 0, SEEK_SET);
+
     cant = readToInt(fd);
 
     *path = malloc(cant * sizeof(point_t));
 
     while( i < cant )
     {
-	num = readToInt(fd);
-	(*path)[i].x = num;
+        num = readToInt(fd);
+        (*path)[i].x = num;
 
-	num = readToInt(fd);
-        (*path)[i].y = num;
+        num = readToInt(fd);
+            (*path)[i].y = num;
 
-	i++;
+        i++;
     }
 
     return cant;
@@ -102,8 +116,6 @@ get_qty_buses(int fd)
 {
     int cant;
 
-    lseek(fd, 0, SEEK_SET);
-    
     cant = readToInt(fd);
 
     return cant;
@@ -139,12 +151,12 @@ get_stops(int fd, point_t ** stops)
 
     while( i < cant )
     {
-	num = readToInt(fd);
+        num = readToInt(fd);
         (*stops)[i].x = num;
-	num = readToInt(fd);
+        num = readToInt(fd);
         (*stops)[i].y = num;
 	
-	i++;
+        i++;
     }
 
     return cant;
@@ -200,30 +212,33 @@ main(void)
 
     openDir();
 
-    ignore();
+//     ignore();
 
     fds = openFiles();
+    printf("fds vale %d\n", fds);
 
+//     preparefd(fds);
 
-//     mostrarTodo(fds);
+//     fds = 3;
 
-    cant = get_qty_buses(fds);
-    printf("cantidad de colectivos = %d\n", cant);
-    
+    mostrarTodo(fds);
+
     cant = get_path(fds, &path);
     printf("cantidad de recorridos = %d\n", cant);
     for( i = 0 ; i < cant ; i++ )
 	printf("recorrido %d = %d %d\n", i, path[i].x, path[i].y);
+
+    cant = get_qty_buses(fds);
+    printf("cantidad de colectivos = %d\n", cant);
+    
+    tiempos = get_times(fds);
+    for( i = 0 ; tiempos[i] ; i++ )
+	printf("tiempos = %d\n", tiempos[i]);
 	
     cant = get_stops(fds, &stops);
     printf("cantidad de paradas = %d\n", cant);
     for( i = 0 ; i < cant ; i++ )
 	printf("paradas %d = %d %d\n", i, stops[i].x, stops[i].y);
-	
-    tiempos = get_times(fds);
-    for( i = 0 ; tiempos[i] ; i++ )
-	printf("tiempos = %d\n", tiempos[i]);
-	
 
     closeFd(fds);
 

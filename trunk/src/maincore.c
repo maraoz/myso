@@ -46,7 +46,7 @@ main(void) {
 
     openDir();
 
-    ignore();
+//     ignore();
 
     files.buffer[files.qty] = 3;
     while((files.buffer[files.qty] = openFiles()) != 0) {
