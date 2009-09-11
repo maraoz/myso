@@ -23,6 +23,10 @@ void
 move_ack(int fd, int id){
         if(DEBUG_MODE)
         printf("TRACE: ME MOVIIII WIII\n");
+  //  if(movements[id] == -1){
+//         printf("no existe el colectivo\n");
+        //return;
+    //}
     movements[id]++;
     movements[id]%=buses.path_length;
 }
@@ -30,7 +34,7 @@ move_ack(int fd, int id){
 void
 insert_ack(int id){
     
-    if(movements[id] == 0){
+    if(movements[id] == -1){
         if(DEBUG_MODE)
         printf("TRACE: ME INSERTARON WIII\n");
         movements[id] = 1;
@@ -43,20 +47,20 @@ new_bus(int index) {
     int i=0,j=0;
 
     while(movements[my_index] == 0){
-        insert_request(session, line_id, index, buses.path[movements[my_index]]);
-        usleep(1000);
+        insert_request(session, line_id, index, buses.path[0]);
+        usleep(10000);
     }
     if(DEBUG_MODE)
     printf("sali del while\n");
    while(sim_on){
-        usleep(1000000);
+        usleep(100000);
         if(DEBUG_MODE)
         printf("intenando moverme\n");
         move_request(session, line_id, index, buses.path[movements[my_index]]);
 	    if(buses.path[movements[my_index]].x == buses.stops[j].x && buses.path[movements[my_index]].y == buses.stops[j].y ) {
-            j = j%buses.stops_length;
-            usleep(10000);
+            usleep(1000000);
             j++;
+            j = j%buses.stops_length;
 	    }
     }
 }

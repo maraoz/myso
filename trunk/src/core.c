@@ -168,7 +168,7 @@ move_bus(int fd, int id, point_t new_pos){
     pthread_mutex_lock(&map_mutex);
     //printf("actual pos: (%d,%d)\n",actual_pos.x,actual_pos.y);
     tiles[actual_pos.y][actual_pos.x] = FALSE;
-    printf("new pos: (%d,%d)\n",new_pos.x,new_pos.y);
+    //printf("new pos: (%d,%d)\n",new_pos.x,new_pos.y);
     tiles[new_pos.y][new_pos.x] = TRUE;
     pthread_mutex_unlock(&map_mutex);
     if(DEBUG_MODE)

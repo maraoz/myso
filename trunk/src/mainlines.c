@@ -32,6 +32,7 @@ main(int argc, char * argv[] ){
     pthread_attr_t attr;
     int index = 0;
     int aux = 0;
+    int i;
 //     int tmp_qty_buses;
 
     pthread_attr_init(&attr);
@@ -72,7 +73,7 @@ main(int argc, char * argv[] ){
     buses.path[11].x = 0;
     buses.path[11].y = 1;
 
-    qty_buses = 1;
+    qty_buses = 3;
 
     buses_times = malloc(3*sizeof(int));
     buses_times[0] = 1000;
@@ -82,6 +83,9 @@ main(int argc, char * argv[] ){
     
     
     movements = calloc(sizeof(int),qty_buses);
+    for(i =0 ; i<qty_buses; i++){
+        movements[i] = -1;
+    }
     if(movements == NULL){
     return 1;
     }
@@ -111,10 +115,10 @@ main(int argc, char * argv[] ){
     while(qty_buses > 0) {
         usleep(aux);
 
-	    while(movements[index] == 0){
-                    usleep(10000);
+	    //while(movements[index] == -1){
+                  //  usleep(10000);
                     aux_pthread_creation = pthread_create(&buses_threads[index], &attr, (void*)(new_bus), (void *)index);
-        }
+        //}
 	    index++;
 	    if(qty_buses > 0){
             aux = buses_times[index] - buses_times[index-1];
