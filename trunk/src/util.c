@@ -19,7 +19,7 @@ int digit_count(int n) {
 }
 
 char * itoa( int n) {
-    char * ret = calloc(11,sizeof(char));
+    char * ret = calloc(21,sizeof(char));
     if (n == 0) {
         ret[0] = '0';
         return ret;
