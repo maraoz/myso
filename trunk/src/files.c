@@ -56,10 +56,10 @@ openFiles(void)
     opdir = readdir(direct);
 
               
-    if(opdir){
-        if(opdir->d_name[0] != '.')
+    if(opdir)
+    {
+        if(ISNUM(opdir->d_name[0]))
         {
-
             strcpy(name, "../files");
             name[8]='/';
             strcpy(name+9, opdir->d_name);
@@ -68,7 +68,10 @@ openFiles(void)
 
             return fd;
         }
+        else
+            return -1;
     }
+
     return 0;
 }
 

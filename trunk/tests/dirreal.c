@@ -63,10 +63,10 @@ openFiles(void)
     opdir = readdir(direct);
 
               
-    if(opdir){
-        if(opdir->d_name[0] != '.')
+    if(opdir)
+    {
+        if(ISNUM(opdir->d_name[0]))
         {
-
             strcpy(name, "../files");
             name[8]='/';
             strcpy(name+9, opdir->d_name);
@@ -75,7 +75,10 @@ openFiles(void)
 
             return fd;
         }
+        else
+            return -1;
     }
+
     return 0;
 }
 
@@ -212,35 +215,34 @@ main(void)
 
     openDir();
 
-//     ignore();
+    while((fds = openFiles()) != 0 )
+    {
+        printf("el fd vale exactamente %d\n", fds);
+        if(fds != -1)
+        {
+            preparefd(fds);
 
-    fds = openFiles();
-    printf("fds vale %d\n", fds);
+            cant = get_path(fds, &path);
+            printf("cantidad de recorridos = %d\n", cant);
+            for( i = 0 ; i < cant ; i++ )
+                printf("recorrido %d = %d %d\n", i, path[i].x, path[i].y);
 
-//     preparefd(fds);
+            cant = get_qty_buses(fds);
+            printf("cantidad de colectivos = %d\n", cant);
 
-//     fds = 3;
+            tiempos = get_times(fds);
+            for( i = 0 ; tiempos[i] ; i++ )
+                printf("tiempos = %d\n", tiempos[i]);
 
-    mostrarTodo(fds);
+            cant = get_stops(fds, &stops);
+            printf("cantidad de paradas = %d\n", cant);
+            for( i = 0 ; i < cant ; i++ )
+                printf("paradas %d = %d %d\n", i, stops[i].x, stops[i].y);
 
-    cant = get_path(fds, &path);
-    printf("cantidad de recorridos = %d\n", cant);
-    for( i = 0 ; i < cant ; i++ )
-	printf("recorrido %d = %d %d\n", i, path[i].x, path[i].y);
-
-    cant = get_qty_buses(fds);
-    printf("cantidad de colectivos = %d\n", cant);
-    
-    tiempos = get_times(fds);
-    for( i = 0 ; tiempos[i] ; i++ )
-	printf("tiempos = %d\n", tiempos[i]);
-	
-    cant = get_stops(fds, &stops);
-    printf("cantidad de paradas = %d\n", cant);
-    for( i = 0 ; i < cant ; i++ )
-	printf("paradas %d = %d %d\n", i, stops[i].x, stops[i].y);
-
-    closeFd(fds);
+            closeFd(fds);
+            closeFd(3);
+           }
+    }
 
     closeDir();
 }

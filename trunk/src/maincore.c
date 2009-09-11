@@ -46,12 +46,10 @@ main(void) {
 
     openDir();
 
-//     ignore();
-
     files.buffer[files.qty] = 3;
     while((files.buffer[files.qty] = openFiles()) != 0) {
 
-
+    if(files.buffer[files.qty] != -1){
         pid_t pid;
         int aux;
         char * line_id;
@@ -73,6 +71,7 @@ main(void) {
         if(files.qty%10 == 0){
             files.buffer = realloc(files.buffer,(files.qty+10)*sizeof(int));
 	    // TODO: CHEQUEAR POR NULL
+            }
         }
     }
 
