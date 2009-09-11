@@ -29,7 +29,6 @@ init(void) {
     int i,j;
     point_t aux;
     int index = 0;
-    
     /* LLeno la matriz de la ciudad, donde hay una manzana pongo TRUE, asi siempre
     esta ocupada y no se puede pasar por encima de una manzana. */
     for(i=0 ; i < YDIM ; i++){
@@ -88,12 +87,11 @@ insert_bus(int fd, int id, point_t pos){
     }
 
 //     if(tiles[pos.y][pos.x]){
-//         printf("Hay un bus en ese lugar, intentar luego.\n");
+// //        printf("Hay un bus en ese lugar, intentar luego.\n");
 //         return BUS_ALREADY_IN_SLOT;
 //     }
-    
+
     pthread_mutex_lock(&map_mutex);
-    
     tiles[pos.y][pos.x] = TRUE;
     buses[fd][id] = pos;
     pthread_mutex_unlock(&map_mutex);
@@ -111,14 +109,14 @@ move_bus(int fd, int id, point_t new_pos){
     int aux; 
     if(DEBUG_MODE)
     printf("TRACE: PIDIO DE MOVERSE\n");
-/*    
+    
     if(fd >= XDIM*YDIM || fd < 0) {
-   //     printf("Linea no soportada por el sistema.\n");
+        printf("Linea no soportada por el sistema.\n");
         return FD_TOO_LARGE;
     }
     
     if(id >= XDIM*YDIM || id < 0) {
-  //      printf("Colectivo no soportado por el sistema.\n");
+        printf("Colectivo no soportado por el sistema.\n");
         return ID_TOO_LARGE;
     }  
     
@@ -127,42 +125,47 @@ move_bus(int fd, int id, point_t new_pos){
     }
     
     if(dist(new_pos, actual_pos) > 1){
- //       printf("No te podes mover mas de 1 lugar por turno.\n");
+        printf("No te podes mover mas de 1 lugar por turno.\n");
        return NEW_POS_FAR_AWAY;
     }
   
-    pthread_mutex_lock(&semaphore_mutex);
+    //pthread_mutex_lock(&semaphore_mutex);
     if(hasSemaphore(new_pos) && isVRedHGreen(semps[(semps_hash[new_pos.y][new_pos.x])]) 
 	&& actual_pos.x == new_pos.x) {
 //	printf("No se puede avanzar, semaforo en rojo.\n");
         return RED_LIGHT_ON;
     }
-    pthread_mutex_unlock(&semaphore_mutex);
+    if(hasSemaphore(new_pos) && !isVRedHGreen(semps[(semps_hash[new_pos.y][new_pos.x])]) 
+    && actual_pos.y == new_pos.y) {
+        printf("No se puede avanzar, semaforo en rojo.\n");
+        return RED_LIGHT_ON;
+    }
+    //pthread_mutex_unlock(&semaphore_mutex);
     
     if(tiles[new_pos.y][new_pos.x] == TRUE){
- //       printf("No se puede avanzar, nueva posicion esta ocupada.\n");
+  //      printf("No se puede avanzar, nueva posicion esta ocupada.\n");
         return NEW_POS_ALREADY_OCCUPIED;
     }
 
-    if((aux=new_pos.x - actual_pos.x) != 0) {
+    if((aux=(new_pos.x - actual_pos.x)) != 0) {
         if(new_pos.y%6==0  && aux != 1) {
             printf("CONTRAMANO.\n");
             return WRONG_WAY;
         }
-        if((new_pos.y%3==0 || new_pos.y==XDIM-1) && aux != -1) {
+        if((new_pos.y%3==0 || new_pos.y==XDIM-1) && aux != -1  && new_pos.y != 0) {
             printf("CONTRAMANO.\n");
             return WRONG_WAY;
         }
-    } else if((aux=new_pos.y - actual_pos.y) != 0) {
-        if((new_pos.x%6==0 || new_pos.x==YDIM-1 ) && aux != 1) {
-            printf("CONTRAMANO.\n");
-            return WRONG_WAY;
-        }hay alguna funcion para saber si 
-        if(new_pos.x%3==0 && aux != -1) {
+    } else if((aux=(new_pos.y - actual_pos.y)) != 0) {
+        if((new_pos.x%6==0 || new_pos.x==YDIM-1 ) && aux != -1) {
             printf("CONTRAMANO.\n");
             return WRONG_WAY;
         }
-    }*/
+        if(new_pos.x%3==0 && aux != 1 && new_pos.x != 0) {
+            printf("CONTRAMANO.\n");
+            return WRONG_WAY;
+        }
+    }
 	
     buses[fd][id] = new_pos;
     pthread_mutex_lock(&map_mutex);
@@ -174,6 +177,7 @@ move_bus(int fd, int id, point_t new_pos){
     if(DEBUG_MODE)
     printf("TRACE: SE MOVIO\n");
     move_request_ack(session_line,fd,id);
+    
     return id;
 }
 
@@ -182,6 +186,7 @@ valid_pos(point_t pos){
     
     if(pos.x >= XDIM || pos.x < 0 
         || pos.y >= YDIM || pos.y < 0){
+            printf("pos.x = %d, pos.y = %d\n", pos.x, pos.y);
             printf("Posicion fuera las dimensiones de la ciudad.\n");
             return FALSE;
     }

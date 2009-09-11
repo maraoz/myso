@@ -43,22 +43,7 @@ main(int argc, char * argv[] ){
 //    buses_times = get_times(3);
     
     
-    
 
-// int mycont;
-    
-
-	
-
-
-	
-
-
-
-
-
-
-    
     buses.path_length = 12;
 //     printf("cantidad de recorridos = %d\n", buses.path_length);
     buses.path = malloc(12*sizeof(point_t));
@@ -93,9 +78,9 @@ main(int argc, char * argv[] ){
 //     printf("cantidad de colectivos = %d\n", qty_buses);
 
     buses_times = malloc(3*sizeof(int));
-    buses_times[0] = 1000;
-    buses_times[1] = 1000000;
-    buses_times[2] = 2000000;
+    buses_times[0] = 1;
+    buses_times[1] = 4;
+    buses_times[2] = 7;
 //     for( mycont = 0 ; buses_times[mycont] ; mycont++ )
 // 	printf("tiempos = %d\n", buses_times[mycont]);
     
@@ -106,7 +91,7 @@ main(int argc, char * argv[] ){
         movements[i] = -1;
     }
     if(movements == NULL){
-    return 1;
+        return 1;
     }
     buses_threads = malloc(sizeof(pthread_t) * qty_buses);
     
@@ -114,7 +99,7 @@ main(int argc, char * argv[] ){
         printf("No hay suficiente memoria \n");
         return 1;
     }
-   buses.stops_length = get_stops(0, &buses.stops);
+   //buses.stops_length = get_stops(0, &buses.stops);
     
    
     
@@ -133,21 +118,17 @@ main(int argc, char * argv[] ){
 
     
     aux = buses_times[0];
-    tmp_qty_buses = qty_buses;
     
     aux_pthread_creation = pthread_create(&listener_thread, &attr, (void*)(line_listener), (void *)0);
     while(qty_buses > 0) {
-        usleep(aux);
-
-	    //while(movements[index] == -1){
-                  //  usleep(10000);
-                    aux_pthread_creation = pthread_create(&buses_threads[index], &attr, (void*)(new_bus), (void *)index);
-        //}
+        sleep(aux);
+        aux_pthread_creation = pthread_create(&buses_threads[index], &attr, (void*)(new_bus), (void *)index);
 	    index++;
+        qty_buses--;
 	    if(qty_buses > 0){
             aux = buses_times[index] - buses_times[index-1];
 	    } else {
-            printf("No se puedo crear el colectivo \n");
+            //printf("No se pudo crear el colectivo \n");
             aux = 0;
         }
     }
