@@ -41,20 +41,21 @@ main(void) {
     if(files.buffer == NULL)
         return 1;
     	
-
+  
     init();
 
     openDir();
 
     ignore();
 
+    files.buffer[files.qty] = 3;
+    while((files.buffer[files.qty]/* = openFiles()*/) != 0) {
 
 
-    while((files.buffer[files.qty] = openFiles()) != 0) {
         pid_t pid;
         int aux;
-	char * line_id;
-	line_id = itoa(files.qty);
+        char * line_id;
+        line_id = itoa(files.qty);
         char *args[] = {"lineas", line_id ,(char *) 0 };
         pid = fork();
         switch(pid){
@@ -68,6 +69,7 @@ main(void) {
 			closeFd(files.buffer[files.qty]); break;
         }           
         files.qty++;
+        files.buffer[files.qty] = 0;
         if(files.qty%10 == 0){
             files.buffer = realloc(files.buffer,(files.qty+10)*sizeof(int));
 	    // TODO: CHEQUEAR POR NULL
@@ -76,10 +78,9 @@ main(void) {
 
     closeDir();
     
-    
-    
     initscr();
 
+    
     aux_pthread_creation = pthread_create(&core_threads[0], &attr, (void*)(draw), NULL);
     if(aux_pthread_creation){
        printf("No se pudo crear el thread pedido.\n");
@@ -89,7 +90,7 @@ main(void) {
         printf("No se pudo crear el thread pedido.\n");
     }
     pthread_attr_destroy(&attr);
-    
+
     while(sim_on){
         int i;
         usleep(1000000);

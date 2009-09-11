@@ -16,7 +16,7 @@ void *
 draw(void) {
     int i,j;
     while(sim_on) {
-        usleep(1);
+        usleep(10000);
         pthread_mutex_lock(&map_mutex);
         
         erase();
@@ -24,19 +24,19 @@ draw(void) {
             for( j = 0 ; j < XDIM ; j++) {
                 if(((i%(TILES_CUADRAS+1) == 1) || (i%(TILES_CUADRAS+1) == 2)) 
                 && ((j%(TILES_CUADRAS+1) == 1) || (j%(TILES_CUADRAS+1) == 2))) {
-                    mvprintw(j, i, "+");
+                    mvprintw(i, j, "+");
                 } else {
                     point_t aux;
                     aux.x = j;
                     aux.y = i;
                     if(hasSemaphore(aux)) {
                         if(isVRedHGreen(semps[(semps_hash[i][j])])){
-                            mvprintw(j, i, "-",tiles[i][j]?'c':' ');
+                            mvprintw(i, j, "-",tiles[i][j]?'c':' ');
                         } else {
-                            mvprintw(j, i, "|",tiles[i][j]?'c':' ');
+                            mvprintw(i, j, "|",tiles[i][j]?'c':' ');
                         }
                     } else{
-                        mvprintw(j, i, "%c",tiles[i][j]?'c':' ');
+                        mvprintw(i, j, "%c",tiles[i][j]?'c':' ');
                     }
                 }
             }
