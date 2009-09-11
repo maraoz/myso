@@ -15,6 +15,8 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <sys/ipc.h>
+#include <sys/shm.h>
+#include <sys/sem.h>
 #include <sys/msg.h>
 
 #include "../inc/typedef.h"
@@ -35,10 +37,9 @@ int is_core;
 #define READ 2
 
 
-
-
 int sessions[SESSION_MAX][3]; // USED, WRITE, READ
 int msqid_singleton;
+package_t error_package = {-1, -1, -1, {-1, -1}};
 
 void init_sessions(void) {
     int i;
@@ -70,31 +71,122 @@ int commit_session(session_t session) {
  * Shared Memory
  */
 
-int s_w_init(void) {}
+#define SH_PACKAGE_MAX 10
+typedef struct sh_pck {
+    int used;
+    package_t package;
+} sh_package_t;
+
+typedef struct shm_descr {
+    int shmid;
+    sh_package_t * data;
+    int semaphore_id;
+} shm_descriptor_t;
+
+int s_w_init(void) {
+    return 0;
+}
 
 session_t s_w_open(int other) {
     session_t new_session = get_session();
+    char * name;
+    key_t key = is_core?other:getpid();
 
-    char * name = itoa(other);
-    key_t key = ftok(name, 'W');
-    int shmid_r = shmget(key, 1000, 0);
-    int shmid_w = shmget(key+1, 1000, 0);
+    int size = SH_PACKAGE_MAX * sizeof(sh_package_t);
+    shm_descriptor_t * desc_r = malloc(sizeof(shm_descriptor_t));
+    shm_descriptor_t * desc_w = malloc(sizeof(shm_descriptor_t));
 
-    if (shmid_r == -1 | shmid_w == -1) {
+    int flag = 0666 | IPC_CREAT;
+    desc_r->shmid = shmget(2*key, size, flag);
+    desc_r->semaphore_id = semget(2*key, 1, flag);
+    desc_w->shmid= shmget(2*key+1, size, flag);
+    desc_w->semaphore_id = semget(2*key+1, 1, flag);
+
+    if (desc_r->shmid == -1 | desc_w->shmid == -1) {
+        printf("falla el shmget\n");
+        perror("shmget");
+        free(desc_r);free(desc_w);
         return -1;
     }
 
-    sessions[new_session][READ] = shmid_r;
-    sessions[new_session][WRITE] = shmid_w;
+    desc_r->data = shmat(desc_r->shmid, (void *)0, 0);
+    desc_w->data = shmat(desc_w->shmid, (void *)0, 0);
+
+    if (desc_r->data == (sh_package_t *)(-1) ||
+        desc_w->data == (sh_package_t *)(-1)) {
+        printf("falla el shmat\n");
+        free(desc_r);free(desc_w);
+        return -1;
+    }
+    int i;
+    for (i=0; i<SH_PACKAGE_MAX; i++){
+        desc_w->data[i].used = FALSE;
+    }
+    sessions[new_session][READ] = (int) desc_r;
+    sessions[new_session][WRITE] = (int) desc_w;
     if (commit_session(new_session) != -1)
         return new_session;
     else
         return -1;
 }
 
-int s_w_close(session_t session) {};
-int s_w_write(session_t session_id, package_t package) {};
-package_t s_w_read(session_t session_id) {};
+int s_w_close(session_t session) {
+    shm_descriptor_t * desc_r = (shm_descriptor_t *) sessions[session][READ];
+    shm_descriptor_t * desc_w = (shm_descriptor_t *) sessions[session][WRITE];
+
+    if(shmdt(desc_r->data) == -1 || shmdt(desc_w->data) == -1) {
+        printf("fallo el shm_deattatch");
+        return -1;
+    }
+    shmctl(desc_r->shmid, IPC_RMID, NULL);
+    semctl(desc_r->semaphore_id, 0, IPC_RMID);
+    shmctl(desc_w->shmid, IPC_RMID, NULL);
+    semctl(desc_w->semaphore_id, 0, IPC_RMID);
+
+    return 0;
+
+};
+int s_w_write(session_t session_id, package_t package) {
+    shm_descriptor_t * shmdp = (shm_descriptor_t *) sessions[session_id][WRITE];
+    sh_package_t * mem_zone = shmdp->data;
+
+    // search for a free space in shared memory to place package
+    int i;
+    int found_free_zone = FALSE;
+    for(i=0; i<SH_PACKAGE_MAX; i++) {
+        if (mem_zone[i].used == FALSE) {
+            found_free_zone = TRUE;
+            break;
+        }
+    }
+    // if no free space was found, return error
+    if (! found_free_zone) {
+        return -1;
+    }
+
+    // if a free memory zone was found put the package in there and return
+    mem_zone[i].used = TRUE;
+    mem_zone[i].package = package;
+    return 0;
+};
+
+package_t s_w_read(session_t session_id) {
+    shm_descriptor_t * shmdp = (shm_descriptor_t *) sessions[session_id][READ];
+    sh_package_t * mem_zone = shmdp->data;
+    package_t ret;
+    // search for a used space to get a package from it
+    int i;
+    int found_free_zone = FALSE;
+    for(i=0; i<SH_PACKAGE_MAX; i++) {
+        if (mem_zone[i].used == TRUE) {
+            mem_zone[i].used = FALSE;
+            ret = mem_zone[i].package;
+            return ret;
+        }
+    }
+    printf("error en s_w_read!!!\n");
+    return error_package;
+};
 
 /**
  * FIFOs
@@ -102,15 +194,17 @@ package_t s_w_read(session_t session_id) {};
 int f_w_init(void) {};
 
 session_t f_w_open(int other) {
-    char name1[31];
+    char name1[31] = {'c'};
     char name2[31];
     char * other_name;
     int fd_read, fd_write;
 
     other_name = itoa(other);
-    strncpy(name1, strcat("c-", other_name), 30);
-    strncpy(name2, strcat(other_name, "-c"), 30);
-    printf("%s, %s", name1, name2);
+    strcat(name1, other_name);
+    strcat(other_name,"c");
+    strncpy(name2, other_name, 30);
+
+    printf("%s, %s\n", name1, name2);
 
     if (mknod(name1, S_IFIFO | 0666 , 0) == -1) {
         printf("error al crear un fifo\n");
@@ -119,10 +213,10 @@ session_t f_w_open(int other) {
         printf("error al crear un fifo\n");
     }
 
-    free(name1);free(name2);
-
+    free(other_name);
     fd_write = open(is_core?name1:name2, O_WRONLY);
     fd_read = open(is_core?name2:name1, O_RDONLY);
+
     session_t new_session = get_session();
     sessions[new_session][WRITE] = fd_write;
     sessions[new_session][READ] = fd_read;
@@ -212,10 +306,10 @@ int m_w_close(session_t session) {
 }
 
 int m_w_write(session_t session_id, package_t package) {
-    
+
     int msqid = msqid_singleton;
     long msg_key = sessions[session_id][WRITE];
-        
+
     q_msg_t queue_message;
     queue_message.mtype = msg_key;
     queue_message.content = package;
@@ -225,9 +319,6 @@ int m_w_write(session_t session_id, package_t package) {
         perror("m_w_write");
     return aux;
 }
-
-// int m_w_write(session_t session_id
-
 
 
 package_t m_w_read(session_t session_id) {
@@ -244,7 +335,7 @@ package_t m_w_read(session_t session_id) {
         return ret;
     } else {
         printf("Error al leer\n");
-        exit(0);
+        return error_package;
     }
 }
 
@@ -260,45 +351,36 @@ package_t m_w_read(session_t session_id) {
 
 int program_ipc_method;
 
+int (*init_fns[4]) (void) = {s_w_init,f_w_init,k_w_init,m_w_init};
 int w_init(int ipc_type, int mode) {
     program_ipc_method = ipc_type;
 
     is_core = (mode == CORE);
 
     init_sessions();
-
-    switch(program_ipc_method) {
-        case SHARED_MEMORY:
-            s_w_init(); break;
-        case FIFO:
-            f_w_init(); break;
-        case SOCKET:
-            k_w_init(); break;
-        case MESSAGE_QUEUE:
-            m_w_init(); break;
-        default:
-            printf("M�todo IPC inv�lido\n");
-    }
+    return init_fns[program_ipc_method]();
 }
 
+session_t (*open_fns[4]) (int) = {s_w_open,f_w_open,k_w_open,m_w_open};
 session_t w_open(int other) {
-    // TODO: contemplate other IPCS
-    return m_w_open(other);
+    return open_fns[program_ipc_method](other);
 }
 
+
+int (*close_fns[4]) (session_t) = {s_w_close,f_w_close,k_w_close,m_w_close};
 int w_close(session_t session) {
-    // TODO: contemplate other IPCS
-    return m_w_close(session);
+    return close_fns[program_ipc_method](session);
 }
 
+int (*write_fns[4]) (session_t, package_t) =
+    {s_w_write,f_w_write,k_w_write,m_w_write};
 int w_write(session_t session_id, package_t package) {
-    // TODO: contemplate other IPCS
-    return m_w_write(session_id, package);
+    return write_fns[program_ipc_method](session_id, package);
 }
 
+package_t (*read_fns[4]) (session_t) = {s_w_read,f_w_read,k_w_read,m_w_read};
 package_t w_read(session_t session_id) {
-    // TODO: contemplate other IPCS
-    return m_w_read(session_id);
+    return read_fns[program_ipc_method](session_id);
 }
 
 
@@ -306,36 +388,57 @@ package_t w_read(session_t session_id) {
 /**
  * TESTCASES
  */
-/*
+
 int _main(void) {
 
-    w_init(MESSAGE_QUEUE, LINE);
+    printf("inicializando transporte...");
+    if (w_init(SHARED_MEMORY, LINE) == -1)
+        printf("fallo el init\n");
+    else
+        printf("OK!\n");
+
+    printf("abriendo puerta de entrada (open)...");
     session_t sid = w_open(getpid());
+    if (sid == -1)
+        printf("fallo el open...\n");
+    else
+        printf("OK!\n");
+
     package_t pck;
 
-    printf("mandando 1...\n");
+    printf("mandando 1...");
     pck.msg_id = 10;
     pck.id_line = 2;
     pck.id_bus = 3;
     pck.point.x = pck.point.y = 13;
-    w_write(sid, pck);
+    if (w_write(sid, pck) == -1)
+        printf("fallo write 1...\n");
+    else
+        printf("OK!\n");
 
-    printf("mandando 2...\n");
+    printf("mandando 2...");
     pck.msg_id = 11;
     pck.id_line = 20;
     pck.id_bus = 33;
     pck.point.x = pck.point.y = 10;
-    w_write(sid, pck);
+    if (w_write(sid, pck) == -1)
+        printf("fallo write 2...\n");
+    else
+        printf("OK!\n");
 
-    package_t rcv = w_read(sid);
-    printf("recibido msg_id = %d,\nid_line %d,\nid_bus %d,\n(%d, %d)\n",
-        rcv.msg_id, rcv.id_line, rcv.id_bus, rcv.point.x, rcv.point.y );
-    rcv = w_read(sid);
-    printf("recibido msg_id = %d,\nid_line %d,\nid_bus %d,\n(%d, %d)\n",
-        rcv.msg_id, rcv.id_line, rcv.id_bus, rcv.point.x, rcv.point.y );
-    rcv = w_read(sid);
-    printf("recibido msg_id = %d,\nid_line %d,\nid_bus %d,\n(%d, %d)\n",
-        rcv.msg_id, rcv.id_line, rcv.id_bus, rcv.point.x, rcv.point.y );
+    package_t rcv;
+    int i = 3;
+    while (i--) {
+        rcv = w_read(sid);
+        printf("{msg_id: %d, id_line: %d, id_bus: %d, point: (%d, %d)}\n",
+            rcv.msg_id, rcv.id_line, rcv.id_bus, rcv.point.x, rcv.point.y );
+    }
+
+    printf("closing connection, (close)...");
+    if (w_close(sid) == -1)
+        printf("Error al cerrar la conexion!\n");
+    else
+        printf("OK!\n");
 
 
     return 0;
@@ -343,4 +446,4 @@ int _main(void) {
 
 
 
-*/
+
