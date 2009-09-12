@@ -39,8 +39,8 @@ main(int argc, char * argv[] ){
     pthread_attr_setdetachstate(&attr, PTHREAD_CREATE_DETACHED);
     
     buses.path_length = get_path(3, &buses.path);
-//    qty_buses = get_qty_buses(3);
-//    buses_times = get_times(3);
+    qty_buses = get_qty_buses(3);
+    buses_times = get_times(3);
     
     
 
@@ -74,13 +74,13 @@ main(int argc, char * argv[] ){
 //     for( mycont = 0 ; mycont < buses.path_length ; mycont++ )
 // 	printf("recorrido %d = %d %d\n", mycont, buses.path[mycont].x, buses.path[mycont].y);
 
-    qty_buses = 3;
+//     qty_buses = 3;
 //     printf("cantidad de colectivos = %d\n", qty_buses);
 
-    buses_times = malloc(3*sizeof(int));
-    buses_times[0] = 1;
-    buses_times[1] = 4;
-    buses_times[2] = 7;
+//     buses_times = malloc(3*sizeof(int));
+//     buses_times[0] = 1;
+//     buses_times[1] = 4;
+//     buses_times[2] = 7;
 //     for( mycont = 0 ; buses_times[mycont] ; mycont++ )
 // 	printf("tiempos = %d\n", buses_times[mycont]);
     
