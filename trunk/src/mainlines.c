@@ -99,19 +99,19 @@ main(int argc, char * argv[] ){
         printf("No hay suficiente memoria \n");
         return 1;
     }
-   //buses.stops_length = get_stops(0, &buses.stops);
+   buses.stops_length = get_stops(3, &buses.stops);
     
    
     
     
-    buses.stops_length = 2;
+//     buses.stops_length = 2;
 //     printf("cantidad de paradas = %d\n", buses.stops_length);
 // 
-    buses.stops = malloc(2*sizeof(point_t));
-    buses.stops[0].x = 2;
-    buses.stops[0].y = 0;
-    buses.stops[1].x = 3;
-    buses.stops[1].y = 1;
+//     buses.stops = malloc(2*sizeof(point_t));
+//     buses.stops[0].x = 2;
+//     buses.stops[0].y = 0;
+//     buses.stops[1].x = 3;
+//     buses.stops[1].y = 1;
 //     for( mycont = 0 ; mycont < buses.stops_length ; mycont++ )
 // 	printf("paradas %d = %d %d\n", mycont, buses.stops[mycont].x, buses.stops[mycont].y);
 
