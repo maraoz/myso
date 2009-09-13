@@ -101,12 +101,6 @@ session_t s_w_open(int other) {
     key_t read_key = 2*base_key + (is_core?1:0);
     key_t write_key = 2*base_key + (is_core?0:1);
 
-    if (is_core) {
-        printf("soy el core y estoy abriendo READ=%d, WRITE=%d",read_key,write_key);
-    } else {
-        printf("soy la linea %d y estoy abriendo READ=%d, WRITE=%d",getpid(),read_key,write_key);
-    }
-
     desc_r->shmid = shmget(read_key, size, flag);
     desc_r->semaphore_id = semget(read_key, 1, flag);
 
@@ -252,7 +246,6 @@ session_t f_w_open(int other) {
 
     char * read_name = is_core?name1:name2;
     char * write_name = is_core?name2:name1;
-    printf("read = %s, write = %s\n", read_name, write_name);
 
     if (is_core) {
         fd_write = open(write_name, O_WRONLY);
@@ -284,9 +277,6 @@ int f_w_close(session_t session) {
 int f_w_write(session_t session_id, package_t package) {
     int fd_write = sessions[session_id][WRITE];
     int ret = write(fd_write, &package, sizeof(package_t));
-    if (ret == EPIPE){
-        printf("EPIPE\n");
-    }
     if (ret == -1) {
         perror("write de fifos");
     }
