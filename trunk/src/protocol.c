@@ -210,28 +210,45 @@ package_t s_w_read(session_t session_id) {
 int f_w_init(void) {};
 
 session_t f_w_open(int other) {
-    char name1[31] = {'c'};
+    other = other==1?getpid():other;
+
+    char * prefix = "../tmp/";
+    char name1[31];
     char name2[31];
-    char * other_name;
+    char * other_str;
     int fd_read, fd_write;
 
-    other_name = itoa(other);
-    strcat(name1, other_name);
-    strcat(other_name,"c");
-    strncpy(name2, other_name, 30);
+    other_str = itoa(other);
 
-    printf("%s, %s\n", name1, name2);
+    strncpy(name1, prefix, 30);
+    strncpy(name2, prefix, 30);
+
+    strcat(name1, "c");
+    strcat(name1, other_str);
+
+    strcat(name2,other_str);
+    strcat(name2,"c");
 
     if (mknod(name1, S_IFIFO | 0666 , 0) == -1) {
-        printf("error al crear un fifo\n");
+        perror("mknod warning");
     }
     if (mknod(name2, S_IFIFO | 0666 , 0) == -1) {
-        printf("error al crear un fifo\n");
+        perror("mknod warning");
+    }
+    free(other_str);
+
+    char * read_name = is_core?name1:name2;
+    char * write_name = is_core?name2:name1;
+    printf("read = %s, write = %s\n", read_name, write_name);
+
+    if (is_core) {
+        fd_write = open(write_name, O_WRONLY);
+        fd_read = open(read_name, O_RDONLY);
+    } else {
+        fd_read = open(read_name, O_RDONLY);
+        fd_write = open(write_name, O_WRONLY);
     }
 
-    free(other_name);
-    fd_write = open(is_core?name1:name2, O_WRONLY);
-    fd_read = open(is_core?name2:name1, O_RDONLY);
 
     session_t new_session = get_session();
     sessions[new_session][WRITE] = fd_write;
@@ -254,7 +271,11 @@ int f_w_close(session_t session) {
 };
 int f_w_write(session_t session_id, package_t package) {
     int fd_write = sessions[session_id][WRITE];
-    return write(fd_write, package, sizeof(package));
+    int ret = write(fd_write, package, sizeof(package));
+    if (ret == -1) {
+        perror("write de fifos");
+    }
+    return ret;
 };
 
 package_t f_w_read(session_t session_id) {
