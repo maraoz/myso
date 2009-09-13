@@ -71,7 +71,7 @@ int commit_session(session_t session) {
  * Shared Memory
  */
 
-#define SH_PACKAGE_MAX 10
+#define SH_PACKAGE_MAX 100
 typedef struct sh_pck {
     int used;
     package_t package;
@@ -90,21 +90,31 @@ int s_w_init(void) {
 session_t s_w_open(int other) {
     session_t new_session = get_session();
     char * name;
-    key_t key = is_core?other:getpid();
+    key_t base_key = is_core?other:getpid();
 
     int size = SH_PACKAGE_MAX * sizeof(sh_package_t);
     shm_descriptor_t * desc_r = malloc(sizeof(shm_descriptor_t));
     shm_descriptor_t * desc_w = malloc(sizeof(shm_descriptor_t));
 
     int flag = 0666 | IPC_CREAT;
-    desc_r->shmid = shmget(2*key, size, flag);
-    desc_r->semaphore_id = semget(2*key, 1, flag);
-    desc_w->shmid= shmget(2*key+1, size, flag);
-    desc_w->semaphore_id = semget(2*key+1, 1, flag);
+
+    key_t read_key = 2*base_key + (is_core?1:0);
+    key_t write_key = 2*base_key + (is_core?0:1);
+
+    if (is_core) {
+        printf("soy el core y estoy abriendo READ=%d, WRITE=%d",read_key,write_key);
+    } else {
+        printf("soy la linea %d y estoy abriendo READ=%d, WRITE=%d",getpid(),read_key,write_key);
+    }
+
+    desc_r->shmid = shmget(read_key, size, flag);
+    desc_r->semaphore_id = semget(read_key, 1, flag);
+
+    desc_w->shmid= shmget(write_key, size, flag);
+    desc_w->semaphore_id = semget(write_key, 1, flag);
 
     if (desc_r->shmid == -1 | desc_w->shmid == -1) {
-        printf("falla el shmget\n");
-        perror("shmget");
+        perror("shmget falla");
         free(desc_r);free(desc_w);
         return -1;
     }
@@ -114,7 +124,7 @@ session_t s_w_open(int other) {
 
     if (desc_r->data == (sh_package_t *)(-1) ||
         desc_w->data == (sh_package_t *)(-1)) {
-        printf("falla el shmat\n");
+        perror("shmat falla");
         free(desc_r);free(desc_w);
         return -1;
     }
@@ -164,6 +174,7 @@ int s_w_write(session_t session_id, package_t package) {
     }
     // if no free space was found, return error
     if (! found_free_zone) {
+        printf("Shared memory is full Probably some process died!!!\n");
         return -1;
     }
 
@@ -189,6 +200,8 @@ package_t s_w_read(session_t session_id) {
     int i;
     int found_free_zone = FALSE;
     // only if there is one such resource available
+    // (if not, block until there is)
+
     if (semop(shmdp->semaphore_id, &sb, 1) == -1) {
         perror("semop");
         exit(1);
@@ -249,7 +262,6 @@ session_t f_w_open(int other) {
         fd_write = open(write_name, O_WRONLY);
     }
 
-
     session_t new_session = get_session();
     sessions[new_session][WRITE] = fd_write;
     sessions[new_session][READ] = fd_read;
@@ -271,7 +283,10 @@ int f_w_close(session_t session) {
 };
 int f_w_write(session_t session_id, package_t package) {
     int fd_write = sessions[session_id][WRITE];
-    int ret = write(fd_write, package, sizeof(package));
+    int ret = write(fd_write, &package, sizeof(package_t));
+    if (ret == EPIPE){
+        printf("EPIPE\n");
+    }
     if (ret == -1) {
         perror("write de fifos");
     }
