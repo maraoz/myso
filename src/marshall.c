@@ -18,7 +18,7 @@ int
 m_init_core(){
     int result;
     
-    result = w_init(FIFO, CORE);
+    result = w_init(MESSAGE_QUEUE, CORE);
 
     if(result == -1)
 	printf("ha fallado en init core\n");
@@ -31,7 +31,7 @@ int
 m_init_line(){
     int result;
     
-    result = w_init(FIFO, LINE);
+    result = w_init(MESSAGE_QUEUE, LINE);
 
     if(result == -1)
 	printf("ha fallado init line\n");
