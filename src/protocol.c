@@ -305,6 +305,9 @@ package_t f_w_read(session_t session_id) {
 /**
  * Sockets
  */
+
+int allmighty_socket;
+
 int k_w_init(void) {
     if (is_core) {
     /* socket server */
@@ -317,7 +320,7 @@ int k_w_init(void) {
         }
 
         local.sun_family = AF_UNIX;
-        local.sun_path = "../tmp/SOcket";
+        strcpy(local.sun_path,"/tmp/SOcket");
         unlink(local.sun_path);
         len = strlen(local.sun_path) + sizeof(local.sun_family);
         if (bind(s, (struct sockaddr *)&local, len) == -1) {
@@ -328,6 +331,7 @@ int k_w_init(void) {
             perror("listen");
             exit(1);
         }
+        allmighty_socket = s;
 
     } else {
     /* socket clients */
@@ -339,16 +343,70 @@ session_t k_w_open(int other) {
 }
 
 
-int k_w_close(session_t session) {};
-int k_w_write(session_t session_id, package_t package) {};
+int k_w_close(session_t session) {
+    return -1;
+};
+int k_w_write(session_t session_id, package_t package) {
+    int s, t, len;
+    struct sockaddr_un remote;
+    char str[100];
+
+    if ((s = socket(AF_UNIX, SOCK_STREAM, 0)) == -1) {
+        perror("socket");
+        exit(1);
+    }
+
+    printf("Trying to connect...\n");
+
+    remote.sun_family = AF_UNIX;
+    strcpy(remote.sun_path, "/tmp/SOcket");
+    len = strlen(remote.sun_path) + sizeof(remote.sun_family);
+    if (connect(s, (struct sockaddr *)&remote, len) == -1) {
+        perror("connect");
+        exit(1);
+    }
+
+    printf("Connected.\n");
+
+    return -1;
+};
+
+
 package_t k_w_read(session_t session_id) {
+    int s2,s;
+    char str[100];
     struct sockaddr_un remote;
     int size_of_remote;
+
+    s = allmighty_socket;
+
     size_of_remote = sizeof(remote);
-    if ((s2 = accept(s, (struct sockaddr *)&remote, &t)) == -1) {
+    if ((s2 = accept(s, (struct sockaddr *)&remote, &size_of_remote)) == -1) {
         perror("accept");
         exit(1);
     }
+    printf("Connected.\n");
+
+    int done, n;
+
+    done = 0;
+    do {
+        n = recv(s2, str, 100, 0);
+        if (n <= 0) {
+            if (n < 0) perror("recv");
+            done = 1;
+        }
+
+        if (!done) 
+            if (send(s2, str, n, 0) < 0) {
+                perror("send");
+                done = 1;
+            }
+    } while (!done);
+
+    close(s2);
+
+
 
 };
 
@@ -478,7 +536,7 @@ package_t w_read(session_t session_id) {
 int _main(void) {
 
     printf("inicializando transporte...");
-    if (w_init(SOCKET, LINE) == -1)
+    if (w_init(SOCKET, CORE) == -1)
         printf("fallo el init\n");
     else
         printf("OK!\n");
