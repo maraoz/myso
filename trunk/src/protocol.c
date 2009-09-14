@@ -18,6 +18,9 @@
 #include <sys/shm.h>
 #include <sys/sem.h>
 #include <sys/msg.h>
+#include <sys/socket.h>
+#include <sys/un.h>
+
 
 #include "../inc/typedef.h"
 #include "../inc/protocol.h"
@@ -168,7 +171,7 @@ int s_w_write(session_t session_id, package_t package) {
     }
     // if no free space was found, return error
     if (! found_free_zone) {
-        printf("Shared memory is full Probably some process died!!!\n");
+        printf("Shared memory is full. Probably some process died!!!\n");
         return -1;
     }
 
@@ -219,7 +222,7 @@ int f_w_init(void) {};
 session_t f_w_open(int other) {
     other = other==1?getpid():other;
 
-    char * prefix = "../tmp/";
+    char * prefix = "/tmp/";
     char name1[31];
     char name2[31];
     char * other_str;
@@ -302,11 +305,52 @@ package_t f_w_read(session_t session_id) {
 /**
  * Sockets
  */
-int k_w_init(void) {};
-session_t k_w_open(int other) {};
+int k_w_init(void) {
+    if (is_core) {
+    /* socket server */
+        int s, s2, len;
+        struct sockaddr_un local;
+
+        if ((s = socket(AF_UNIX, SOCK_STREAM, 0)) == -1) {
+            perror("socket");
+            exit(1);
+        }
+
+        local.sun_family = AF_UNIX;
+        local.sun_path = "../tmp/SOcket";
+        unlink(local.sun_path);
+        len = strlen(local.sun_path) + sizeof(local.sun_family);
+        if (bind(s, (struct sockaddr *)&local, len) == -1) {
+            perror("bind");
+            exit(1);
+        }
+        if (listen(s, 5) == -1) {
+            perror("listen");
+            exit(1);
+        }
+
+    } else {
+    /* socket clients */
+        ;
+    }
+
+}
+session_t k_w_open(int other) {
+}
+
+
 int k_w_close(session_t session) {};
 int k_w_write(session_t session_id, package_t package) {};
-package_t k_w_read(session_t session_id) {};
+package_t k_w_read(session_t session_id) {
+    struct sockaddr_un remote;
+    int size_of_remote;
+    size_of_remote = sizeof(remote);
+    if ((s2 = accept(s, (struct sockaddr *)&remote, &t)) == -1) {
+        perror("accept");
+        exit(1);
+    }
+
+};
 
 /**
  * Message Queue
@@ -434,7 +478,7 @@ package_t w_read(session_t session_id) {
 int _main(void) {
 
     printf("inicializando transporte...");
-    if (w_init(SHARED_MEMORY, LINE) == -1)
+    if (w_init(SOCKET, LINE) == -1)
         printf("fallo el init\n");
     else
         printf("OK!\n");

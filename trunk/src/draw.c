@@ -25,83 +25,83 @@ int Ypositions[19] = {0,2,4,6,8,10,12,14,16,18,20,22,24,26,28,30,32,34,36};
 
 void *
 draw(void)
-{
-    int i, j;
-    point_t aux;
-
-    while(sim_on) 
-    {
-        usleep(10000);
-        pthread_mutex_lock(&map_mutex);
-
-       initscr();
-
-        if (has_colors())
-            start_color();
-
-        erase();
-
-        print_all_squares();
-
-        for(i = 0; i < 19; i++)
-            for(j = 0; j < 19; j++)
-                if( !((i%(TILES_CUADRAS+1) == 1) || (i%(TILES_CUADRAS+1) == 2)) 
-                    || !((j%(TILES_CUADRAS+1) == 1) || (j%(TILES_CUADRAS+1) == 2)))
-                {
-//                     sleep(1);
-                    aux.x = Xpositions[i];
-                    aux.y = Ypositions[j];
-                    if(hasSemaphore(aux))
-                        if(isVRedHGreen(semps[(semps_hash[i][j])]))
-                            print_v_sem(aux);
-                        else
-                            print_h_sem(aux);
-                    else if(tiles[i][j])
-                        print_bus(aux);
-                    refresh();
-               }
-        }
-
-        pthread_mutex_unlock(&map_mutex);
-
-        endwin();
-        return;
-}
-
 // {
-//     int i,j;
-//     while(sim_on) {
+//     int i, j;
+//     point_t aux;
+// 
+//     while(sim_on) 
+//     {
 //         usleep(10000);
 //         pthread_mutex_lock(&map_mutex);
-//         
+// 
+//        initscr();
+// 
+//         if (has_colors())
+//             start_color();
+// 
 //         erase();
-//         for(i = 0 ; i < YDIM ; i++){
-//             for( j = 0 ; j < XDIM ; j++) {
-//                 if(((i%(TILES_CUADRAS+1) == 1) || (i%(TILES_CUADRAS+1) == 2)) 
-//                 && ((j%(TILES_CUADRAS+1) == 1) || (j%(TILES_CUADRAS+1) == 2))) {
-//                     mvprintw(i, j, "+");
-//                 } else {
-//                     point_t aux;
-//                     aux.x = j;
-//                     aux.y = i;
-//                     if(hasSemaphore(aux)) {
-//                         if(isVRedHGreen(semps[(semps_hash[i][j])])){
-//                             mvprintw(i, j, "-",tiles[i][j]?'c':' ');
-//                         } else {
-//                             mvprintw(i, j, "|",tiles[i][j]?'c':' ');
-//                         }
-//                     } else{
-//                         mvprintw(i, j, "%c",tiles[i][j]?'c':' ');
-//                     }
-//                 }
-//             }
+// 
+//         print_all_squares();
+// 
+//         for(i = 0; i < 19; i++)
+//             for(j = 0; j < 19; j++)
+//                 if( !((i%(TILES_CUADRAS+1) == 1) || (i%(TILES_CUADRAS+1) == 2)) 
+//                     || !((j%(TILES_CUADRAS+1) == 1) || (j%(TILES_CUADRAS+1) == 2)))
+//                 {
+// //                     sleep(1);
+//                     aux.x = Xpositions[i];
+//                     aux.y = Ypositions[j];
+//                     if(hasSemaphore(aux))
+//                         if(isVRedHGreen(semps[(semps_hash[i][j])]))
+//                             print_v_sem(aux);
+//                         else
+//                             print_h_sem(aux);
+//                     else if(tiles[i][j])
+//                         print_bus(aux);
+//                     refresh();
+//                }
 //         }
-//         refresh();
-//         //endwin();
+// 
 //         pthread_mutex_unlock(&map_mutex);
-//         
-//     }
+// 
+//         endwin();
+//         return;
 // }
+
+{
+    int i,j;
+    while(sim_on) {
+        usleep(10000);
+        pthread_mutex_lock(&map_mutex);
+        
+        erase();
+        for(i = 0 ; i < YDIM ; i++){
+            for( j = 0 ; j < XDIM ; j++) {
+                if(((i%(TILES_CUADRAS+1) == 1) || (i%(TILES_CUADRAS+1) == 2)) 
+                && ((j%(TILES_CUADRAS+1) == 1) || (j%(TILES_CUADRAS+1) == 2))) {
+                    mvprintw(i, j, "+");
+                } else {
+                    point_t aux;
+                    aux.x = j;
+                    aux.y = i;
+                    if(hasSemaphore(aux)) {
+                        if(isVRedHGreen(semps[(semps_hash[i][j])])){
+                            mvprintw(i, j, "-",tiles[i][j]?'c':' ');
+                        } else {
+                            mvprintw(i, j, "|",tiles[i][j]?'c':' ');
+                        }
+                    } else{
+                        mvprintw(i, j, "%c",tiles[i][j]?'c':' ');
+                    }
+                }
+            }
+        }
+        refresh();
+        //endwin();
+        pthread_mutex_unlock(&map_mutex);
+        
+    }
+}
 
 
 
