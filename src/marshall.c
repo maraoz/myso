@@ -41,8 +41,6 @@ m_init_line(){
 session_t
 openChannel(int channel){
     int result;
-    
-    
     result = w_open(channel);
     
     if(result == -1)
