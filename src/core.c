@@ -147,25 +147,25 @@ move_bus(int fd, int id, point_t new_pos){
         return NEW_POS_ALREADY_OCCUPIED;
     }
 
-//     if((aux=(new_pos.x - actual_pos.x)) != 0) {
-//         if(new_pos.y%6==0  && aux != 1) {
-//             printf("CONTRAMANO.\n");
-//             return WRONG_WAY;
-//         }
-//         if((new_pos.y%3==0 || new_pos.y==XDIM-1) && aux != -1  && new_pos.y != 0) {
-//             printf("CONTRAMANO.\n");
-//             return WRONG_WAY;
-//         }
-//     } else if((aux=(new_pos.y - actual_pos.y)) != 0) {
-//         if((new_pos.x%6==0 || new_pos.x==YDIM-1 ) && aux != -1) {
-//             printf("CONTRAMANO.\n");
-//             return WRONG_WAY;
-//         }
-//         if(new_pos.x%3==0 && aux != 1 && new_pos.x != 0) {
-//             printf("CONTRAMANO.\n");
-//             return WRONG_WAY;
-//         }
-//     }
+    if((aux=(new_pos.x - actual_pos.x)) != 0) {
+        if(new_pos.y%6==0  && aux != 1) {
+            printf("CONTRAMANO.\n");
+            return WRONG_WAY;
+        }
+        if((new_pos.y%3==0 || new_pos.y==XDIM-1) && aux != -1  && new_pos.y != 0) {
+            printf("CONTRAMANO.\n");
+            return WRONG_WAY;
+        }
+    } else if((aux=(new_pos.y - actual_pos.y)) != 0) {
+        if((new_pos.x%6==0 || new_pos.x==YDIM-1 ) && aux != -1) {
+            printf("CONTRAMANO.\n");
+            return WRONG_WAY;
+        }
+        if(new_pos.x%3==0 && aux != 1 && new_pos.x != 0) {
+            printf("CONTRAMANO.\n");
+            return WRONG_WAY;
+        }
+    }
 	
     buses[fd][id] = new_pos;
     pthread_mutex_lock(&map_mutex);
