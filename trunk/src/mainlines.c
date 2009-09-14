@@ -117,8 +117,18 @@ main(int argc, char * argv[] ){
 //     for( mycont = 0 ; mycont < buses.stops_length ; mycont++ )
 // 	printf("paradas %d = %d %d\n", mycont, buses.stops[mycont].x, buses.stops[mycont].y);
 
-    pax = calloc(buses.stops_length, sizeof(int));
-    
+    pax = malloc(buses.stops_length, sizeof(int*));
+    if(pax == NULL){
+	printf("No hay suficiente memoria\n");
+    }
+    for(i = 0 ; i<buses.stops_length, i++){
+	pax[i] = malloc(1*sizeof(int));
+	if(pax[i] == NULL){
+	    printf("No hay suficiente memoria\n");
+	}
+    }
+
+
     aux = buses_times[0];
     
     aux_pthread_creation = pthread_create(&listener_thread, &attr, (void*)(line_listener), (void *)0);
