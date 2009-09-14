@@ -13,7 +13,6 @@ TARGET2 = lineas
 OBJS2 = ./obj/mainlines.o
 SOURCES2 = ./src/draw.c ./src/core.c ./src/marshall.c ./src/protocol.c\
 ./src/util.c ./src/lineas.c ./src/mainlines.c ./src/files.c
-CFLAGS = -Wall -O -Wuninitialized
 
 .SILENT:
 $(TARGET2): $(COMMON_OBJS) $(OBJS2)

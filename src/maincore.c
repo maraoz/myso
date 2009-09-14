@@ -46,7 +46,6 @@ main(void) {
 
     openDir();
 
-//     files.buffer[files.qty] = 3;
     while((files.buffer[files.qty] = openFiles()) != 0) {
 
     if(files.buffer[files.qty] != -1){
@@ -66,7 +65,6 @@ main(void) {
             default: closeFd(files.buffer[files.qty]); files.buffer[files.qty] = openChannel(pid); break;
         }           
         files.qty++;
-//         files.buffer[files.qty] = 0;
         if(files.qty%10 == 0){
             files.buffer = realloc(files.buffer,(files.qty+10)*sizeof(int));
 	    // TODO: CHEQUEAR POR NULL
