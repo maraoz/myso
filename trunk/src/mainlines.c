@@ -15,6 +15,8 @@ extern int tmp_qty_buses;
 extern session_t session;
 extern int line_id;
 extern int * insertion_ack;
+extern int * pax;
+extern pthread_mutex_t pax_mutex;
 
 int
 main(int argc, char * argv[] ){
@@ -115,7 +117,7 @@ main(int argc, char * argv[] ){
 //     for( mycont = 0 ; mycont < buses.stops_length ; mycont++ )
 // 	printf("paradas %d = %d %d\n", mycont, buses.stops[mycont].x, buses.stops[mycont].y);
 
-
+    pax = calloc(buses.stops_length, sizeof(int));
     
     aux = buses_times[0];
     
