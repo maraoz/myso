@@ -326,7 +326,7 @@ int k_w_init(void) {
         if (bind(s, (struct sockaddr *)&local, len) == -1) {
             perror("bind");
         }
-        s = dup2(s,34);
+        s = dup2(s,42);
         allmighty_socket = s;
         if (listen(allmighty_socket, 5) < 0) {
             perror("listen");

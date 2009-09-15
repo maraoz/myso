@@ -19,16 +19,18 @@ extern int * insertion_ack;
 extern int ** pax;
 extern pthread_mutex_t pax_mutex;
 extern WINDOW *log_win;
+extern int ipc_selection;
 
 int
 main(int argc, char * argv[] ){
 
-    
+    ipc_selection = atoi(argv[2]);
     m_init_line();
 
     session = openChannel(1);
 
     line_id = atoi(argv[1]);
+
     int * buses_times;
     pthread_t * buses_threads;
     pthread_t listener_thread;
@@ -36,16 +38,16 @@ main(int argc, char * argv[] ){
     pthread_attr_t attr;
     int index = 0;
     int aux = 0;
-    int i;  
+    int i;
     int tmp_qty_buses;
 
     pthread_attr_init(&attr);
     pthread_attr_setdetachstate(&attr, PTHREAD_CREATE_DETACHED);
-    
+
     buses.path_length = get_path(3, &buses.path);
     qty_buses = get_qty_buses(3);
     buses_times = get_times(3);
-    
+
     movements = calloc(sizeof(int),qty_buses);
     if(movements == NULL){
 	wprintw(log_win,"+ERROR: No hay suficiente memoria\n");

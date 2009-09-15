@@ -3,6 +3,7 @@
 #include "../inc/draw.h"
 #include "../inc/util.h"
 #include "../inc/files.h"
+#include "../inc/protocol.h"
 #include <pthread.h>
 #include <stdio.h>
 #include <unistd.h>
@@ -25,9 +26,24 @@ extern WINDOW *log_win;
 // extern session_t session_line;
 extern Tfiles files;
 
-int
-main(void) {
+extern ipc_selection;
 
+int
+main(int argc, char * argv[]) {
+
+    if (argc == 2){
+        char * option = argv[1];
+        int int_opt = atoi(option);
+        if (int_opt >= 0 && int_opt < 4 ) {
+            ipc_selection = int_opt;
+        } else {
+            printf("Código de IPC inválido, se toma el default"
+            "MESSAGE_QUEUE\n");
+            ipc_selection = MESSAGE_QUEUE;
+        }
+    } else {
+        ipc_selection = MESSAGE_QUEUE;
+    }
 
     pthread_t * core_threads;
     pthread_attr_t attr;
@@ -51,9 +67,12 @@ main(void) {
         pid_t pid;
         int aux;
         char * line_id;
+        char * ipc_method;
         line_id = itoa(files.qty);
-        preparefd(files.buffer[files.qty]); 
-        char *args[] = {"lineas", line_id ,(char *) 0 };
+        ipc_method = itoa(ipc_selection);
+        preparefd(files.buffer[files.qty]);
+        closeFd(files.buffer[files.qty]);
+        char *args[] = {"lineas", line_id, ipc_method ,(char *) 0 };
         pid = fork();
         switch(pid){
             case 0: aux = execv("../bin/lineas", args);
@@ -63,7 +82,6 @@ main(void) {
             case -1:
                     return 1;
             default:
-                closeFd(files.buffer[files.qty]);
                 files.buffer[files.qty] = openChannel(pid);
                 break;
         }
@@ -94,6 +112,7 @@ main(void) {
     if(aux_pthread_creation){
        wprintw(log_win, "+ERROR: No se pudo crear el thread pedido.\n");
     }
+
     for(i=0;i<files.qty;i++){
         aux_pthread_creation = pthread_create(&core_threads[i+3], &attr, (void*)(core_listen), (void*)i);
         if(aux_pthread_creation){
