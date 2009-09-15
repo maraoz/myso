@@ -93,6 +93,7 @@ main(int argc, char * argv[] ){
    
     while(sim_on);
     
+    pthread_mutex_destroy(&pax_mutex);
     pthread_attr_destroy(&attr);
     free(movements);
 }

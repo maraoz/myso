@@ -110,4 +110,8 @@ main(void) {
             switch_semaphore(&semps[i]);
         pthread_mutex_unlock(&semaphore_mutex);
     }
+    pthread_mutex_destroy(&semaphore_mutex);
+    pthread_mutex_destroy(&map_mutex);
+    pthread_mutex_destroy(&citizen_mutex);
+    pthread_cond_destroy(&citizen_cond);
 }

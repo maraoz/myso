@@ -19,11 +19,9 @@ pid_t my_pid;
 int line_id;
 int * insertion_ack;
 int ** pax;
-
-extern WINDOW *log_win;
-
 pthread_mutex_t pax_mutex = PTHREAD_MUTEX_INITIALIZER;
 
+extern WINDOW *log_win;
 
 void 
 new_pax(int fd, int id, point_t start, point_t stop){
