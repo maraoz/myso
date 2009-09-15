@@ -18,6 +18,9 @@ semaphore semps[(CUADRAS+1)*(CUADRAS+1)-4];
 int semps_hash[(CUADRAS+1)][(CUADRAS+1)];
 pthread_mutex_t semaphore_mutex = PTHREAD_MUTEX_INITIALIZER;
 pthread_mutex_t map_mutex = PTHREAD_MUTEX_INITIALIZER;
+pthread_mutex_t citizen_mutex = PTHREAD_MUTEX_INITIALIZER;
+pthread_cond_t citizen_cond = PTHREAD_COND_INITIALIZER;
+person_t passenger;
 int sim_on = 1;
 Tfiles files;
 
@@ -59,6 +62,22 @@ listen(int index) {
     while(sim_on){
         receive(files.buffer[index]);
     }
+}
+
+void *
+pax_creation() {
+    int random_line;
+    printf("pasajero creado");
+    random_line = rand()%files.qty;
+    pthread_mutex_lock(&citizen_mutex);
+    get_random_stops(files.buffer[random_line], random_line);
+    pthread_cond_wait(&citizen_cond,&citizen_mutex);
+    if(random_line != passenger.line){
+        printf("Paradas no corresponden a la linea pedida\n");
+    } else {
+        insert_pax_to_line(files.buffer[passenger.line], passenger.line, passenger.up, passenger.down);
+    }
+    pthread_mutex_unlock(&citizen_mutex);
 }
 
 
@@ -215,5 +234,23 @@ switch_semaphore(semaphore * sem){
     sem->state = !sem->state;
 }
 
-            
+int
+set_new_pax(int idl, point_t stop_up, point_t stop_down){
+    
+    pthread_mutex_lock(&citizen_mutex);
+    
+    passenger.line = idl;
+    passenger.up = stop_up;
+    passenger.down = stop_down;
+    
+    pthread_cond_signal(&citizen_cond);
+    pthread_mutex_unlock(&citizen_mutex);
+    return 0;
+}
+
+int
+pax_get_of_bus(int idl, point_t stop){
+    printf("Pasajero bajandose en %d, %d",stop.x,stop.y);
+    return 0;
+}
          

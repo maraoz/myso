@@ -22,6 +22,12 @@ typedef struct {
     int stops_length;
 } buses_line;
 
+typedef struct {
+    point_t up;
+    point_t down;
+    int line;
+    int used;
+} person_t;
 
 // protocol
 typedef int session_t;
@@ -34,6 +40,7 @@ typedef struct
     int id_line;		/*  */ 
     int id_bus;			/*  */
     point_t point;		/* posible posicion del colectivo */
+    point_t point2;
 } package_t;
 
 

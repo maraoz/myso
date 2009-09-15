@@ -20,6 +20,9 @@ extern int semps_hash[(CUADRAS+1)][(CUADRAS+1)];
 extern pthread_mutex_t semaphore_mutex;
 extern pthread_mutex_t map_mutex;
 extern int sim_on;
+extern person_t passenger;
+extern pthread_mutex_t citizen_mutex;
+extern pthread_cond_t citizen_cond;
 
 // extern session_t session_line;
 extern Tfiles files;
@@ -76,20 +79,25 @@ main(void) {
     
     initscr();
 
-    core_threads = malloc(files.qty * sizeof(pthread_t)+1);
+    core_threads = malloc(files.qty * sizeof(pthread_t)+2);
     
     aux_pthread_creation = pthread_create(&core_threads[0], &attr, (void*)(draw), NULL);
     if(aux_pthread_creation){
        printf("No se pudo crear el thread pedido.\n");
     }
+    aux_pthread_creation = pthread_create(&core_threads[1], &attr, (void*)(pax_creation), NULL);
+    if(aux_pthread_creation){
+       printf("No se pudo crear el thread pedido.\n");
+    }
     for(i=0;i<files.qty;i++){
-        aux_pthread_creation = pthread_create(&core_threads[i+1], &attr, (void*)(listen), (void*)i);
+        aux_pthread_creation = pthread_create(&core_threads[i+2], &attr, (void*)(listen), (void*)i);
         if(aux_pthread_creation){
             printf("No se pudo crear el thread pedido.\n");
         }   
     }
     pthread_attr_destroy(&attr);
-
+    
+    srand(time(NULL));
     while(sim_on){
         int i;
         sleep(10);
@@ -97,7 +105,5 @@ main(void) {
         for(i = 0; i<(CUADRAS+1)*(CUADRAS+1) - 4 ; i++)
             switch_semaphore(&semps[i]);
         pthread_mutex_unlock(&semaphore_mutex);
-
     }
-    
 }

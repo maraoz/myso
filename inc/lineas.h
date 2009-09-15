@@ -9,4 +9,6 @@ void move_ack(int fd, int id);
 
 void insert_ack(int fd, int id);
 
+void new_pax(int fd, int id, point_t start, point_t stop);
+
 #endif

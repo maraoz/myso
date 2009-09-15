@@ -11,8 +11,14 @@
 #define CD_MOVE_BUS 2
 #define CD_VALID_POS 3
 #define CD_INIT 4
-#define CD_MOVE_ACK 5
-#define CD_INSERT_ACK 6
+#define CD_PAX_DL 5
+#define CD_DEL_STOPS 6
+#define CD_MOVE_ACK 7
+#define CD_INSERT_ACK 8
+#define CD_NEW_PAX 9
+#define CD_RND_STOPS 10
+
+
 
 int
 m_init_core(){
@@ -131,6 +137,76 @@ move_request(session_t session, int idl, int idb, point_t new_pos)
 }
 
 void
+pax_downloaded(session_t session, int idl, int idb, point_t stop){
+
+    package_t data;
+    int result;
+    
+    data.msg_id = CD_PAX_DL;
+    data.id_line = idl;
+    data.id_bus = idb;
+    data.point = stop;
+
+    result = w_write(session, data);
+    
+    if(result == -1)
+    printf("ha fallado en download pax\n");
+
+}
+
+void 
+insert_pax_to_line(session_t session, int idl, point_t pos1, point_t pos2){
+    
+    package_t data;
+    int result;
+    
+    data.msg_id = CD_NEW_PAX;
+    data.id_line = idl;
+    data.point = pos1;
+    data.point2 = pos2;
+
+    result = w_write(session, data);
+    
+    if(result == -1)
+    printf("ha fallado en insert pax\n");
+}
+
+
+void
+get_random_stops(session_t session, int idl){
+    
+    package_t data;
+    int result;
+    
+    data.msg_id = CD_RND_STOPS;
+    data.id_line = idl;
+
+    result = w_write(session, data);
+    
+    if(result == -1)
+    printf("ha fallado en get random stops\n");
+    
+}
+
+void
+deliver_stops(session_t session, int idl, point_t stop1, point_t stop2){
+ 
+    package_t data;
+    int result;
+    
+    data.msg_id = CD_DEL_STOPS;
+    data.id_line = idl;
+    data.point = stop1;
+    data.point2 = stop2;
+
+    result = w_write(session, data);
+    
+    if(result == -1)
+    printf("ha fallado en deliver stops\n");   
+}
+
+
+void
 receive_core(package_t data)
 {
     int code;
@@ -143,6 +219,8 @@ receive_core(package_t data)
         case CD_MOVE_BUS: code = move_bus(data.id_line, data.id_bus, data.point);break;
         case CD_VALID_POS: code = valid_pos(data.point);break;
         case CD_INIT: code = init(); break;
+        case CD_PAX_DL: code = pax_get_of_bus(data.id_line,data.point); break;
+        case CD_DEL_STOPS: code = set_new_pax(data.id_line, data.point, data.point2);break;
         default: /* */;
     }
 }
@@ -159,6 +237,8 @@ receive_lines(package_t data)
     {
         case CD_INSERT_ACK: code = insert_ack(data.id_line, data.id_bus);break;
         case CD_MOVE_ACK: code = move_ack(data.id_line, data.id_bus);break;
+        case CD_NEW_PAX: code = new_pax(data.id_line, data.id_bus, data.point, data.point2); break;
+        case CD_RND_STOPS: code = calculate_stops(data.id_line); break;
         default: /* */;
     }
 }
@@ -183,7 +263,8 @@ receive(session_t session)
         case CD_INSERT_BUS:
         case CD_MOVE_BUS:
         case CD_VALID_POS:
-        case CD_INIT: receive_core(data); break;
+        case CD_INIT:
+        case CD_PAX_DL: receive_core(data); break;
         case CD_INSERT_ACK:
         case CD_MOVE_ACK: if(DEBUG_MODE) printf("TRACE: LLEGUE HASTA EL SWITCH\n");receive_lines(data); break;
         default: /* */;
