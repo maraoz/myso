@@ -113,7 +113,7 @@ move_request_ack(session_t session, int idl, int idb){
     data.id_bus = idb;
 
     if(DEBUG_MODE)
-    wprintw(log_win"TRACE: ESTOY POR ESCRIBIR EL APROBADO DEL MOVE\n");
+	wprintw(log_win, "TRACE: ESTOY POR ESCRIBIR EL APROBADO DEL MOVE\n");
     result = w_write(session, data);
     
     if(result == -1)
