@@ -22,7 +22,7 @@ void print_v_sem(point_t point);
 
 int Xpositions[19] = {2,6,11,15,19,24,28,32,37,41,45,50,54,58,63,67,71,76,80};
 int Ypositions[19] = {0,2,4,6,8,10,12,14,16,18,20,22,24,26,28,30,32,34,36};
-WINDOW *city_win, *log_win;
+WINDOW *city_win, *log_win, *city_box, *log_box;
 
 WINDOW* create_newwin(int height, int width, int starty, int startx)
 {	WINDOW *local_win;
@@ -76,10 +76,12 @@ draw(void)
 	width = 90;
 	starty = (LINES - height) / 2;	/* Calculating for a center placement */
 	startx = 0;	/* of the window		*/
-/*	printw("Press F1 to exit");*/
+	printw("Press F1 to exit");
 	refresh();
-	city_win = create_newwin(height, width, starty, startx);
-	log_win = create_newwin(height, width-30, starty, startx+width+5);
+	city_box = create_newwin(height, width, starty, startx);
+	log_box = create_newwin(height, width-30, starty, startx+width+5);
+	city_win = subwin(city_box,height-4, width-5, starty+2, startx+3);
+	log_win = subwin(log_box,height-2, width-32, starty+1, startx+width+6);
 	scrollok(log_win, TRUE);
 
     while(sim_on) {
@@ -88,12 +90,8 @@ draw(void)
 	wrefresh(city_win);
 	wrefresh(log_win);
 	getyx(log_win,y,x);
-	if(y == height)
-	    werase(log_win);	
 	werase(city_win);
 	
-	box(log_win, 0, 0);
-	box(city_win, 0 , 0);
         usleep(10000);
         pthread_mutex_lock(&map_mutex);
 
@@ -132,36 +130,10 @@ draw(void)
 		}
 
 		pthread_mutex_unlock(&map_mutex);
-
-//      	endwin();
         }
-//         return;
-
-// 	while((ch = getch()) != KEY_F(1))
-// 	{	switch(ch)
-// 		{	case KEY_LEFT:
-// 				destroy_win(city_win);
-// 				city_win = create_newwin(height, width, starty,--startx);
-// 				break;
-// 			case KEY_RIGHT:
-// 				destroy_win(city_win);
-// 				city_win = create_newwin(height, width, starty,++startx);
-// 				break;
-// 			case KEY_UP:
-// 				destroy_win(city_win);
-// 				city_win = create_newwin(height, width, --starty,startx);
-// 				break;
-// 			case KEY_DOWN:
-// 				destroy_win(city_win);
-// 				city_win = create_newwin(height, width, ++starty,startx);
-// 				break;	
-// 		}
-// 	}
 		
 	endwin();			/* End curses mode		  */
 	return 0;
-   
-
 }
 
 

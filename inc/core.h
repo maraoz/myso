@@ -50,6 +50,8 @@ void * core_listen(int index);
 
 void * pax_creation();
 
+void * keyboard_listen();
+
 void switch_semaphore(semaphore *s);
 
 
