@@ -31,7 +31,7 @@ m_init_core(){
 
 
     if(result == -1)
-    printf("ha fallado en init core\n");
+    wprintw(log_win, "+ERROR: ha fallado en init core\n");
 
     return result;
 }
@@ -42,7 +42,7 @@ m_init_line(){
 
     result = w_init(FIFO, LINE);
     if(result == -1)
-	printf("ha fallado init line\n");
+	wprintw(log_win, "+ERROR: ha fallado init line\n");
 
     return result;
 }
@@ -53,7 +53,7 @@ openChannel(int channel){
     result = w_open(channel);
     
     if(result == -1)
-	printf("ha fallado en open, el channel es %d\n", channel);
+	wprintw(log_win, "+ERROR: ha fallado en open, el channel es %d\n", channel);
 
     
     return result;
@@ -79,7 +79,7 @@ insert_request(session_t session, int idl, int idb, point_t pos)
     result = w_write(session, data);
 
     if(result == -1)
-	printf("ha fallado en insert request\n");
+	wprintw(log_win, "+ERROR: ha fallado en insert request\n");
 
 
 }
@@ -95,11 +95,11 @@ insert_bus_ack(session_t session, int idl, int idb){
     data.id_bus = idb;
 
     if(DEBUG_MODE)
-    printf("TRACE: ESTOY POR ESCRIBIR EL APROBADO DEL INSERT\n");
+    wprintw(log_win, "TRACE: ESTOY POR ESCRIBIR EL APROBADO DEL INSERT\n");
     result = w_write(session, data);
     
     if(result == -1)
-	printf("ha fallado en insert bus ack\n");
+	wprintw(log_win, "+ERROR: ha fallado en insert bus ack\n");
 
 }
 
@@ -113,11 +113,11 @@ move_request_ack(session_t session, int idl, int idb){
     data.id_bus = idb;
 
     if(DEBUG_MODE)
-    printf("TRACE: ESTOY POR ESCRIBIR EL APROBADO DEL MOVE\n");
+    wprintw(log_win"TRACE: ESTOY POR ESCRIBIR EL APROBADO DEL MOVE\n");
     result = w_write(session, data);
     
     if(result == -1)
-	printf("ha fallado en move request ack\n");
+	wprintw(log_win, "+ERROR: ha fallado en move request ack\n");
 
 }
 
@@ -134,7 +134,7 @@ move_request(session_t session, int idl, int idb, point_t new_pos)
     result = w_write(session, data);
     
     if(result == -1)
-	printf("ha fallado en move request\n");
+	wprintw(log_win, "+ERROR: ha fallado en move request\n");
 
 
 }
@@ -153,7 +153,7 @@ pax_downloaded(session_t session, int idl, int idb, point_t stop){
     result = w_write(session, data);
     
     if(result == -1)
-    printf("ha fallado en download pax\n");
+	wprintw(log_win, "+ERROR: ha fallado en download pax\n");
 
 }
 
@@ -171,7 +171,7 @@ insert_pax_to_line(session_t session, int idl, point_t pos1, point_t pos2){
     result = w_write(session, data);
     
     if(result == -1)
-    printf("ha fallado en insert pax\n");
+	wprintw(log_win, "+ERROR: ha fallado en insert pax\n");
 }
 
 
@@ -187,7 +187,7 @@ get_random_stops(session_t session, int idl){
     result = w_write(session, data);
     
     if(result == -1)
-    printf("ha fallado en get random stops\n");
+	wprintw(log_win, "+ERROR: ha fallado en get random stops\n");
     
 }
 
@@ -205,7 +205,7 @@ deliver_stops(session_t session, int idl, point_t stop1, point_t stop2){
     result = w_write(session, data);
     
     if(result == -1)
-    printf("ha fallado en deliver stops\n");   
+	wprintw(log_win, "+ERROR: ha fallado en deliver stops\n");   
 }
 
 
@@ -213,9 +213,7 @@ void
 receive_core(package_t data)
 {
     int code;
-//     package_t data;
 
-//     data = w_read();
     switch(data.msg_id)
     {
         case CD_INSERT_BUS: code = insert_bus(data.id_line, data.id_bus, data.point);break;
@@ -232,9 +230,6 @@ void
 receive_lines(package_t data)
 {
     int code;
-//     package_t data;
-
-//     data = w_read();
     
     switch(data.msg_id)
     {
@@ -254,12 +249,12 @@ receive(session_t session)
     data = w_read(session);
 
     if(DEBUG_MODE)
-    printf("TRACE: LLEGUE HASTA ANTES DEL SWITCH\n");
+	wprintw(log_win,"TRACE: LLEGUE HASTA ANTES DEL SWITCH\n");
     if(DEBUG_MODE)
-    printf("TRACE: MSG_ID = %d\n",data.msg_id);
+	wprintw(log_win,"TRACE: MSG_ID = %d\n",data.msg_id);
     if(data.msg_id == -1){
         if(DEBUG_MODE){
-        printf("TRACE: EL MENSAJE ES EL ESPERADO\n");
+	    wprintw(log_win,"TRACE: EL MENSAJE ES EL ESPERADO\n");
 	}
     }
     switch(data.msg_id)
@@ -269,11 +264,11 @@ receive(session_t session)
         case CD_VALID_POS:
         case CD_INIT:
         case CD_PAX_DL:
-        case CD_DEL_STOPS: if(DEBUG_MODE) printf("TRACE: LLEGUE HASTA RECEIVE CORE\n"); receive_core(data); break;
+        case CD_DEL_STOPS: if(DEBUG_MODE) wprintw(log_win,"TRACE: LLEGUE HASTA RECEIVE CORE\n"); receive_core(data); break;
         case CD_INSERT_ACK:
         case CD_MOVE_ACK:
         case CD_NEW_PAX:
-        case CD_RND_STOPS: if(DEBUG_MODE) printf("TRACE: LLEGUE HASTA RECEIVE LINES\n");receive_lines(data); break;
+        case CD_RND_STOPS: if(DEBUG_MODE) wprintw(log_win,"TRACE: LLEGUE HASTA RECEIVE LINES\n");receive_lines(data); break;
         default: /* */;
     }
 }

@@ -77,15 +77,6 @@ openFiles(void)
 
 int 
 preparefd(int fd){
-    /**
-     * MAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAL
-     * QUE CARAJO ES ESTOOOOOO?????????????
-     * ESTUVE 3 HORAS DEBBUGEANDO POR ESTA MIERDA
-     * 
-     * ME PISABA EL SOCKET Q SE ABRIA EN EL FD 3
-     * LA PUTA MADRE 
-     * PORQUEEEEEEEEEEEEEEEEEEEEE?????????????
-     */
     return dup2(fd,3);
 }
 
@@ -168,9 +159,7 @@ get_stops(int fd, point_t ** stops)
 }
 
 int
-closeFd(int fd)
-{
-    printf("cerrando el fd %d\n",fd);
+closeFd(int fd){
     return close(fd);
 }
 

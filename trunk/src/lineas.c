@@ -19,6 +19,8 @@ int line_id;
 int * insertion_ack;
 int ** pax;
 
+extern WINDOW *log_win;
+
 pthread_mutex_t pax_mutex = PTHREAD_MUTEX_INITIALIZER;
 
 
@@ -34,14 +36,14 @@ new_pax(int fd, int id, point_t start, point_t stop){
         }
     }
     if(k==-1 || j==-1){
-        printf("No existe dicha parada\n");
+        wprintw(log_win,"+ERROR: No existe dicha parada\n");
         return;
     }
     pthread_mutex_lock(&pax_mutex);
     if(pax[j][0] != 0 && (pax[j][0]) % 10 == 0){
         pax[j] = realloc(pax[j],((pax[j][0]+1)+10)*sizeof(int));   
         if(pax[j] == NULL){
-            printf("No hay suficiente memoria\n");
+            wprintw(log_win,"+ERROR: No hay suficiente memoria\n");
 	    return;
 	}
     }
@@ -64,9 +66,9 @@ calculate_stops(int fd){
 void
 move_ack(int fd, int id){
     if(DEBUG_MODE)
-        printf("TRACE: ME MOVIIII WIII\n");
+        wprintw(log_win,"TRACE: ME MOVI\n");
     if(movements[id] == -1){
-         printf("no existe el colectivo\n");
+         wprintw(log_win,"+ERROR: no existe el colectivo\n");
         return;
     }
     movements[id]++;
@@ -78,7 +80,7 @@ insert_ack(int fd, int id){
     
     if(movements[id] == -1){
         if(DEBUG_MODE)
-        printf("TRACE: ME INSERTARON WIII\n");
+        wprintw(log_win,"TRACE: ME INSERTE\n");
         movements[id] = 1;
     }
 }
@@ -97,11 +99,11 @@ new_bus(int index) {
         usleep(100000);
     }
     if(DEBUG_MODE)
-    printf("sali del while\n");
+	wprintw(log_win,"sali del while\n");
     while(sim_on){
         sleep(2);
         if(DEBUG_MODE)
-        printf("intenando moverme\n");
+	    wprintw(log_win,"intenando moverme\n");
         move_request(session, line_id, index, buses.path[movements[my_index]]);
 	    if(buses.path[movements[my_index]].x == buses.stops[j].x && buses.path[movements[my_index]].y == buses.stops[j].y ) {
 //             printf("estoy en una parada con %d pasajeros\n",pax[j][0]);
@@ -113,7 +115,7 @@ new_bus(int index) {
             }
 	    pax[j] = realloc(pax[j],11*sizeof(int));
 	    if(pax[j] == NULL){
-		printf("No hay suficiente memoria\n");
+		wprintw(log_win,"+ERROR: No hay suficiente memoria\n");
 		return NULL;
 	    }
 	    pax[j][0] = 0;

@@ -74,7 +74,7 @@ pax_creation() {
         get_random_stops(files.buffer[random_line], random_line);
         pthread_cond_wait(&citizen_cond,&citizen_mutex);
         if(random_line != passenger.line){
-            printf("Paradas no corresponden a la linea pedida\n");
+            wprintw(log_win,"Paradas no corresponden a la linea pedida\n");
         } else {
             insert_pax_to_line(files.buffer[passenger.line], passenger.line, passenger.up, passenger.down);
 // 	    printf("inserte nuevo pasajero\n");
@@ -89,14 +89,14 @@ pax_creation() {
 int
 insert_bus(int fd, int id, point_t pos){
     if(DEBUG_MODE)
-    printf("TRACE: PIDIO DE INSERTARSE\n");
+	wprintw(log_win,"TRACE: PIDIO DE INSERTARSE\n");
     if(fd >= XDIM*YDIM || fd < 0) {
        printf("Linea no soportada por el sistema.\n");
         return FD_TOO_LARGE;
     }
     
     if(id >= XDIM*YDIM || id < 0) {
-        printf("Colectivo no soportado por el sistema.\n");
+	    wprintw(log_win,"Colectivo no soportado por el sistema.\n");
         return ID_TOO_LARGE;
     }
     
@@ -105,7 +105,7 @@ insert_bus(int fd, int id, point_t pos){
     }
     if(((pos.y%(TILES_CUADRAS+1) == 1) || (pos.y%(TILES_CUADRAS+1) == 2)) 
       && ((pos.x%(TILES_CUADRAS+1) == 1) || (pos.x%(TILES_CUADRAS+1) == 2))){
-        printf("No se puede insertar un colectivo en medio de una manzana.\n");
+	    wprintw(log_win,"No se puede insertar un colectivo en medio de una manzana.\n");
         return BLOCKED_SLOT;
     }
 
@@ -120,7 +120,7 @@ insert_bus(int fd, int id, point_t pos){
     pthread_mutex_unlock(&map_mutex);
     insert_bus_ack(files.buffer[fd],fd,id);
     if(DEBUG_MODE)
-    printf("TRACE: COLECTIVO INSERTADO\n");
+	wprintw(log_win,"TRACE: COLECTIVO INSERTADO\n");
     return id;
         
 }
@@ -131,15 +131,15 @@ move_bus(int fd, int id, point_t new_pos){
     point_t actual_pos = buses[fd][id];
     int aux; 
     if(DEBUG_MODE)
-    printf("TRACE: PIDIO DE MOVERSE\n");
+	wprintw(log_win,"TRACE: PIDIO DE MOVERSE\n");
     
     if(fd >= XDIM*YDIM || fd < 0) {
-        printf("Linea no soportada por el sistema.\n");
+	    wprintw(log_win,"Linea no soportada por el sistema.\n");
         return FD_TOO_LARGE;
     }
     
     if(id >= XDIM*YDIM || id < 0) {
-        printf("Colectivo no soportado por el sistema.\n");
+	    wprintw(log_win,"Colectivo no soportado por el sistema.\n");
         return ID_TOO_LARGE;
     }  
     
@@ -148,25 +148,25 @@ move_bus(int fd, int id, point_t new_pos){
     }
     
     if(dist(new_pos, actual_pos) > 1){
-        printf("No te podes mover mas de 1 lugar por turno.\n");
-       return NEW_POS_FAR_AWAY;
+        wprintw(log_win,"No te podes mover mas de 1 lugar por turno.\n");
+        return NEW_POS_FAR_AWAY;
     }
   
     //pthread_mutex_lock(&semaphore_mutex);
     if(hasSemaphore(new_pos) && isVRedHGreen(semps[(semps_hash[new_pos.y][new_pos.x])]) 
 	&& actual_pos.x == new_pos.x) {
-//	printf("No se puede avanzar, semaforo en rojo.\n");
+	wprintw(log_win,"No se puede avanzar, semaforo en rojo.\n");
         return RED_LIGHT_ON;
     }
     if(hasSemaphore(new_pos) && !isVRedHGreen(semps[(semps_hash[new_pos.y][new_pos.x])]) 
     && actual_pos.y == new_pos.y) {
-     //   printf("No se puede avanzar, semaforo en rojo.\n");
+	wprintw(log_win,"No se puede avanzar, semaforo en rojo.\n");
         return RED_LIGHT_ON;
     }
     //pthread_mutex_unlock(&semaphore_mutex);
     
     if(tiles[new_pos.y][new_pos.x] == TRUE){
-  //      printf("No se puede avanzar, nueva posicion esta ocupada.\n");
+	wprintw(log_win,"No se puede avanzar, nueva posicion esta ocupada.\n");
         return NEW_POS_ALREADY_OCCUPIED;
     }
 
@@ -192,13 +192,13 @@ move_bus(int fd, int id, point_t new_pos){
 	
     buses[fd][id] = new_pos;
     pthread_mutex_lock(&map_mutex);
-    //printf("actual pos: (%d,%d)\n",actual_pos.x,actual_pos.y);
+    wprintw(log_win,"actual pos: (%d,%d)\n",actual_pos.x,actual_pos.y);
     tiles[actual_pos.y][actual_pos.x] = FALSE;
-    //printf("new pos: (%d,%d)\n",new_pos.x,new_pos.y);
+    wprintw(log_win,"new pos: (%d,%d)\n",new_pos.x,new_pos.y);
     tiles[new_pos.y][new_pos.x] = TRUE;
     pthread_mutex_unlock(&map_mutex);
-//     if(DEBUG_MODE)
-    wprintw(log_win,"TRACE: SE MOVIO\n");
+    if(DEBUG_MODE)
+	wprintw(log_win,"TRACE: SE MOVIO\n");
     move_request_ack(files.buffer[fd],fd,id);
     
     return id;
@@ -209,8 +209,8 @@ valid_pos(point_t pos){
     
     if(pos.x >= XDIM || pos.x < 0 
         || pos.y >= YDIM || pos.y < 0){
-            printf("pos.x = %d, pos.y = %d\n", pos.x, pos.y);
-            printf("Posicion fuera las dimensiones de la ciudad.\n");
+            wprintw(log_win,"pos.x = %d, pos.y = %d\n", pos.x, pos.y);
+            wprintw(log_win,"Posicion fuera las dimensiones de la ciudad.\n");
             return FALSE;
     }
     return TRUE;

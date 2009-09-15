@@ -8,12 +8,8 @@
 #include <unistd.h>
 #include <stdlib.h>
 
-
-
-
 extern boolean tiles[YDIM][XDIM];
 extern point_t buses[XDIM*YDIM][XDIM*YDIM];
-
 
 extern semaphore semps[(CUADRAS+1)*(CUADRAS+1)-4];
 extern int semps_hash[(CUADRAS+1)][(CUADRAS+1)];
@@ -23,6 +19,7 @@ extern int sim_on;
 extern person_t passenger;
 extern pthread_mutex_t citizen_mutex;
 extern pthread_cond_t citizen_cond;
+extern WINDOW *log_win;
 
 // extern session_t session_line;
 extern Tfiles files;
@@ -81,20 +78,20 @@ main(void) {
     
     aux_pthread_creation = pthread_create(&core_threads[0], &attr, (void*)(draw), NULL);
     if(aux_pthread_creation){
-       printf("No se pudo crear el thread pedido.\n");
+       wprintw(log_win, "+ERROR: No se pudo crear el thread pedido.\n");
     }
     aux_pthread_creation = pthread_create(&core_threads[1], &attr, (void*)(pax_creation), NULL);
     if(aux_pthread_creation){
-       printf("No se pudo crear el thread pedido.\n");
+       wprintw(log_win, "+ERROR: No se pudo crear el thread pedido.\n");
     }
     aux_pthread_creation = pthread_create(&core_threads[2], &attr, (void*)(keyboard_listen), NULL);
     if(aux_pthread_creation){
-       printf("No se pudo crear el thread pedido.\n");
+       wprintw(log_win, "+ERROR: No se pudo crear el thread pedido.\n");
     }
     for(i=0;i<files.qty;i++){
         aux_pthread_creation = pthread_create(&core_threads[i+3], &attr, (void*)(core_listen), (void*)i);
         if(aux_pthread_creation){
-            printf("No se pudo crear el thread pedido.\n");
+            wprintw(log_win, "+ERROR: No se pudo crear el thread pedido.\n");
         }   
     }
     pthread_attr_destroy(&attr);
