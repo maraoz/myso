@@ -2,6 +2,7 @@
 #include "../inc/protocol.h"
 #include "../inc/core.h"
 #include "../inc/marshall.h"
+#include <stdlib.h>
 #include <stdio.h>
 #include <dirent.h>
 #include <stdio.h>
@@ -22,13 +23,12 @@ extern WINDOW *log_win;
 #define CD_NEW_PAX 9
 #define CD_RND_STOPS 10
 
-
-
+int ipc_selection = MESSAGE_QUEUE;
+char * stringuis[] = {"SHARED_MEMORY","FIFO","SOCKET","MSG_QUEUE"};
 int
 m_init_core(){
     int result;
-    result = w_init(MESSAGE_QUEUE, CORE);
-
+    result = w_init(ipc_selection, CORE);
 
     if(result == -1)
     wprintw(log_win, "+ERROR: ha fallado en init core\n");
@@ -39,8 +39,7 @@ m_init_core(){
 int
 m_init_line(){
     int result;
-
-    result = w_init(MESSAGE_QUEUE, LINE);
+    result = w_init(ipc_selection, LINE);
     if(result == -1)
 	wprintw(log_win, "+ERROR: ha fallado init line\n");
 
