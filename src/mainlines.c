@@ -102,4 +102,5 @@ line_listener(){
     while(sim_on){
         receive(session);
     }
+    pthread_exit(0);
 }

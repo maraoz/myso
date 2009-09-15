@@ -106,10 +106,3 @@ main(void) {
         pthread_mutex_unlock(&semaphore_mutex);
     }
 }
-
-void *
-keyboard_listen(){
-	while((ch = getch()) != KEY_F(1)){
-	    sim_on = FALSE;
-	}
-}

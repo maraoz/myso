@@ -25,6 +25,9 @@ person_t passenger;
 int sim_on = 1;
 Tfiles files;
 
+// pthread_mutex_destroy(semaphore_mutex);
+// pthread_mutex_destroy(map_mutex);
+// pthread_mutex_destroy(citizen_mutex);
 // int session_line;
 
 int
@@ -63,7 +66,18 @@ core_listen(int index) {
     while(sim_on){
         receive(files.buffer[index]);
     }
+    pthread_exit(0);
 }
+
+
+void *
+keyboard_listen(){
+    int ch;
+    while((ch = getch()) != KEY_F(1));
+    sim_on = FALSE;
+    pthread_exit(0);
+}
+
 
 void *
 pax_creation() {
@@ -82,6 +96,7 @@ pax_creation() {
         pthread_mutex_unlock(&citizen_mutex);
         sleep(1);
     }
+    pthread_exit(0);
 }
 
 
@@ -254,7 +269,7 @@ set_new_pax(int idl, point_t stop_up, point_t stop_down){
 
 int
 pax_get_of_bus(int idl, point_t stop){
-    wprintf(log_win,"Pasajero bajandose en %d, %d\n",stop.x,stop.y);
+    wprintw(log_win,"Pasajero bajandose en %d, %d\n",stop.x,stop.y);
     return 0;
 }
          

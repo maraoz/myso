@@ -130,4 +130,5 @@ new_bus(int index) {
             j = j%buses.stops_length;
         }
     }
+    pthread_exit(0);
 }
