@@ -27,7 +27,7 @@ extern WINDOW *log_win;
 int
 m_init_core(){
     int result;
-    result = w_init(SOCKET, CORE);
+    result = w_init(FIFO, CORE);
 
 
     if(result == -1)
@@ -40,7 +40,7 @@ int
 m_init_line(){
     int result;
 
-    result = w_init(SOCKET, LINE);
+    result = w_init(FIFO, LINE);
     if(result == -1)
 	printf("ha fallado init line\n");
 
