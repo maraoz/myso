@@ -33,6 +33,10 @@ int move_bus(session_t session, int id, point_t new_pos);
 /* funcion que inserta un autobus en la ciudad */
 int insert_bus(session_t session, int id, point_t pos); 
 
+int set_new_pax(int idl, point_t stop_up, point_t stop_down);
+
+int pax_get_of_bus(int idl, point_t stop);
+
 /* funcion que inicializa la ciudad */
 int init(void);
 
@@ -44,6 +48,9 @@ int hasSemaphore(point_t pos);
 
 void * listen(int index);
 
+void * pax_creation();
+
 void switch_semaphore(semaphore *s);
+
 
 #endif

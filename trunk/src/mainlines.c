@@ -15,7 +15,7 @@ extern int tmp_qty_buses;
 extern session_t session;
 extern int line_id;
 extern int * insertion_ack;
-extern int * pax;
+extern int ** pax;
 extern pthread_mutex_t pax_mutex;
 
 int
@@ -34,7 +34,7 @@ main(int argc, char * argv[] ){
     pthread_attr_t attr;
     int index = 0;
     int aux = 0;
-    int i;
+    int i;  
     int tmp_qty_buses;
 
     pthread_attr_init(&attr);
@@ -117,11 +117,11 @@ main(int argc, char * argv[] ){
 //     for( mycont = 0 ; mycont < buses.stops_length ; mycont++ )
 // 	printf("paradas %d = %d %d\n", mycont, buses.stops[mycont].x, buses.stops[mycont].y);
 
-    pax = malloc(buses.stops_length, sizeof(int*));
+    pax = malloc(buses.stops_length*sizeof(int*));
     if(pax == NULL){
 	printf("No hay suficiente memoria\n");
     }
-    for(i = 0 ; i<buses.stops_length, i++){
+    for(i = 0 ; i<buses.stops_length; i++){
 	pax[i] = malloc(1*sizeof(int));
 	if(pax[i] == NULL){
 	    printf("No hay suficiente memoria\n");

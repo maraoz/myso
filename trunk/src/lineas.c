@@ -22,32 +22,45 @@ int ** pax;
 pthread_mutex_t pax_mutex = PTHREAD_MUTEX_INITIALIZER;
 
 
-void
-new_pax(point_t start, point_t stop){
+void 
+new_pax(int fd, int id, point_t start, point_t stop){
     int i,j=-1,k=-1;
     for(i=0;i<buses.stops_length;i++){
-	if(start.x != buses.stops[i].x && start.y != buses.stops[i].y){
-	    j = i;
-	}
-	if((stop.x != buses.stops[i].x && stop.y != buses.stops[i].y){
-	    k = i;
-	}
+        if(start.x != buses.stops[i].x && start.y != buses.stops[i].y){
+            j = i;
+        }
+        if((stop.x != buses.stops[i].x && stop.y != buses.stops[i].y)){
+            k = i;
+        }
     }
     if(k==-1 || j==-1){
-	printf("No existe dicha parada\n");
-    pthread_mutex_lock(&pax_mutex);
-    if((pax[j][0]+1) % 10 == 0){
-	pax[j] = realloc(pax[j],(pax[j][0]+1)+10);   
-	if(pax[j] == NULL)
-	    printf("No hay suficiente memoria\n");
+        printf("No existe dicha parada\n");
+        pthread_mutex_lock(&pax_mutex);
+        if((pax[j][0]+1) % 10 == 0){
+            pax[j] = realloc(pax[j],(pax[j][0]+1)+10);   
+            if(pax[j] == NULL)
+                printf("No hay suficiente memoria\n");
+        }
+        pax[j][pax[j][0]+1] = k;
+        pthread_mutex_unlock(&pax_mutex);
     }
-    pax[j][pax[j][0]+1] = k;
-    pthread_mutex_unlock(&pax_mutex);
 }
+
+
+void
+calculate_stops(int fd){
+    srand(time(NULL));
+    int stop_up, stop_down;
+    stop_up = rand()%buses.stops_length;
+    stop_down = rand()%buses.stops_length;
+    deliver_stops(session, line_id, stop_up, stop_down);
+}
+    
+    
 
 void
 move_ack(int fd, int id){
-        if(DEBUG_MODE)
+    if(DEBUG_MODE)
         printf("TRACE: ME MOVIIII WIII\n");
     if(movements[id] == -1){
          printf("no existe el colectivo\n");
@@ -66,6 +79,7 @@ insert_ack(int fd, int id){
         movements[id] = 1;
     }
 }
+
 
 void *
 new_bus(int index) {
@@ -87,20 +101,20 @@ new_bus(int index) {
         printf("intenando moverme\n");
         move_request(session, line_id, index, buses.path[movements[my_index]]);
 	    if(buses.path[movements[my_index]].x == buses.stops[j].x && buses.path[movements[my_index]].y == buses.stops[j].y ) {
-		pthread_mutex_lock(&pax_mutex);
-		while(pax[j][0] > 0){
-		    sleep(1);                
-		    pax[j][0]--;
-		    pax_arriba[pax[j][pax[j][0]]]++;
-		}
-		pthread_mutex_unlock(&pax_mutex);
-		while(pax_arriba[j] > 0){
-		    sleep(1);
-		    pax_arriba[j]--;
-		    pax_downloaded(buses.stops[j]); 
-		}
-		j++;
-		j = j%buses.stops_length;
-	}
+            pthread_mutex_lock(&pax_mutex);
+            while(pax[j][0] > 0){
+                sleep(1);                
+                pax[j][0]--;
+                pax_arriba[pax[j][pax[j][0]]]++;
+            }
+            pthread_mutex_unlock(&pax_mutex);
+            while(pax_arriba[j] > 0){
+                sleep(1);
+                pax_arriba[j]--;
+                pax_downloaded(session, line_id, index, buses.stops[j]); 
+            }
+            j++;
+            j = j%buses.stops_length;
+        }
     }
 }
