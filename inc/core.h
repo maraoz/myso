@@ -46,7 +46,7 @@ int isVRedHGreen(semaphore s);
 /* funcion que retorna TRUE si en pos hay un semaforo y FALSE caso contrario */
 int hasSemaphore(point_t pos);
 
-void * listen(int index);
+void * core_listen(int index);
 
 void * pax_creation();
 

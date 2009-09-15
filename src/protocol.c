@@ -312,56 +312,44 @@ int allmighty_socket;
 int k_w_init(void) {
     if (is_core) {
     /* socket server */
-        int s, s2, len;
+        int s, len;
         struct sockaddr_un local;
-
         if ((s = socket(AF_UNIX, SOCK_STREAM, 0)) == -1) {
             perror("socket");
             exit(1);
         }
-        printf("just created socket %d\n",s);
-
         local.sun_family = AF_UNIX;
         strcpy(local.sun_path,SOCK_PATH);
         unlink(local.sun_path);
         len = strlen(local.sun_path) + sizeof(local.sun_family);
         if (bind(s, (struct sockaddr *)&local, len) == -1) {
             perror("bind");
-            exit(1);
         }
-        printf("<%d, %s>\n", local.sun_family,local.sun_path);
-        if (listen(s, 5) == -1) {
-            perror("listen");
-            exit(1);
-        }
-        printf("Core is listening at socket %d\n", s);
+        s = dup2(s,34);
         allmighty_socket = s;
-
-    } else {
-
-
+        if (listen(allmighty_socket, 5) < 0) {
+            perror("listen");
+        }
     }
-
+    return 0;
 }
 session_t k_w_open(int other) {
 
     if ( is_core ) {
         struct sockaddr_un remote;
-        printf("Waiting for a connection from %d...\n", other);
-        int t = sizeof(remote);
-        int s2, s;
+        int size = sizeof(remote);
+        int new_skt, s;
         s = allmighty_socket;
-        if ((s2 = accept(s, (struct sockaddr *)&remote, &t)) == -1) {
+        if ((new_skt = accept(s, (struct sockaddr *)&remote, &size)) == -1) {
             perror("accept");
-            exit(1);
+            exit(0);
+            return -1;
         }
-        printf("soy el core y acepté el socket %d\n",s2);
 
         session_t sid = get_session();
-        sessions[sid][WRITE] = s2;
-        sessions[sid][READ] = s2;
+        sessions[sid][WRITE] = new_skt;
+        sessions[sid][READ] = new_skt;
         if (commit_session(sid) != -1) {
-            printf("Connected.\n");
             return sid;
         } else {
             return -1;
@@ -370,14 +358,11 @@ session_t k_w_open(int other) {
         /* socket clients */
         int s, t, len;
         struct sockaddr_un remote;
-        char str[100];
 
         if ((s = socket(AF_UNIX, SOCK_STREAM, 0)) == -1) {
             perror("socket");
             exit(1);
         }
-
-        printf("I'm a line trying to connect...\n");
 
         remote.sun_family = AF_UNIX;
         strcpy(remote.sun_path, SOCK_PATH);
@@ -387,75 +372,59 @@ session_t k_w_open(int other) {
             exit(1);
         }
         allmighty_socket = s;
-        printf("Line Connected to socket %d.\n",s);
+        return 0;
     }
-    return 0;
+
 }
 
 
 int k_w_close(session_t session) {
-    if (is_core)
-        return -1;
-    else
-        return 0;
+    if (is_core) {
+        int i;
+        for (i=0; i<SESSION_MAX; i++) {
+            if (sessions[i][USED] == TRUE) {
+                int skt_fd = sessions[i][WRITE];
+                if (close(skt_fd) == -1) {
+                    perror("close_socket");
+                    return -1;
+                } else {
+                    sessions[i][USED] = FALSE;
+                }
+            }
+        }
+    }
+
+    return 0;
 };
 int k_w_write(session_t session_id, package_t package) {
+    int skt;
     if (is_core) {
-        int s2 = sessions[session_id][WRITE];
-        char * str = "Hello socket world! I'm core";
-        if (send(s2, str, strlen(str), 0) < 0) {
-            perror("send");
-        }
-
+        skt = sessions[session_id][WRITE];
     } else {
-        int s = allmighty_socket;
-        char * str = "I'm a line message";
-        printf("I'm a line sending to socket %d\n", s);
-        if (send(s, str, strlen(str), 0) == -1) {
-            perror("send");
-            exit(1);
-        }
-
+        skt = allmighty_socket;
     }
+    if (send(skt, &package, sizeof(package_t), 0) < 0) {
+        perror("send");
+        return -1;
+    }
+    return 0;
 };
 
 
 package_t k_w_read(session_t session_id) {
-    if (is_core) {
-        int s2,s;
-        char str[100];
-        struct sockaddr_un remote;
-        int size_of_remote;
+    package_t pkg;
+    int skt;
+    if (is_core)
+        skt = sessions[session_id][READ];
+    else
+        skt = allmighty_socket;
 
-        s = allmighty_socket;
-        s2 = sessions[session_id][READ];
-        printf("soy el core leyendo el socket %d\n", s2);
-        int done = FALSE;
-        int n;
-        do {
-            n = recv(s2, str, 100, 0);
-            if (n <= 0) {
-                done = TRUE;
-                if (n < 0) perror("recv");
-            }
-        } while (!done);
-        printf("soy core, me llegó: %s\n",str);
-    } else {
-        char str[100];
-        int t;
-        int s = sessions[session_id][READ];
-        if ((t=recv(s, str, 100, 0)) > 0) {
-                str[t] = '\0';
-                printf("echo> %s", str);
-            } else {
-                if (t < 0) perror("recv");
-                else printf("Server closed connection\n");
-                exit(1);
-            }
-        printf("soy linea, me llegó: %s\n",str);
+    int n = recv(skt, &pkg, sizeof(package_t) , 0);
+    if (n <= 0) {
+        if (n<0) {perror("recv");exit(1);}
+        return error_package;
     }
-
-
+    return pkg;
 
 };
 
@@ -582,7 +551,7 @@ package_t w_read(session_t session_id) {
  * TESTCASES
  */
 
-#define SOY_CORE
+#define SOY_COR
 int _main(void) {
 
     printf("inicializando transporte...");
@@ -611,25 +580,27 @@ int _main(void) {
     package_t pck;
 
     printf("mandando 1...");
-    pck.msg_id = 10;
-    pck.id_line = 2;
-    pck.id_bus = 3;
-    pck.point.x = pck.point.y = 13;
+    pck.msg_id = 1;
+    pck.id_line = 1;
+    pck.id_bus = 1;
+    pck.point.x = pck.point.y = 1;
     if (w_write(sid, pck) == -1)
         printf("fallo write 1...\n");
     else
         printf("OK!\n");
 
     printf("mandando 2...");
-    pck.msg_id = 11;
-    pck.id_line = 20;
-    pck.id_bus = 33;
-    pck.point.x = pck.point.y = 10;
+    pck.msg_id = 2;
+    pck.id_line = 2;
+    pck.id_bus = 2;
+    pck.point.x = pck.point.y = 2;
     if (w_write(sid, pck) == -1)
         printf("fallo write 2...\n");
     else
         printf("OK!\n");
 
+    char c;
+    while ((c = getchar())!= EOF);
 
 
     } else {

@@ -72,7 +72,6 @@ clear:
 garbage:
 	- rm -f ./src/*~ 
 	- rm -f ./inc/*~
-	- rm -f ./doc/*~ 
 	- rm -f ./*~
 	- rm -f ./tests/*~
 	echo "Borrando molestos archivos temporales ..."
