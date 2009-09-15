@@ -86,7 +86,7 @@ main(int argc, char * argv[] ){
 	    if(qty_buses > 0){
             aux = buses_times[index] - buses_times[index-1];
 	    } else {
-		wprintw(log_win,"+ERROR: No se pudo crear el colectivo \n");
+// 		wprintw(log_win,"+ERROR: No se pudo crear el colectivo \n");
             aux = 0;
         }
     }
