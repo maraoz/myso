@@ -306,6 +306,7 @@ package_t f_w_read(session_t session_id) {
  * Sockets
  */
 
+#define SOCK_PATH "/tmp/SOcket"
 int allmighty_socket;
 
 int k_w_init(void) {
@@ -318,93 +319,141 @@ int k_w_init(void) {
             perror("socket");
             exit(1);
         }
+        printf("just created socket %d\n",s);
 
         local.sun_family = AF_UNIX;
-        strcpy(local.sun_path,"/tmp/SOcket");
+        strcpy(local.sun_path,SOCK_PATH);
         unlink(local.sun_path);
         len = strlen(local.sun_path) + sizeof(local.sun_family);
         if (bind(s, (struct sockaddr *)&local, len) == -1) {
             perror("bind");
             exit(1);
         }
+        printf("<%d, %s>\n", local.sun_family,local.sun_path);
         if (listen(s, 5) == -1) {
             perror("listen");
             exit(1);
         }
+        printf("Core is listening at socket %d\n", s);
         allmighty_socket = s;
 
     } else {
-    /* socket clients */
-        ;
+
+
     }
 
 }
 session_t k_w_open(int other) {
+
+    if ( is_core ) {
+        struct sockaddr_un remote;
+        printf("Waiting for a connection from %d...\n", other);
+        int t = sizeof(remote);
+        int s2, s;
+        s = allmighty_socket;
+        if ((s2 = accept(s, (struct sockaddr *)&remote, &t)) == -1) {
+            perror("accept");
+            exit(1);
+        }
+        printf("soy el core y acepté el socket %d\n",s2);
+
+        session_t sid = get_session();
+        sessions[sid][WRITE] = s2;
+        sessions[sid][READ] = s2;
+        if (commit_session(sid) != -1) {
+            printf("Connected.\n");
+            return sid;
+        } else {
+            return -1;
+        }
+    } else {
+        /* socket clients */
+        int s, t, len;
+        struct sockaddr_un remote;
+        char str[100];
+
+        if ((s = socket(AF_UNIX, SOCK_STREAM, 0)) == -1) {
+            perror("socket");
+            exit(1);
+        }
+
+        printf("I'm a line trying to connect...\n");
+
+        remote.sun_family = AF_UNIX;
+        strcpy(remote.sun_path, SOCK_PATH);
+        len = strlen(remote.sun_path) + sizeof(remote.sun_family);
+        if (connect(s, (struct sockaddr *)&remote, len) == -1) {
+            perror("connect");
+            exit(1);
+        }
+        allmighty_socket = s;
+        printf("Line Connected to socket %d.\n",s);
+    }
+    return 0;
 }
 
 
 int k_w_close(session_t session) {
-    return -1;
+    if (is_core)
+        return -1;
+    else
+        return 0;
 };
 int k_w_write(session_t session_id, package_t package) {
-    int s, t, len;
-    struct sockaddr_un remote;
-    char str[100];
+    if (is_core) {
+        int s2 = sessions[session_id][WRITE];
+        char * str = "Hello socket world! I'm core";
+        if (send(s2, str, strlen(str), 0) < 0) {
+            perror("send");
+        }
 
-    if ((s = socket(AF_UNIX, SOCK_STREAM, 0)) == -1) {
-        perror("socket");
-        exit(1);
+    } else {
+        int s = allmighty_socket;
+        char * str = "I'm a line message";
+        printf("I'm a line sending to socket %d\n", s);
+        if (send(s, str, strlen(str), 0) == -1) {
+            perror("send");
+            exit(1);
+        }
+
     }
-
-    printf("Trying to connect...\n");
-
-    remote.sun_family = AF_UNIX;
-    strcpy(remote.sun_path, "/tmp/SOcket");
-    len = strlen(remote.sun_path) + sizeof(remote.sun_family);
-    if (connect(s, (struct sockaddr *)&remote, len) == -1) {
-        perror("connect");
-        exit(1);
-    }
-
-    printf("Connected.\n");
-
-    return -1;
 };
 
 
 package_t k_w_read(session_t session_id) {
-    int s2,s;
-    char str[100];
-    struct sockaddr_un remote;
-    int size_of_remote;
+    if (is_core) {
+        int s2,s;
+        char str[100];
+        struct sockaddr_un remote;
+        int size_of_remote;
 
-    s = allmighty_socket;
-
-    size_of_remote = sizeof(remote);
-    if ((s2 = accept(s, (struct sockaddr *)&remote, &size_of_remote)) == -1) {
-        perror("accept");
-        exit(1);
-    }
-    printf("Connected.\n");
-
-    int done, n;
-
-    done = 0;
-    do {
-        n = recv(s2, str, 100, 0);
-        if (n <= 0) {
-            if (n < 0) perror("recv");
-            done = 1;
-        }
-
-        if (!done) 
-            if (send(s2, str, n, 0) < 0) {
-                perror("send");
-                done = 1;
+        s = allmighty_socket;
+        s2 = sessions[session_id][READ];
+        printf("soy el core leyendo el socket %d\n", s2);
+        int done = FALSE;
+        int n;
+        do {
+            n = recv(s2, str, 100, 0);
+            if (n <= 0) {
+                done = TRUE;
+                if (n < 0) perror("recv");
             }
-    } while (!done);
-
-    close(s2);
+        } while (!done);
+        printf("soy core, me llegó: %s\n",str);
+    } else {
+        char str[100];
+        int t;
+        int s = sessions[session_id][READ];
+        if ((t=recv(s, str, 100, 0)) > 0) {
+                str[t] = '\0';
+                printf("echo> %s", str);
+            } else {
+                if (t < 0) perror("recv");
+                else printf("Server closed connection\n");
+                exit(1);
+            }
+        printf("soy linea, me llegó: %s\n",str);
+    }
 
 
 
@@ -533,10 +582,18 @@ package_t w_read(session_t session_id) {
  * TESTCASES
  */
 
+#define SOY_CORE
 int _main(void) {
 
     printf("inicializando transporte...");
-    if (w_init(SOCKET, CORE) == -1)
+    int who;
+    who = CORE;
+#ifndef SOY_CORE
+    who = LINE;
+    printf("\n***********\nINICIALIZANDO LINEAS\n*************\n");
+#endif
+
+    if (w_init(SOCKET, who) == -1)
         printf("fallo el init\n");
     else
         printf("OK!\n");
@@ -548,6 +605,9 @@ int _main(void) {
     else
         printf("OK!\n");
 
+
+
+    if (who == LINE) {
     package_t pck;
 
     printf("mandando 1...");
@@ -570,12 +630,19 @@ int _main(void) {
     else
         printf("OK!\n");
 
+
+
+    } else {
+
+
     package_t rcv;
     int i = 3;
     while (i--) {
         rcv = w_read(sid);
         printf("{msg_id: %d, id_line: %d, id_bus: %d, point: (%d, %d)}\n",
             rcv.msg_id, rcv.id_line, rcv.id_bus, rcv.point.x, rcv.point.y );
+    }
+
     }
 
     printf("closing connection, (close)...");
