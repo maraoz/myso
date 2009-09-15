@@ -96,7 +96,6 @@ new_bus(int index) {
     pax_arriba = calloc(buses.stops_length, sizeof(int));
 
     while(movements[my_index] == -1){
-	 wprintw(log_win,"inserteeeee\n");
         insert_request(session, line_id, index, buses.path[0]);
         usleep(100000);
     }
@@ -105,7 +104,7 @@ new_bus(int index) {
     while(1){
         sleep(2);
 //         if(DEBUG_MODE)
-	    wprintw(log_win,"intenando moverme\n");
+// 	    wprintw(log_win,"intenando moverme\n");
         move_request(session, line_id, index, buses.path[movements[my_index]]);
 	    if(buses.path[movements[my_index]].x == buses.stops[j].x && buses.path[movements[my_index]].y == buses.stops[j].y ) {
 //             printf("estoy en una parada con %d pasajeros\n",pax[j][0]);
