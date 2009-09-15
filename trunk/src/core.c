@@ -25,9 +25,7 @@ person_t passenger;
 int sim_on = TRUE;
 Tfiles files;
 
-// pthread_mutex_destroy(semaphore_mutex);
-// pthread_mutex_destroy(map_mutex);
-// pthread_mutex_destroy(citizen_mutex);
+
 // int session_line;
 
 int
