@@ -77,7 +77,7 @@ main(void) {
     }
     closeDir();
 
-    core_threads = malloc(files.qty * sizeof(pthread_t)+2);
+    core_threads = malloc(files.qty * sizeof(pthread_t)+3);
     
     aux_pthread_creation = pthread_create(&core_threads[0], &attr, (void*)(draw), NULL);
     if(aux_pthread_creation){
@@ -87,14 +87,18 @@ main(void) {
     if(aux_pthread_creation){
        printf("No se pudo crear el thread pedido.\n");
     }
+    aux_pthread_creation = pthread_create(&core_threads[2], &attr, (void*)(keyboard_listen), NULL);
+    if(aux_pthread_creation){
+       printf("No se pudo crear el thread pedido.\n");
+    }
     for(i=0;i<files.qty;i++){
-        aux_pthread_creation = pthread_create(&core_threads[i+2], &attr, (void*)(core_listen), (void*)i);
+        aux_pthread_creation = pthread_create(&core_threads[i+3], &attr, (void*)(core_listen), (void*)i);
         if(aux_pthread_creation){
             printf("No se pudo crear el thread pedido.\n");
         }   
     }
     pthread_attr_destroy(&attr);
-    
+
     while(sim_on){
         int i;
         sleep(10);
@@ -103,4 +107,11 @@ main(void) {
             switch_semaphore(&semps[i]);
         pthread_mutex_unlock(&semaphore_mutex);
     }
+}
+
+void *
+keyboard_listen(){
+	while((ch = getch()) != KEY_F(1)){
+	    sim_on = FALSE;
+	}
 }
