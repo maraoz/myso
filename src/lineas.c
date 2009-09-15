@@ -26,10 +26,10 @@ void
 new_pax(int fd, int id, point_t start, point_t stop){
     int i,j=-1,k=-1;
     for(i=0;i<buses.stops_length;i++){
-        if(start.x != buses.stops[i].x && start.y != buses.stops[i].y){
+        if(start.x == buses.stops[i].x && start.y == buses.stops[i].y){
             j = i;
         }
-        if((stop.x != buses.stops[i].x && stop.y != buses.stops[i].y)){
+        if((stop.x == buses.stops[i].x && stop.y == buses.stops[i].y)){
             k = i;
         }
     }
@@ -38,10 +38,12 @@ new_pax(int fd, int id, point_t start, point_t stop){
         return;
     }
     pthread_mutex_lock(&pax_mutex);
-    if((pax[j][0]+1) % 10 == 0){
-        pax[j] = realloc(pax[j],(pax[j][0]+1)+10);   
-        if(pax[j] == NULL)
+    if(pax[j][0] != 0 && (pax[j][0]) % 10 == 0){
+        pax[j] = realloc(pax[j],((pax[j][0]+1)+10)*sizeof(int));   
+        if(pax[j] == NULL){
             printf("No hay suficiente memoria\n");
+	    return;
+	}
     }
     pax[j][pax[j][0]++] = k;
     pthread_mutex_unlock(&pax_mutex);
@@ -54,7 +56,7 @@ calculate_stops(int fd){
     int stop_up, stop_down;
     stop_up = rand()%buses.stops_length;
     stop_down = rand()%buses.stops_length;
-    deliver_stops(session, line_id, stop_up, stop_down);
+    deliver_stops(session, line_id, buses.stops[stop_up], buses.stops[stop_down]);
 }
     
     
@@ -102,13 +104,19 @@ new_bus(int index) {
         printf("intenando moverme\n");
         move_request(session, line_id, index, buses.path[movements[my_index]]);
 	    if(buses.path[movements[my_index]].x == buses.stops[j].x && buses.path[movements[my_index]].y == buses.stops[j].y ) {
-            printf("estoy en una parada con %d pasajeros\n",pax[j][0]);
+//             printf("estoy en una parada con %d pasajeros\n",pax[j][0]);
             pthread_mutex_lock(&pax_mutex);
             while(pax[j][0] > 0){
                 sleep(1);                
                 pax_arriba[pax[j][pax[j][0]]]++;
                 pax[j][0]--;
             }
+	    pax[j] = realloc(pax[j],11*sizeof(int));
+	    if(pax[j] == NULL){
+		printf("No hay suficiente memoria\n");
+		return NULL;
+	    }
+	    pax[j][0] = 0;
             pthread_mutex_unlock(&pax_mutex);
             while(pax_arriba[j] > 0){
                 sleep(1);

@@ -76,7 +76,7 @@ main(void) {
         }
     }
     closeDir();
-    initscr();
+
     core_threads = malloc(files.qty * sizeof(pthread_t)+2);
     
     aux_pthread_creation = pthread_create(&core_threads[0], &attr, (void*)(draw), NULL);

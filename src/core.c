@@ -6,9 +6,10 @@
 #include <pthread.h>
 #include <stdio.h>
 #include <unistd.h>
+#include <ncurses.h>
 
 
-
+extern WINDOW *log_win;
 
 boolean tiles[XDIM][YDIM];
 point_t buses[XDIM*YDIM][XDIM*YDIM];
@@ -76,6 +77,7 @@ pax_creation() {
             printf("Paradas no corresponden a la linea pedida\n");
         } else {
             insert_pax_to_line(files.buffer[passenger.line], passenger.line, passenger.up, passenger.down);
+// 	    printf("inserte nuevo pasajero\n");
         }
         pthread_mutex_unlock(&citizen_mutex);
         sleep(1);
@@ -169,20 +171,20 @@ move_bus(int fd, int id, point_t new_pos){
     }
 
 //     if((aux=(new_pos.x - actual_pos.x)) != 0) {
-//         if(new_pos.y%6==0  && aux != 1) {
+//         if(new_pos.y%6==0  && aux != 1 && new_pos.y != YDIM-1) {
 //             printf("CONTRAMANO.\n");
 //             return WRONG_WAY;
 //         }
-//         if((new_pos.y%3==0 || new_pos.y==XDIM-1) && aux != -1  && new_pos.y != 0) {
+//         if((new_pos.y%3==0 || new_pos.y==YDIM-1) && aux != -1  && new_pos.y != 0) {
 //             printf("CONTRAMANO.\n");
 //             return WRONG_WAY;
 //         }
 //     } else if((aux=(new_pos.y - actual_pos.y)) != 0) {
-//         if((new_pos.x%6==0 || new_pos.x==YDIM-1 ) && aux != -1) {
+//         if((new_pos.x%6==0 || new_pos.x==XDIM-1 ) && aux != -1) {
 //             printf("CONTRAMANO.\n");
 //             return WRONG_WAY;
 //         }
-//         if(new_pos.x%3==0 && aux != 1 && new_pos.x != 0) {
+//         if(new_pos.x%3==0 && aux != 1 && new_pos.x != 0 && new_pos.x != XDIM-1) {
 //             printf("CONTRAMANO.\n");
 //             return WRONG_WAY;
 //         }
@@ -195,8 +197,8 @@ move_bus(int fd, int id, point_t new_pos){
     //printf("new pos: (%d,%d)\n",new_pos.x,new_pos.y);
     tiles[new_pos.y][new_pos.x] = TRUE;
     pthread_mutex_unlock(&map_mutex);
-    if(DEBUG_MODE)
-    printf("TRACE: SE MOVIO\n");
+//     if(DEBUG_MODE)
+    wprintw(log_win,"TRACE: SE MOVIO\n");
     move_request_ack(files.buffer[fd],fd,id);
     
     return id;
@@ -252,7 +254,7 @@ set_new_pax(int idl, point_t stop_up, point_t stop_down){
 
 int
 pax_get_of_bus(int idl, point_t stop){
-    printf("Pasajero bajandose en %d, %d",stop.x,stop.y);
+    wprintf(log_win,"Pasajero bajandose en %d, %d\n",stop.x,stop.y);
     return 0;
 }
          

@@ -3,6 +3,7 @@
 #include <pthread.h>
 #include "../inc/typedef.h"
 #include "../inc/core.h"
+#include "../inc/draw.h"
 
 extern boolean tiles[YDIM][XDIM];
 extern semaphore semps[(CUADRAS+1)*(CUADRAS+1)-4];
@@ -21,6 +22,41 @@ void print_v_sem(point_t point);
 
 int Xpositions[19] = {2,6,11,15,19,24,28,32,37,41,45,50,54,58,63,67,71,76,80};
 int Ypositions[19] = {0,2,4,6,8,10,12,14,16,18,20,22,24,26,28,30,32,34,36};
+WINDOW *city_win, *log_win;
+
+WINDOW* create_newwin(int height, int width, int starty, int startx)
+{	WINDOW *local_win;
+
+	local_win = newwin(height, width, starty, startx);
+	box(local_win, 0 , 0);		/* 0, 0 gives default characters 
+					 * for the vertical and horizontal
+					 * lines			*/
+	wrefresh(local_win);		/* Show that box 		*/
+
+	return local_win;
+}
+
+void destroy_win(WINDOW * local_win)
+{	
+	/* box(local_win, ' ', ' '); : This won't produce the desired
+	 * result of erasing the window. It will leave it's four corners 
+	 * and so an ugly remnant of window. 
+	 */
+	wborder(local_win, ' ', ' ', ' ',' ',' ',' ',' ',' ');
+	/* The parameters taken are 
+	 * 1. win: the window on which to operate
+	 * 2. ls: character to be used for the left side of the window 
+	 * 3. rs: character to be used for the right side of the window 
+	 * 4. ts: character to be used for the top side of the window 
+	 * 5. bs: character to be used for the bottom side of the window 
+	 * 6. tl: character to be used for the top left corner of the window 
+	 * 7. tr: character to be used for the top right corner of the window 
+	 * 8. bl: character to be used for the bottom left corner of the window 
+	 * 9. br: character to be used for the bottom right corner of the window
+	 */
+	wrefresh(local_win);
+	delwin(local_win);
+}
 
 
 void *
@@ -28,17 +64,41 @@ draw(void)
 {
     int i,j;
     point_t aux;
-    
+	int startx, starty, width, height;
+	int ch;
+
+	initscr();			/* Start curses mode 		*/
+	cbreak();			/* Line buffering disabled, Pass on
+					 * everty thing to me 		*/
+	keypad(stdscr, TRUE);		/* I need that nifty F1 	*/
+
+	height = 50;
+	width = 90;
+	starty = (LINES - height) / 2;	/* Calculating for a center placement */
+	startx = 0;	/* of the window		*/
+/*	printw("Press F1 to exit");*/
+	refresh();
+	city_win = create_newwin(height, width, starty, startx);
+	log_win = create_newwin(height, width-30, starty, startx+width+5);
+
     while(sim_on) {
+
+	int x,y;
+	wrefresh(city_win);
+	wrefresh(log_win);
+	getyx(log_win,y,x);
+	if(y == height)
+	    werase(log_win);	
+	werase(city_win);
+	
+	box(log_win, 0 , 0);
+	box(city_win, 0 , 0);
         usleep(10000);
         pthread_mutex_lock(&map_mutex);
-
-        initscr();
 
         if (has_colors())
             start_color();
        
-        erase();
 
         print_all_squares();
 
@@ -65,13 +125,42 @@ draw(void)
 			aux.y = Ypositions[i];
                         print_bus(aux);
 		    }
-		    refresh();
+
+		    refresh(); 
+
 		}
+
 		pthread_mutex_unlock(&map_mutex);
 
 //      	endwin();
         }
-        return;
+//         return;
+
+// 	while((ch = getch()) != KEY_F(1))
+// 	{	switch(ch)
+// 		{	case KEY_LEFT:
+// 				destroy_win(city_win);
+// 				city_win = create_newwin(height, width, starty,--startx);
+// 				break;
+// 			case KEY_RIGHT:
+// 				destroy_win(city_win);
+// 				city_win = create_newwin(height, width, starty,++startx);
+// 				break;
+// 			case KEY_UP:
+// 				destroy_win(city_win);
+// 				city_win = create_newwin(height, width, --starty,startx);
+// 				break;
+// 			case KEY_DOWN:
+// 				destroy_win(city_win);
+// 				city_win = create_newwin(height, width, ++starty,startx);
+// 				break;	
+// 		}
+// 	}
+		
+	endwin();			/* End curses mode		  */
+	return 0;
+   
+
 }
 
 
@@ -81,7 +170,7 @@ print_square(point_t point)
     int i;
 
     for(i = 0; i < 4; i++)
-        mvprintw((point.y)+i, point.x, "|||||||||");
+        mvwprintw(city_win,(point.y)+i, point.x, "|||||||||");
 }
 
 void
@@ -102,24 +191,24 @@ print_all_squares(void)
 void
 print_bus(point_t point)
 {
-    mvprintw(point.y, point.x, "##");
-    mvprintw((point.y)+1, point.x, "##");
+    mvwprintw(city_win,point.y, point.x, "##");
+    mvwprintw(city_win,(point.y)+1, point.x, "##");
 }
 
 void
 print_h_sem(point_t point)
 {
-    mvprintw(point.y, (point.x)-2, "|");
-    mvprintw((point.y)+1, (point.x)-2, "|");
-    mvprintw(point.y, (point.x)+3, "|");
-    mvprintw((point.y)+1, (point.x)+3, "|");
+    mvwprintw(city_win,point.y, (point.x)-2, "|");
+    mvwprintw(city_win,(point.y)+1, (point.x)-2, "|");
+    mvwprintw(city_win,point.y, (point.x)+3, "|");
+    mvwprintw(city_win,(point.y)+1, (point.x)+3, "|");
 }
 
 void
 print_v_sem(point_t point)
 {
-    mvprintw(point.y, (point.x)-2, "-");
-    mvprintw((point.y)+1, (point.x)-2, "-");
-    mvprintw(point.y, (point.x)+3, "-");
-    mvprintw((point.y)+1, (point.x)+3, "-");
+    mvwprintw(city_win,point.y, (point.x)-2, "-");
+    mvwprintw(city_win,(point.y)+1, (point.x)-2, "-");
+    mvwprintw(city_win,point.y, (point.x)+3, "-");
+    mvwprintw(city_win,(point.y)+1, (point.x)+3, "-");
 }

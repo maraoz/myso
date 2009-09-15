@@ -89,12 +89,14 @@ main(int argc, char * argv[] ){
     
     
     movements = calloc(sizeof(int),qty_buses);
+    if(movements == NULL){
+	printf("No hay suficiente memoria\n");
+	return 1;
+    }
     for(i =0 ; i<qty_buses; i++){
         movements[i] = -1;
     }
-    if(movements == NULL){
-        return 1;
-    }
+     
     buses_threads = malloc(sizeof(pthread_t) * qty_buses);
     
     if(buses_threads == NULL){
@@ -103,26 +105,13 @@ main(int argc, char * argv[] ){
     }
    buses.stops_length = get_stops(3, &buses.stops);
     
-   
-    
-    
-//     buses.stops_length = 2;
-//     printf("cantidad de paradas = %d\n", buses.stops_length);
-// 
-//     buses.stops = malloc(2*sizeof(point_t));
-//     buses.stops[0].x = 2;
-//     buses.stops[0].y = 0;
-//     buses.stops[1].x = 3;
-//     buses.stops[1].y = 1;
-//     for( mycont = 0 ; mycont < buses.stops_length ; mycont++ )
-// 	printf("paradas %d = %d %d\n", mycont, buses.stops[mycont].x, buses.stops[mycont].y);
 
     pax = malloc(buses.stops_length*sizeof(int*));
     if(pax == NULL){
 	printf("No hay suficiente memoria\n");
     }
     for(i = 0 ; i<buses.stops_length; i++){
-	pax[i] = malloc(1*sizeof(int));
+	pax[i] = malloc(11*sizeof(int));
 	if(pax[i] == NULL){
 	    printf("No hay suficiente memoria\n");
 	}
