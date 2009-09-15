@@ -72,7 +72,7 @@ draw(void)
 					 * everty thing to me 		*/
 	keypad(stdscr, TRUE);		/* I need that nifty F1 	*/
 
-	height = 50;
+	height = 45;
 	width = 90;
 	starty = (LINES - height) / 2;	/* Calculating for a center placement */
 	startx = 0;	/* of the window		*/
@@ -80,6 +80,7 @@ draw(void)
 	refresh();
 	city_win = create_newwin(height, width, starty, startx);
 	log_win = create_newwin(height, width-30, starty, startx+width+5);
+	scrollok(log_win, TRUE);
 
     while(sim_on) {
 
@@ -91,7 +92,7 @@ draw(void)
 	    werase(log_win);	
 	werase(city_win);
 	
-	box(log_win, 0 , 0);
+	box(log_win, 0, 0);
 	box(city_win, 0 , 0);
         usleep(10000);
         pthread_mutex_lock(&map_mutex);
