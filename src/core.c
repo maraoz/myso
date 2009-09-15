@@ -22,7 +22,7 @@ pthread_mutex_t map_mutex = PTHREAD_MUTEX_INITIALIZER;
 pthread_mutex_t citizen_mutex = PTHREAD_MUTEX_INITIALIZER;
 pthread_cond_t citizen_cond = PTHREAD_COND_INITIALIZER;
 person_t passenger;
-int sim_on = 1;
+int sim_on = TRUE;
 Tfiles files;
 
 // pthread_mutex_destroy(semaphore_mutex);
@@ -181,7 +181,7 @@ move_bus(int fd, int id, point_t new_pos){
     //pthread_mutex_unlock(&semaphore_mutex);
     
     if(tiles[new_pos.y][new_pos.x] == TRUE){
-	wprintw(log_win,"No se puede avanzar, nueva posicion esta ocupada.\n");
+	wprintw(log_win,"No se puede avanzar, nueva posicion esta ocupada, posicion= %d,%d\n",new_pos.x, new_pos.y);
         return NEW_POS_ALREADY_OCCUPIED;
     }
 

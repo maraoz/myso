@@ -96,14 +96,15 @@ new_bus(int index) {
     pax_arriba = calloc(buses.stops_length, sizeof(int));
 
     while(movements[my_index] == -1){
+	 wprintw(log_win,"inserteeeee\n");
         insert_request(session, line_id, index, buses.path[0]);
         usleep(100000);
     }
     if(DEBUG_MODE)
 	wprintw(log_win,"sali del while\n");
-    while(sim_on){
+    while(1){
         sleep(2);
-        if(DEBUG_MODE)
+//         if(DEBUG_MODE)
 	    wprintw(log_win,"intenando moverme\n");
         move_request(session, line_id, index, buses.path[movements[my_index]]);
 	    if(buses.path[movements[my_index]].x == buses.stops[j].x && buses.path[movements[my_index]].y == buses.stops[j].y ) {
@@ -130,5 +131,5 @@ new_bus(int index) {
             j = j%buses.stops_length;
         }
     }
-    pthread_exit(0);
+/*    pthread_exit(0);*/
 }

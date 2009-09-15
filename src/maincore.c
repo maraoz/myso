@@ -27,11 +27,12 @@ extern Tfiles files;
 
 int
 main(void) {
+
+
     pthread_t * core_threads;
     pthread_attr_t attr;
     int aux_pthread_creation;
     int i;
-
 
     pthread_attr_init(&attr);
     pthread_attr_setdetachstate(&attr, PTHREAD_CREATE_DETACHED);
@@ -75,8 +76,12 @@ main(void) {
     }
     closeDir();
 
-    core_threads = malloc(files.qty * sizeof(pthread_t)+3);
-    
+    core_threads = malloc((files.qty+3) * sizeof(pthread_t));
+    if(core_threads == NULL){
+	printf("No hay suficiente memoria\n");
+	return 1;
+    }
+
     aux_pthread_creation = pthread_create(&core_threads[0], &attr, (void*)(draw), NULL);
     if(aux_pthread_creation){
        wprintw(log_win, "+ERROR: No se pudo crear el thread pedido.\n");

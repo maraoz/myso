@@ -88,10 +88,9 @@ draw(void)
 	int x,y;
 	wrefresh(city_win);
 	wrefresh(log_win);
-	getyx(log_win,y,x);
 	werase(city_win);
 	
-        usleep(10000);
+        usleep(100000);
         pthread_mutex_lock(&map_mutex);
 
         if (has_colors())
