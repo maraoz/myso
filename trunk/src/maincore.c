@@ -97,7 +97,6 @@ main(void) {
     }
     pthread_attr_destroy(&attr);
     
-    srand(time(NULL));
     while(sim_on){
         int i;
         sleep(10);

@@ -24,7 +24,7 @@ int
 m_init_core(){
     int result;
 
-    result = w_init(SHARED_MEMORY, CORE);
+    result = w_init(MESSAGE_QUEUE, CORE);
 
     if(result == -1)
     printf("ha fallado en init core\n");
@@ -36,7 +36,7 @@ int
 m_init_line(){
     int result;
 
-    result = w_init(SHARED_MEMORY, LINE);
+    result = w_init(MESSAGE_QUEUE, LINE);
 
     if(result == -1)
 	printf("ha fallado init line\n");
@@ -232,7 +232,7 @@ receive_lines(package_t data)
 //     package_t data;
 
 //     data = w_read();
-
+    
     switch(data.msg_id)
     {
         case CD_INSERT_ACK: code = insert_ack(data.id_line, data.id_bus);break;
@@ -254,7 +254,7 @@ receive(session_t session)
     printf("TRACE: LLEGUE HASTA ANTES DEL SWITCH\n");
     if(DEBUG_MODE)
     printf("TRACE: MSG_ID = %d\n",data.msg_id);
-    if(data.msg_id == CD_MOVE_ACK){
+    if(data.msg_id == CD_NEW_PAX){
         if(DEBUG_MODE)
         printf("TRACE: EL MENSAJE ES EL ESPERADO\n");
     }
@@ -264,9 +264,12 @@ receive(session_t session)
         case CD_MOVE_BUS:
         case CD_VALID_POS:
         case CD_INIT:
-        case CD_PAX_DL: receive_core(data); break;
+        case CD_PAX_DL:
+        case CD_DEL_STOPS: receive_core(data); break;
         case CD_INSERT_ACK:
-        case CD_MOVE_ACK: if(DEBUG_MODE) printf("TRACE: LLEGUE HASTA EL SWITCH\n");receive_lines(data); break;
+        case CD_MOVE_ACK:
+        case CD_NEW_PAX:
+        case CD_RND_STOPS: if(DEBUG_MODE) printf("TRACE: LLEGUE HASTA EL SWITCH\n");receive_lines(data); break;
         default: /* */;
     }
 }
