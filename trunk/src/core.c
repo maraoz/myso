@@ -58,7 +58,7 @@ init(void) {
     
 
 void *
-listen(int index) {
+core_listen(int index) {
     while(sim_on){
         receive(files.buffer[index]);
     }

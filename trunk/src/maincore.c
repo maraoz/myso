@@ -29,22 +29,19 @@ extern Tfiles files;
 
 int
 main(void) {
-    
     pthread_t * core_threads;
     pthread_attr_t attr;
     int aux_pthread_creation;
     int i;
-    
-    
+
+
     pthread_attr_init(&attr);
     pthread_attr_setdetachstate(&attr, PTHREAD_CREATE_DETACHED);
-    
     files.buffer = malloc(10*sizeof(int));
     files.qty = 0;
     if(files.buffer == NULL)
         return 1;
-    	
-  
+
     init();
 
     openDir();
@@ -61,12 +58,16 @@ main(void) {
         pid = fork();
         switch(pid){
             case 0: aux = execv("../bin/lineas", args);
-            if(aux == -1){
-                 return -1;
-            }
-            case -1: return 1;
-            default: closeFd(files.buffer[files.qty]); files.buffer[files.qty] = openChannel(pid); break;
-        }           
+                if(aux == -1){
+                    return -1;
+                }
+            case -1:
+                    return 1;
+            default:
+                closeFd(files.buffer[files.qty]);
+                files.buffer[files.qty] = openChannel(pid);
+                break;
+        }
         files.qty++;
         if(files.qty%10 == 0){
             files.buffer = realloc(files.buffer,(files.qty+10)*sizeof(int));
@@ -74,11 +75,8 @@ main(void) {
             }
         }
     }
-
     closeDir();
-    
     initscr();
-
     core_threads = malloc(files.qty * sizeof(pthread_t)+2);
     
     aux_pthread_creation = pthread_create(&core_threads[0], &attr, (void*)(draw), NULL);
@@ -90,7 +88,7 @@ main(void) {
        printf("No se pudo crear el thread pedido.\n");
     }
     for(i=0;i<files.qty;i++){
-        aux_pthread_creation = pthread_create(&core_threads[i+2], &attr, (void*)(listen), (void*)i);
+        aux_pthread_creation = pthread_create(&core_threads[i+2], &attr, (void*)(core_listen), (void*)i);
         if(aux_pthread_creation){
             printf("No se pudo crear el thread pedido.\n");
         }   
