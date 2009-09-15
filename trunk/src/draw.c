@@ -65,7 +65,6 @@ draw(void)
     int i,j;
     point_t aux;
 	int startx, starty, width, height;
-	int ch;
 
 	initscr();			/* Start curses mode 		*/
 	cbreak();			/* Line buffering disabled, Pass on
@@ -84,7 +83,7 @@ draw(void)
 	log_win = subwin(log_box,height-2, width-32, starty+1, startx+width+6);
 	scrollok(log_win, TRUE);
 
-    while(sim_on) {
+	while(sim_on) {
 
 	int x,y;
 	wrefresh(city_win);
@@ -133,7 +132,7 @@ draw(void)
         }
 		
 	endwin();			/* End curses mode		  */
-	return 0;
+	pthread_exit(0);
 }
 
 
