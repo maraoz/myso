@@ -7,6 +7,7 @@
 #include <stdio.h>
 #include <unistd.h>
 #include <stdlib.h>
+#include <ncurses.h>
 
 extern boolean tiles[YDIM][XDIM];
 extern point_t buses[XDIM*YDIM][XDIM*YDIM];

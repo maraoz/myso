@@ -5,6 +5,7 @@
 #include <pthread.h>
 #include <stdio.h>
 #include <unistd.h>
+#include <ncurses.h>
 
 extern buses_line buses;
 extern pid_t my_pid;
