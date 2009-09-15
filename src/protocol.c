@@ -11,6 +11,7 @@
 #include <string.h>
 #include <fcntl.h>
 #include <errno.h>
+#include <ncurses.h>
 
 #include <sys/types.h>
 #include <sys/stat.h>
@@ -21,11 +22,11 @@
 #include <sys/socket.h>
 #include <sys/un.h>
 
-
 #include "../inc/typedef.h"
 #include "../inc/protocol.h"
 #include "../inc/util.h"
 
+extern WINDOW *log_win;
 
 /**
  * http://www.ecst.csuchico.edu/~beej/guide/ipc/
@@ -142,7 +143,7 @@ int s_w_close(session_t session) {
     shm_descriptor_t * desc_w = (shm_descriptor_t *) sessions[session][WRITE];
 
     if(shmdt(desc_r->data) == -1 || shmdt(desc_w->data) == -1) {
-        printf("fallo el shm_deattatch");
+        wprintw(log_win, "+ERROR: fallo el shm_deattatch");
         return -1;
     }
 
@@ -171,7 +172,7 @@ int s_w_write(session_t session_id, package_t package) {
     }
     // if no free space was found, return error
     if (! found_free_zone) {
-        printf("Shared memory is full. Probably some process died!!!\n");
+        wprintw(log_win, "+ERROR: Shared memory is full. Probably some process died!!!\n");
         return -1;
     }
 
@@ -210,7 +211,7 @@ package_t s_w_read(session_t session_id) {
             return ret;
         }
     }
-    printf("error en s_w_read!!!\n");
+    wprintw(log_win, "+ERROR: error en s_w_read!!!\n");
     return error_package;
 };
 
@@ -496,7 +497,7 @@ package_t m_w_read(session_t session_id) {
         ret = q_message.content;
         return ret;
     } else {
-        printf("Error al leer\n");
+        wprintw(log_win, "+ERROR: Error al leer\n");
         return error_package;
     }
 }
