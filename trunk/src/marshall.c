@@ -5,6 +5,10 @@
 #include <stdio.h>
 #include <dirent.h>
 #include <stdio.h>
+#include <ncurses.h>
+
+
+extern WINDOW *log_win;
 
 #define CD_NO 0
 #define CD_INSERT_BUS 1
@@ -253,9 +257,10 @@ receive(session_t session)
     printf("TRACE: LLEGUE HASTA ANTES DEL SWITCH\n");
     if(DEBUG_MODE)
     printf("TRACE: MSG_ID = %d\n",data.msg_id);
-    if(data.msg_id == CD_NEW_PAX){
-        if(DEBUG_MODE)
+    if(data.msg_id == -1){
+        if(DEBUG_MODE){
         printf("TRACE: EL MENSAJE ES EL ESPERADO\n");
+	}
     }
     switch(data.msg_id)
     {
@@ -264,11 +269,11 @@ receive(session_t session)
         case CD_VALID_POS:
         case CD_INIT:
         case CD_PAX_DL:
-        case CD_DEL_STOPS: receive_core(data); break;
+        case CD_DEL_STOPS: if(DEBUG_MODE) printf("TRACE: LLEGUE HASTA RECEIVE CORE\n"); receive_core(data); break;
         case CD_INSERT_ACK:
         case CD_MOVE_ACK:
         case CD_NEW_PAX:
-        case CD_RND_STOPS: if(DEBUG_MODE) printf("TRACE: LLEGUE HASTA EL SWITCH\n");receive_lines(data); break;
+        case CD_RND_STOPS: if(DEBUG_MODE) printf("TRACE: LLEGUE HASTA RECEIVE LINES\n");receive_lines(data); break;
         default: /* */;
     }
 }
