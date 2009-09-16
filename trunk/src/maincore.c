@@ -17,7 +17,7 @@ extern semaphore semps[(CUADRAS+1)*(CUADRAS+1)-4];
 extern int semps_hash[(CUADRAS+1)][(CUADRAS+1)];
 extern pthread_mutex_t semaphore_mutex;
 extern pthread_mutex_t map_mutex;
-int sim_on = TRUE;
+extern int sim_on;
 extern person_t passenger;
 extern pthread_mutex_t citizen_mutex;
 extern pthread_cond_t citizen_cond;
@@ -133,8 +133,5 @@ main(int argc, char * argv[]) {
     pthread_mutex_destroy(&map_mutex);
     pthread_mutex_destroy(&citizen_mutex);
     pthread_cond_destroy(&citizen_cond);
-    for (i = 0; i<files.qty; i++)
-        closeChannel(files.buffer[i]);
-
     exit(0);
 }

@@ -37,6 +37,8 @@ int set_new_pax(int idl, point_t stop_up, point_t stop_down);
 
 int pax_get_of_bus(int idl, point_t stop);
 
+int pax_get_on_bus(int idl, point_t stop);
+
 /* funcion que inicializa la ciudad */
 int init(void);
 

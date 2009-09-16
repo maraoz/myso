@@ -22,6 +22,10 @@ void get_random_stops(session_t session, int idl);
 
 void receive_core(package_t data);
 
+void pax_downloaded(session_t session, int idl, int idb, point_t stop);
+
+void pax_uploaded(session_t session, int idl, int idb, point_t stop);
+
 void receive_lines(package_t data);
 
 void receive();
