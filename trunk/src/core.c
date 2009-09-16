@@ -22,7 +22,7 @@ pthread_mutex_t map_mutex = PTHREAD_MUTEX_INITIALIZER;
 pthread_mutex_t citizen_mutex = PTHREAD_MUTEX_INITIALIZER;
 pthread_cond_t citizen_cond = PTHREAD_COND_INITIALIZER;
 person_t passenger;
-int sim_on = TRUE;
+extern int sim_on;
 Tfiles files;
 
 
@@ -64,15 +64,16 @@ core_listen(int index) {
     while(sim_on){
         receive(files.buffer[index]);
     }
-    closeChannel(files.buffer[index]);
     pthread_exit(0);
 }
 
 
 void *
 keyboard_listen(){
-    int ch;
+    int ch,i;
     while((ch = getch()) != KEY_F(1));
+    for(i=0; i<files.qty; i++)
+        delete_line(files.buffer[i],i);
     sim_on = FALSE;
     pthread_exit(0);
 }

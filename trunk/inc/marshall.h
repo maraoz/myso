@@ -25,3 +25,5 @@ void receive_core(package_t data);
 void receive_lines(package_t data);
 
 void receive();
+
+void delete_line(session_t sid, int line);
