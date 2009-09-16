@@ -143,7 +143,7 @@ int s_w_close(session_t session) {
     shm_descriptor_t * desc_w = (shm_descriptor_t *) sessions[session][WRITE];
 
     if(shmdt(desc_r->data) == -1 || shmdt(desc_w->data) == -1) {
-        wprintw(log_win, "+ERROR: fallo el shm_deattatch");
+        printf("fallo el shm_deattatch");
         return -1;
     }
 
@@ -172,7 +172,7 @@ int s_w_write(session_t session_id, package_t package) {
     }
     // if no free space was found, return error
     if (! found_free_zone) {
-        wprintw(log_win, "+ERROR: Shared memory is full. Probably some process died!!!\n");
+        printf("Shared memory is full. Probably some process died!!!\n");
         return -1;
     }
 
@@ -211,7 +211,7 @@ package_t s_w_read(session_t session_id) {
             return ret;
         }
     }
-    wprintw(log_win, "+ERROR: error en s_w_read!!!\n");
+    printf("error en s_w_read!!!\n");
     return error_package;
 };
 
@@ -497,7 +497,7 @@ package_t m_w_read(session_t session_id) {
         ret = q_message.content;
         return ret;
     } else {
-        wprintw(log_win, "+ERROR: Error al leer\n");
+        printf("Error al leer\n");
         return error_package;
     }
 }
