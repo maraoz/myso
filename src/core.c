@@ -169,18 +169,18 @@ move_bus(int fd, int id, point_t new_pos){
     //pthread_mutex_lock(&semaphore_mutex);
     if(hasSemaphore(new_pos) && isVRedHGreen(semps[(semps_hash[new_pos.y][new_pos.x])]) 
 	&& actual_pos.x == new_pos.x) {
-	wprintw(log_win,"No se puede avanzar, semaforo en rojo.\n");
+	wprintw(log_win,"No se puede avanzar a (%d,%d), semaforo en rojo.\n",new_pos.x, new_pos.y);
         return RED_LIGHT_ON;
     }
     if(hasSemaphore(new_pos) && !isVRedHGreen(semps[(semps_hash[new_pos.y][new_pos.x])]) 
     && actual_pos.y == new_pos.y) {
-	wprintw(log_win,"No se puede avanzar, semaforo en rojo.\n");
+	wprintw(log_win,"No se puede avanzar a (%d,%d), semaforo en rojo.\n",new_pos.x, new_pos.y);
         return RED_LIGHT_ON;
     }
     //pthread_mutex_unlock(&semaphore_mutex);
     
     if(tiles[new_pos.y][new_pos.x] == TRUE){
-	wprintw(log_win,"No se puede avanzar, nueva posicion esta ocupada, posicion= %d,%d\n",new_pos.x, new_pos.y);
+	wprintw(log_win,"No se puede avanzar, posicion (%d,%d) ocupada\n",new_pos.x, new_pos.y);
         return NEW_POS_ALREADY_OCCUPIED;
     }
 
@@ -203,7 +203,7 @@ move_bus(int fd, int id, point_t new_pos){
 //             return WRONG_WAY;
 //         }
 //     }
-	
+
     buses[fd][id] = new_pos;
     pthread_mutex_lock(&map_mutex);
     wprintw(log_win,"actual pos: (%d,%d)\n",actual_pos.x,actual_pos.y);
@@ -268,7 +268,7 @@ set_new_pax(int idl, point_t stop_up, point_t stop_down){
 
 int
 pax_get_of_bus(int idl, point_t stop){
-    wprintw(log_win,"Pasajero bajandose en %d, %d\n",stop.x,stop.y);
+    wprintw(log_win,"Pasajero de linea %d bajandose en (%d,%d)\n", idl, stop.x, stop.y);
     return 0;
 }
          
