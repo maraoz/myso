@@ -59,7 +59,7 @@ openChannel(int channel){
 }
 
 int
-closeChanel(int channel){
+closeChannel(int channel){
     return w_close(channel);
 }
 
