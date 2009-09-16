@@ -29,6 +29,7 @@
 extern WINDOW *log_win;
 
 /**
+ * tutorial usado:
  * http://www.ecst.csuchico.edu/~beej/guide/ipc/
  */
 
@@ -147,10 +148,11 @@ int s_w_close(session_t session) {
         return -1;
     }
 
-    shmctl(desc_r->shmid, IPC_RMID, NULL);
-    semctl(desc_r->semaphore_id, 0, IPC_RMID);
-    shmctl(desc_w->shmid, IPC_RMID, NULL);
-    semctl(desc_w->semaphore_id, 0, IPC_RMID);
+    int flag;
+    flag += shmctl(desc_r->shmid, IPC_RMID, NULL);
+    flag += semctl(desc_r->semaphore_id, 0, IPC_RMID);
+    flag += shmctl(desc_w->shmid, IPC_RMID, NULL);
+    flag += semctl(desc_w->semaphore_id, 0, IPC_RMID);
 
     return 0;
 
@@ -181,7 +183,7 @@ int s_w_write(session_t session_id, package_t package) {
     mem_zone[i].used = TRUE;
     // and set the resource as available
     if (semop(shmdp->semaphore_id, &sb, 1) == -1) {
-        perror("semop");
+        perror("semop write:");
         exit(1);
     }
 
@@ -200,10 +202,8 @@ package_t s_w_read(session_t session_id) {
     // only if there is one such resource available
     // (if not, block until there is)
 
-    if (semop(shmdp->semaphore_id, &sb, 1) == -1) {
-        perror("semop");
-        exit(1);
-    }
+    semop(shmdp->semaphore_id, &sb, 1);
+
     for(i=0; i<SH_PACKAGE_MAX; i++) {
         if (mem_zone[i].used == TRUE) {
             mem_zone[i].used = FALSE;
