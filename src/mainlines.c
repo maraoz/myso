@@ -9,7 +9,7 @@
 
 extern buses_line buses;
 extern pid_t my_pid;
-int sim_on = TRUE;
+extern int sim_on;
 extern int * movements;
 extern int qty_buses;
 extern int tmp_qty_buses;
@@ -92,9 +92,14 @@ main(int argc, char * argv[] ){
             aux = 0;
         }
     }
-
+   
+    while(sim_on);
+    
+    closeChannel(session);
+    pthread_mutex_destroy(&pax_mutex);
     pthread_attr_destroy(&attr);
-    pthread_exit(0);
+    free(movements);
+    exit(0);
 }
 
 void * 

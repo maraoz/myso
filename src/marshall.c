@@ -17,27 +17,16 @@ extern WINDOW *log_win;
 #define CD_VALID_POS 3
 #define CD_INIT 4
 #define CD_PAX_DL 5
-#define CD_DEL_STOPS 6
-#define CD_MOVE_ACK 7
-#define CD_INSERT_ACK 8
-#define CD_NEW_PAX 9
-#define CD_RND_STOPS 10
-#define CD_DEL_LINE 11
+#define CD_PAX_UL 6
+#define CD_DEL_STOPS 7
+#define CD_MOVE_ACK 8
+#define CD_INSERT_ACK 9
+#define CD_NEW_PAX 10
+#define CD_RND_STOPS 11
+
 
 int ipc_selection = MESSAGE_QUEUE;
 char * stringuis[] = {"SHARED_MEMORY","FIFO","SOCKET","MSG_QUEUE"};
-
-void delete_line(session_t sid, int line) {
-    package_t data;
-
-    data.msg_id = CD_DEL_LINE;
-    data.id_line = line;
-
-    if (w_write(sid, data) == -1) {
-        printf("error en delete line\n");
-    }
-}
-
 int
 m_init_core(){
     int result;
@@ -169,6 +158,24 @@ pax_downloaded(session_t session, int idl, int idb, point_t stop){
 
 }
 
+void
+pax_uploaded(session_t session, int idl, int idb, point_t stop){
+
+    package_t data;
+    int result;
+    
+    data.msg_id = CD_PAX_UL;
+    data.id_line = idl;
+    data.id_bus = idb;
+    data.point = stop;
+
+    result = w_write(session, data);
+    
+    if(result == -1)
+	wprintw(log_win, "+ERROR: ha fallado en download pax\n");
+
+}
+
 void 
 insert_pax_to_line(session_t session, int idl, point_t pos1, point_t pos2){
     
@@ -233,6 +240,7 @@ receive_core(package_t data)
         case CD_VALID_POS: code = valid_pos(data.point);break;
         case CD_INIT: code = init(); break;
         case CD_PAX_DL: code = pax_get_of_bus(data.id_line,data.point); break;
+	case CD_PAX_UL: code = pax_get_on_bus(data.id_line,data.point); break;
         case CD_DEL_STOPS: code = set_new_pax(data.id_line, data.point, data.point2);break;
         default: /* */;
     }
@@ -249,7 +257,6 @@ receive_lines(package_t data)
         case CD_MOVE_ACK: code = move_ack(data.id_line, data.id_bus);break;
         case CD_NEW_PAX: code = new_pax(data.id_line, data.id_bus, data.point, data.point2); break;
         case CD_RND_STOPS: code = calculate_stops(data.id_line); break;
-        case CD_DEL_LINE: code = end_line(data.id_line);break;
         default: /* */;
     }
 }
@@ -277,12 +284,12 @@ receive(session_t session)
         case CD_VALID_POS:
         case CD_INIT:
         case CD_PAX_DL:
+	case CD_PAX_UL:
         case CD_DEL_STOPS: if(DEBUG_MODE) wprintw(log_win,"TRACE: LLEGUE HASTA RECEIVE CORE\n"); receive_core(data); break;
         case CD_INSERT_ACK:
         case CD_MOVE_ACK:
         case CD_NEW_PAX:
-        case CD_RND_STOPS:
-        case CD_DEL_LINE: if(DEBUG_MODE) wprintw(log_win,"TRACE: LLEGUE HASTA RECEIVE LINES\n");receive_lines(data); break;
+        case CD_RND_STOPS: if(DEBUG_MODE) wprintw(log_win,"TRACE: LLEGUE HASTA RECEIVE LINES\n");receive_lines(data); break;
         default: /* */;
     }
 }

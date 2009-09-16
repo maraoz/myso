@@ -22,7 +22,7 @@ pthread_mutex_t map_mutex = PTHREAD_MUTEX_INITIALIZER;
 pthread_mutex_t citizen_mutex = PTHREAD_MUTEX_INITIALIZER;
 pthread_cond_t citizen_cond = PTHREAD_COND_INITIALIZER;
 person_t passenger;
-extern int sim_on;
+int sim_on = TRUE;
 Tfiles files;
 
 
@@ -64,16 +64,15 @@ core_listen(int index) {
     while(sim_on){
         receive(files.buffer[index]);
     }
+    closeChannel(files.buffer[index]);
     pthread_exit(0);
 }
 
 
 void *
 keyboard_listen(){
-    int ch,i;
+    int ch;
     while((ch = getch()) != KEY_F(1));
-    for(i=0; i<files.qty; i++)
-        delete_line(files.buffer[i],i);
     sim_on = FALSE;
     pthread_exit(0);
 }
@@ -163,53 +162,53 @@ move_bus(int fd, int id, point_t new_pos){
     }
     
     if(dist(new_pos, actual_pos) > 1){
-        wprintw(log_win,"No te podes mover mas de 1 lugar por turno.\n");
+//         wprintw(log_win,"No te podes mover mas de 1 lugar por turno.\n");
         return NEW_POS_FAR_AWAY;
     }
   
     //pthread_mutex_lock(&semaphore_mutex);
     if(hasSemaphore(new_pos) && isVRedHGreen(semps[(semps_hash[new_pos.y][new_pos.x])]) 
 	&& actual_pos.x == new_pos.x) {
-	wprintw(log_win,"No se puede avanzar a (%d,%d), semaforo en rojo.\n",new_pos.x, new_pos.y);
+// 	wprintw(log_win,"No se puede avanzar a (%d,%d), semaforo en rojo.\n",new_pos.x, new_pos.y);
         return RED_LIGHT_ON;
     }
     if(hasSemaphore(new_pos) && !isVRedHGreen(semps[(semps_hash[new_pos.y][new_pos.x])]) 
     && actual_pos.y == new_pos.y) {
-	wprintw(log_win,"No se puede avanzar a (%d,%d), semaforo en rojo.\n",new_pos.x, new_pos.y);
+// 	wprintw(log_win,"No se puede avanzar a (%d,%d), semaforo en rojo.\n",new_pos.x, new_pos.y);
         return RED_LIGHT_ON;
     }
     //pthread_mutex_unlock(&semaphore_mutex);
     
     if(tiles[new_pos.y][new_pos.x] == TRUE){
-	wprintw(log_win,"No se puede avanzar, posicion (%d,%d) ocupada\n",new_pos.x, new_pos.y);
+// 	wprintw(log_win,"No se puede avanzar, posicion (%d,%d) ocupada\n",new_pos.x, new_pos.y);
         return NEW_POS_ALREADY_OCCUPIED;
     }
 
-//     if((aux=(new_pos.x - actual_pos.x)) != 0) {
-//         if(new_pos.y%6==0  && aux != 1 && new_pos.y != YDIM-1) {
-//             printf("CONTRAMANO.\n");
-//             return WRONG_WAY;
-//         }
-//         if((new_pos.y%3==0 || new_pos.y==YDIM-1) && aux != -1  && new_pos.y != 0) {
-//             printf("CONTRAMANO.\n");
-//             return WRONG_WAY;
-//         }
-//     } else if((aux=(new_pos.y - actual_pos.y)) != 0) {
-//         if((new_pos.x%6==0 || new_pos.x==XDIM-1 ) && aux != -1) {
-//             printf("CONTRAMANO.\n");
-//             return WRONG_WAY;
-//         }
-//         if(new_pos.x%3==0 && aux != 1 && new_pos.x != 0 && new_pos.x != XDIM-1) {
-//             printf("CONTRAMANO.\n");
-//             return WRONG_WAY;
-//         }
-//     }
+    if((aux=(new_pos.x - actual_pos.x)) != 0) {
+        if(new_pos.y%6==0  && aux != 1 && new_pos.y != YDIM-1) {
+            printf("CONTRAMANO.\n");
+            return WRONG_WAY;
+        }
+        if((new_pos.y%3==0 || new_pos.y==YDIM-1) && aux != -1  && new_pos.y != 0) {
+            printf("CONTRAMANO.\n");
+            return WRONG_WAY;
+        }
+    } else if((aux=(new_pos.y - actual_pos.y)) != 0) {
+        if((new_pos.x%6==0 || new_pos.x==XDIM-1 ) && aux != -1) {
+            printf("CONTRAMANO.\n");
+            return WRONG_WAY;
+        }
+        if(new_pos.x%3==0 && aux != 1 && new_pos.x != 0 && new_pos.x != XDIM-1) {
+            printf("CONTRAMANO.\n");
+            return WRONG_WAY;
+        }
+    }
 
     buses[fd][id] = new_pos;
     pthread_mutex_lock(&map_mutex);
-    wprintw(log_win,"actual pos: (%d,%d)\n",actual_pos.x,actual_pos.y);
+//     wprintw(log_win,"actual pos: (%d,%d)\n",actual_pos.x,actual_pos.y);
     tiles[actual_pos.y][actual_pos.x] = FALSE;
-    wprintw(log_win,"new pos: (%d,%d)\n",new_pos.x,new_pos.y);
+//     wprintw(log_win,"new pos: (%d,%d)\n",new_pos.x,new_pos.y);
     tiles[new_pos.y][new_pos.x] = TRUE;
     pthread_mutex_unlock(&map_mutex);
     if(DEBUG_MODE)
@@ -270,6 +269,12 @@ set_new_pax(int idl, point_t stop_up, point_t stop_down){
 int
 pax_get_of_bus(int idl, point_t stop){
     wprintw(log_win,"Pasajero de linea %d bajandose en (%d,%d)\n", idl, stop.x, stop.y);
+    return 0;
+}
+
+int
+pax_get_on_bus(int idl, point_t stop){
+    wprintw(log_win,"Pasajero de linea %d subiendose en (%d,%d)\n", idl, stop.x, stop.y);
     return 0;
 }
          
