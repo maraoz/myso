@@ -64,6 +64,7 @@ core_listen(int index) {
     while(sim_on){
         receive(files.buffer[index]);
     }
+    closeChannel(files.buffer[index]);
     pthread_exit(0);
 }
 

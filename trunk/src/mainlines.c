@@ -95,9 +95,11 @@ main(int argc, char * argv[] ){
    
     while(sim_on);
     
+    closeChannel(session);
     pthread_mutex_destroy(&pax_mutex);
     pthread_attr_destroy(&attr);
     free(movements);
+    exit(0);
 }
 
 void * 
