@@ -86,7 +86,7 @@ pax_creation() {
     int random_line;
     sleep(5);
     while(sim_on){
-        sleep(1);
+        sleep(3);
         random_line = rand()%files.qty;
         pthread_mutex_lock(&citizen_mutex);
         get_random_stops(files.buffer[random_line], random_line);
