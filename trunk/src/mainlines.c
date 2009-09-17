@@ -18,7 +18,7 @@ extern int line_id;
 extern int * insertion_ack;
 extern int ** pax;
 extern pthread_mutex_t pax_mutex;
-extern WINDOW *log_win;
+// extern WINDOW *log_win;
 extern int ipc_selection;
 
 int
@@ -50,7 +50,7 @@ main(int argc, char * argv[] ){
 
     movements = calloc(sizeof(int),qty_buses);
     if(movements == NULL){
-	wprintw(log_win,"+ERROR: No hay suficiente memoria\n");
+	printf("+ERROR: No hay suficiente memoria\n");
 	return 1;
     }
     for(i =0 ; i<qty_buses; i++){
@@ -60,7 +60,7 @@ main(int argc, char * argv[] ){
     buses_threads = malloc(sizeof(pthread_t) * qty_buses);
     
     if(buses_threads == NULL){
-        wprintw(log_win,"+ERROR: No hay suficiente memoria \n");
+        printf("+ERROR: No hay suficiente memoria \n");
         return 1;
     }
    buses.stops_length = get_stops(3, &buses.stops);
@@ -68,12 +68,12 @@ main(int argc, char * argv[] ){
 
     pax = malloc(buses.stops_length*sizeof(int*));
     if(pax == NULL){
-	wprintw(log_win,"+ERROR: No hay suficiente memoria\n");
+	printf("+ERROR: No hay suficiente memoria\n");
     }
     for(i = 0 ; i<buses.stops_length; i++){
 	pax[i] = malloc(11*sizeof(int));
 	if(pax[i] == NULL){
-	    wprintw(log_win,"+ERROR: No hay suficiente memoria\n");
+	    printf("+ERROR: No hay suficiente memoria\n");
 	}
     }
 
@@ -88,7 +88,7 @@ main(int argc, char * argv[] ){
 	    if(qty_buses > 0){
             aux = buses_times[index] - buses_times[index-1];
 	    } else {
-// 		wprintw(log_win,"+ERROR: No se pudo crear el colectivo \n");
+// 		printf("+ERROR: No se pudo crear el colectivo \n");
             aux = 0;
         }
     }

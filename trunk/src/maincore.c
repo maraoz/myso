@@ -23,7 +23,6 @@ extern pthread_mutex_t citizen_mutex;
 extern pthread_cond_t citizen_cond;
 extern WINDOW *log_win;
 
-// extern session_t session_line;
 extern Tfiles files;
 
 extern ipc_selection;
@@ -37,7 +36,7 @@ main(int argc, char * argv[]) {
         if (int_opt >= 0 && int_opt < 4 ) {
             ipc_selection = int_opt;
         } else {
-            printf("Código de IPC inválido, se toma el default"
+            printf("Cï¿½digo de IPC invï¿½lido, se toma el default"
             "MESSAGE_QUEUE\n");
             ipc_selection = MESSAGE_QUEUE;
         }

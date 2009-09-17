@@ -22,6 +22,7 @@ void print_v_sem(point_t point);
 
 int Xpositions[19] = {2,6,11,15,19,24,28,32,37,41,45,50,54,58,63,67,71,76,80};
 int Ypositions[19] = {0,2,4,6,8,10,12,14,16,18,20,22,24,26,28,30,32,34,36};
+
 WINDOW *city_win, *log_win, *city_box, *log_box;
 
 WINDOW* create_newwin(int height, int width, int starty, int startx)
@@ -36,41 +37,19 @@ WINDOW* create_newwin(int height, int width, int starty, int startx)
 	return local_win;
 }
 
-void destroy_win(WINDOW * local_win)
-{	
-	/* box(local_win, ' ', ' '); : This won't produce the desired
-	 * result of erasing the window. It will leave it's four corners 
-	 * and so an ugly remnant of window. 
-	 */
-	wborder(local_win, ' ', ' ', ' ',' ',' ',' ',' ',' ');
-	/* The parameters taken are 
-	 * 1. win: the window on which to operate
-	 * 2. ls: character to be used for the left side of the window 
-	 * 3. rs: character to be used for the right side of the window 
-	 * 4. ts: character to be used for the top side of the window 
-	 * 5. bs: character to be used for the bottom side of the window 
-	 * 6. tl: character to be used for the top left corner of the window 
-	 * 7. tr: character to be used for the top right corner of the window 
-	 * 8. bl: character to be used for the bottom left corner of the window 
-	 * 9. br: character to be used for the bottom right corner of the window
-	 */
-	wrefresh(local_win);
-	delwin(local_win);
-}
-
-
 void *
 draw(void)
 {
+    WINDOW * hola;
     int i,j;
     point_t aux;
 	int startx, starty, width, height;
 
 	initscr();			/* Start curses mode 		*/
 	cbreak();			/* Line buffering disabled, Pass on
-					 * everty thing to me 		*/
+// 					 * everty thing to me 		*/
 	keypad(stdscr, TRUE);		/* I need that nifty F1 	*/
-
+// 
 	height = 45;
 	width = 90;
 	starty = (LINES - height) / 2;	/* Calculating for a center placement */
@@ -79,8 +58,10 @@ draw(void)
 	refresh();
 	city_box = create_newwin(height, width, starty, startx);
 	log_box = create_newwin(height, width-30, starty, startx+width+5);
-	city_win = subwin(city_box,height-4, width-5, starty+2, startx+3);
-	log_win = subwin(log_box,height-2, width-32, starty+1, startx+width+6);
+// 	city_win = subwin(city_box,height-4, width-5, starty+2, startx+3);
+    city_win = newwin(height-4, width-5, starty+2, startx+3);
+// 	log_win = subwin(hola,height-2, width-32, starty+1, startx+width+6);
+    log_win = newwin(height-2, width-32, starty+1, startx+width+6);
 	scrollok(log_win, TRUE);
 
 	while(sim_on) {
@@ -130,6 +111,10 @@ draw(void)
 		pthread_mutex_unlock(&map_mutex);
         }
 		
+    delwin(city_box);
+    delwin(city_win);
+    delwin(log_box);
+    delwin(log_win);
 	endwin();			/* End curses mode		  */
 	pthread_exit(0);
 }
