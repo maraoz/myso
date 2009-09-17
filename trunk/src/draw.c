@@ -30,11 +30,8 @@ WINDOW* create_newwin(int height, int width, int starty, int startx)
 {	WINDOW *local_win;
 
 	local_win = newwin(height, width, starty, startx);
-	box(local_win, 0 , 0);		/* 0, 0 gives default characters 
-					 * for the vertical and horizontal
-					 * lines			*/
-	wrefresh(local_win);		/* Show that box 		*/
-
+	box(local_win, 0 , 0);
+	wrefresh(local_win);
 	return local_win;
 }
 
@@ -59,8 +56,8 @@ draw(void)
     log_box = create_newwin(height, width-30, starty, startx+width+5);
     werase(city_box);
     werase(log_box);
-        city_win = newwin(height-4, width-5, starty+2, startx+3);
-        log_win = newwin(height-2, width-32, starty+1, startx+width+6);
+    city_win = newwin(height-4, width-5, starty+2, startx+3);
+    log_win = newwin(height-2, width-32, starty+1, startx+width+6);
 	scrollok(log_win, TRUE);
 
 	while(sim_on) {
@@ -110,8 +107,8 @@ draw(void)
     delwin(city_win);
     delwin(log_box);
     delwin(log_win);
-	endwin();	
-	pthread_exit(0);
+    endwin();	
+    pthread_exit(0);
 }
 
 /* Dibuja una cuadra */
