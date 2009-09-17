@@ -1,3 +1,5 @@
+#ifndef __MARSHALL_H__
+#define __MARSHALL_H__
 
 /* Funcion que inicializa el IPC del lado del core */
 int m_init_core();
@@ -50,3 +52,5 @@ void receive();
 
 /* Funcion para enviar el paquete de terminacion a una linea */
 void delete_line(session_t sid, int line);
+
+#endif
