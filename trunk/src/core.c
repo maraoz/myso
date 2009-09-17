@@ -216,9 +216,10 @@ move_bus(int idl, int idb, point_t new_pos){
         }
     }
 
-    /* Si llegue hasta acá, muevo el colectivo */
-    buses[idl][idb] = new_pos;
+    /* Si llegue hasta aca, muevo el colectivo */
+
     pthread_mutex_lock(&map_mutex);
+    buses[idl][idb] = new_pos;
     tiles[actual_pos.y][actual_pos.x] = FALSE;
     tiles[new_pos.y][new_pos.x] = TRUE;
     pthread_mutex_unlock(&map_mutex);

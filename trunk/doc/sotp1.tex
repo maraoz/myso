@@ -1,7 +1,7 @@
 \documentclass[a4paper,10pt]{elsart}
 \usepackage[pdftex,usenames,dvipsnames]{color}
-\usepackage [spanish] {babel}
-\usepackage[utf8]{inputenc}
+\usepackage [spanish]{babel}
+\usepackage[latin1]{inputenc}
 \usepackage{amsmath, amsfonts, amssymb}
 \include{latexsym}
 
@@ -9,84 +9,121 @@
 
 
 \begin{frontmatter}
-\title{Trabajo Práctico 1: Filesystems, IPCs, Servidores}
-\author{Manuel Aráoz (49244) \& Matí­as Williams (49195)} \& Pablo Giorgi (49222)}
-\address{Ingeniería en Informática\\
-Instituto Tecnológico Buenos Aires\\
-Ciudad Autónoma de Buenos Aires, Argentina}
+\title{Trabajo Pr\'actico 1: Filesystems, IPCs, Servidores}
+\author{Manuel Ar\'aoz (49244), Pablo Giorgi (49222) \& Mat\'ias Williams (49195)}
+\address{Ingenier\'ia en Inform\'atica\\
+Instituto Tecnol\'ogico Buenos Aires\\		
+Ciudad Aut\'onoma de Buenos Aires, Argentina}
 \date{\today}
 
 
 \maketitle
 
 \begin{abstract}
-En este informe se darán a conocer las decisiones que se tomaron al momento de realizar el Trabajo Práctico, los problemas presentados y las soluciones que se aplicaron para resolverlos.
+En este informe se dar\'an a conocer las decisiones que se tomaron al momento de realizar el Trabajo Pr\'actico, los problemas presentados y las soluciones que se aplicaron para resolverlos.
 \end{abstract}
 \end{frontmatter}
 \clearpage
 
 \tableofcontents
-\listoffigures
 
 \clearpage
 
-\section{División en Capas}
+\section{Divisi\'on en Capas}
 
-\subsection{Aplicación}
-La capa de aplicación consiste en distintos módulos. Por un lado existen los módulos \emph{maincore.c} y \emph{mainlines.c}. Estos módulos son los que contienen los \emph{main} de los procesos que van a estar corriendo a la vez. Solo habrá un proceso corriendo \emph{maincore.c} y habrá tantos threads como archivos haya en el directorio de lineas, corriendo \emph{mainlines.c}. También, existen otros módulos que complementan las funciones de los dos \emph{main}: \emph{lineas.c} y \emph{core.c}. Aquí­ se hallan todas las funciones que se van a llamar desde los dos \emph{main}. Asimismo, hay un módulo que se encarga de la interfaz gráfica: \emph{draw.c}.
+\subsection{Aplicaci\'on}
+La capa de aplicaci\'on consiste en distintos m\'odulos. Por un lado existen los m\'odulos \emph{maincore.c} y \emph{mainlines.c}. Estos m\'odulos son los que contienen los \emph{main} de los procesos que van a estar corriendo a la vez. Solo habr\'a un proceso corriendo \emph{maincore.c} y habr\'a tantos threads como archivos haya en el directorio de lineas, corriendo \emph{mainlines.c}. Tambi\'en, existen otros m\'odulos que complementan las funciones de los dos \emph{main}: \emph{lineas.c} y \emph{core.c}. Aqu\'i se hallan todas las funciones que se van a llamar desde los dos \emph{main}. Asimismo, hay un m\'odulo que se encarga de la interfaz gr\'afica: \emph{draw.c}, y otro encargado del manejo de archivos: \emph{files.c}
 
 \subsubsection{Archivos}
-Para la parte de levantar la información de los archivos, se organizó de la siguiente manera:
-En primer lugar se creó un directorio en el que se guardan todos los archivos con la información de las lineas. Dichos archivos tienen como nombre un número que los describe.
-Al iniciar el core, llama a una función que abre el directorio y va devolviendo los FD de los archivos abiertos, hasta que no quedan más en el directorio.
-Luego, antes de crear el proceso linea desde core, se pasa el FD a 3, para que cada linea sepa de antemano de qué FD leer sus datos.
-Despues se tienen las funciones que levantan los datos de los files descriptors abiertos, se van llamando de a una con el número de FD, que será 3.
+Para la parte de levantar la informaci\'on de los archivos, se organiz\'o de la siguiente manera:
+En primer lugar se cre\'o un directorio en el que se guardan todos los archivos con la informaci\'on de las lineas. Dichos archivos tienen como nombre un n\'umero que los describe.
+Al iniciar el core, llama a una funci\'on que abre el directorio y va devolviendo los FD de los archivos abiertos, hasta que no quedan m\'as en el directorio.
+Luego, antes de crear el proceso linea desde core, se pasa el FD a 3, para que cada linea sepa de antemano de qu\'e FD leer sus datos.
+Despues se tienen las funciones que levantan los datos de los files descriptors abiertos, se van llamando de a una con el n\'umero de FD, que ser\'a 3.
 La organizacion interna de los archivos se corresponde con el orden en que se llaman las funciones que piden los datos, simplemente para agregar simplicidad.
-También existen 2 funciones del tipo close, una para los FD y otra para el directorio.
+Tambi\'en existen 2 funciones del tipo close, una para los FD y otra para el directorio.
 
 \subsubsection{Draw Image}
-Para la parte de imprimir la pantalla con el estado del sistema, lo que se hizo fue crear una función draw como thread de core, para independizarlo, y en caso de haber algun error, este no repercutiría en el resto del sistema.
-La forma de dibujar fue básicamente crear 2 ventanas, una para la ciudad, y otra para los mensajes que se considere importante mostrar, como ser los movimientos de los pasajeros, etc.
-Ademas se muestra el número de linea de colectivo y el Id del interno del mismo, para poder seguir su recorrido.
+Para la parte de imprimir la pantalla con el estado del sistema, lo que se hizo fue crear una funci\'on draw como thread de core, para independizarlo, y en caso de haber algun error, este no repercutir\'ia en el resto del sistema.
+La forma de dibujar fue b\'asicamente crear 2 ventanas, una para la ciudad, y otra para los mensajes que se considere importante mostrar, como ser los movimientos de los pasajeros, etc.
+Ademas se muestra el n\'umero de linea de colectivo y el Id del interno del mismo, para poder seguir su recorrido.
 
 \subsubsection{Decisiones tomadas}
-\subsubsection{Problemas presentados}
 \begin{itemize}
-	\item Al principio no se chequeaba que un colectivo insertado no se pudiera insertar nuevamente. Esto generaba dos problemas; por un lado se insertaba dos veces el mismo colectivo, y por el otro varias veces se querí­a mover un colectivo que no estaba insertado. El segundo problema surgió porque se quiso arreglar el primero mediante utilizar un valor inválido para.
+	\item La ciudad se almacena en una matriz booleana, donde los valores de cada elemento de la matriz indica si est\'a ocupada o no. Es decir, que tanto para indicar que hay un colectivo como para indicar que hay una manzana, se utiliza el valor \emph{TRUE} y para indicar que est\'a vac\'io, es decir que se puede insertar o moverse en esa posici\'on de la matriz, se indica con un \emph{FALSE}.
+	\item El core es un proceso que tiene varios threads:
+	\begin{itemize}
+		\item El thread que dibuja en salida est\'andar.
+		\item El thread que lee de teclado.
+		\item El thread que crea pasajeros.
+		\item El thread que cambia el estado de los sem\'aforos.
+		\item Un thread por cada l\'inea, para escuchar los mensajes que env\'ian.
+	\end{itemize}
+	\item Las l\'ineas son cada una un proceso y los colectivos dentro de cada linea son threads. Cada l\'inea tambi\'en tiene un thread que se encarga de recibir los paquetes que manda el core.
+	\item La posici\'on de cada colectivo de cada l\'inea se las almacena en una matriz que las filas representan las l\'ineas y las columnas los colectivos. 
 \end{itemize}
 
+\subsubsection{Problemas presentados}
+\begin{enumerate}
+	\item Al principio no se chequeaba que un colectivo insertado no se pudiera insertar nuevamente. Esto generaba dos problemas; por un lado se insertaba dos veces el mismo colectivo, y por el otro varias veces se quer\'ia mover un colectivo que no estaba insertado. El segundo problema surgi\'o porque se quiso arreglar el primero mediante utilizar un valor inv\'alido para identificar el error.
+	\item La libreria \emph{ncurses} tiraba segmentation fault al ejecutar el comando subwin.
+\end{enumerate}
 \subsubsection{Soluciones a los problemas}
-
+\begin{enumerate}
+	\item Para solucionar estos problemas se chequea que primero exista el colectivo para moverse y tambi\'en que se lo pueda insertar una sola vez. Del mismo modo para lograr mejores resultados, no se pide de mover un colectivo hasta que no este insertado.
+	\item Se investig\'o el problema y se encontr\'o que el error proven\'ia de querer crear en una \emph{window} que no entraba en la pantalla una \emph{sub-window}. Se solucion\'o haciendo que la dimensi\'on de las \emph{windows} dependieran de la dimensi\'on de la consola donde se estaban corriendo y no tuviesen un valor fijo.
+\end{enumerate}
 
 \subsection{Marshall}
-Para la capa de marshall lo que se hizo fue, en base a determinadas funciones que se conocía que usarían los 2 procesos que se iban a comunicar por medio de IPCS, se crearon funciones que en cierta manera empaquetarían los datos que estas utilizarían de la siguiente forma:
+Para la capa de marshall lo que se hizo fue, en base a determinadas funciones que se conoc\'ia que usar\'ian los 2 procesos que se iban a comunicar por medio de IPCS, se crearon funciones que en cierta manera empaquetar\'ian los datos que estas utilizar\'ian de la siguiente forma:
 Yendo a un ejemplo concreto supongamos el caso en que una linea necesita insertar un colectivo en la ciudad.
-En primer lugar, el proceso lineas envía a core un insert request por medio del IPC que se este usando; el thread de core encargado de la comunicación que probablemente estará bloqueado en read dentro de receive, recibirá un paquete.
-Dicho paquete, entre su información, contendrá un ID de mensaje, en este caso el ID que le indica a core que debe insertar un colectivo, a lo que core reaccionará realizando dicha accion con los parametros que también recibió en el paquete.
-Luego de esto, core necesita hacer saber a la linea si logró realizar dicha acción; si pudo insertar el colectivo, responderá con un insert request ack. Un thread de lineas, recibirá este paquete y confirmará la inserción.
-Si no pudo core insertar el colectivo por algún motivo, no enviará el insert request ack, con lo cual, lineas no recibirá confirmación y el próximo mensaje que enviará será nuevamente el de inserción.
+En primer lugar, el proceso lineas env\'ia a core un insert request por medio del IPC que se este usando; el thread de core encargado de la comunicaci\'on que probablemente estar\'a bloqueado en read dentro de receive, recibir\'a un paquete.
+Dicho paquete, entre su informaci\'on, contendr\'a un ID de mensaje, en este caso el ID que le indica a core que debe insertar un colectivo, a lo que core reaccionar\'a realizando dicha accion con los parametros que tambi\'en recibi\'o en el paquete.
+Luego de esto, core necesita hacer saber a la linea si logr\'o realizar dicha acci\'on; si pudo insertar el colectivo, responder\'a con un insert request ack. Un thread de lineas, recibir\'a este paquete y confirmar\'a la inserci\'on.
+Si no pudo core insertar el colectivo por alg\'un motivo, no enviar\'a el insert request ack, con lo cual, lineas no recibir\'a confirmaci\'on y el pr\'oximo mensaje que enviar\'a ser\'a nuevamente el de inserci\'on.
 
 \subsubsection{Decisiones tomadas}
-Lo interesante de la capa de marshall es que se logró utilizar el mismo codigo para los 4 IPCs, que era el objetivo del mismo.
-Esto es consecuencia de que la parte de comunicación con los IPCs se da por medio de 4 funciones, open, close, read y write.
+Lo interesante de la capa de marshall es que se logr\'o utilizar el mismo codigo para los 4 IPCs, que era el objetivo del mismo.
+Esto es consecuencia de que la parte de comunicaci\'on con los IPCs se da por medio de 4 funciones, open, close, read y write.
 Las cuales enmascaran a las funciones nombradas anteriormente de cada uno de los IPCs.
 
 \subsection{Transporte}
-En la capa de transporte se implementaron los 4 IPCs vistos en la materia: FIFO, Shared Memory, Sockets y Message Queue.
-Todos estos, tienen las primitivas básicas: open, close, read y write enmascaradas detrás de funciones generales que llamarán a la que corresponda según el IPC que se este usando.
+En la capa de transporte se implementaron los 4 IPCs vistos en la materia: FIFO, Shared Memory, Sockets y Message Queue. \\
+Todos estos, tienen las primitivas b\'asicas: open, close, read y write enmascaradas detr\'as de funciones generales que llamar\'an a la que corresponda seg\'un el IPC que se este usando.
 
 \subsubsection{Decisiones tomadas}
-	\item Para facilitar el uso de las funcionalidades de transporte, se decidió (aconsejados por la cátedra) implementar una interfaz uniforme (API) que maneje de forma transparente los 4 métodos de IPC pedidos. Para lograr esto se usó un vector de punteros a funciones para cada uno de las funciones que se deseaban exponer (en nuestro caso w_init, w_open, w_close, w_write y w_read) y en función del tipo de IPC usado se hacía el llamado corespondiente.
-	\item Se decidió que la capa de transporte maneje una tabla de sesiones para cada proceso en donde almacenar la informacion necesaria para acceder a los demás procesos para cada uno de los IPC. Entonces, en lineas generales, al hacer los llamados a w_open, la capa de protocolo guarda información sobre el canal de comunicacion que se está abriendo y se devuelve una variable identificatoria de la sesión, que podrá ser usada luego por el usuario para escribir o leer en ese canal. La idea es muy parecida al comportamiento de las funciones open, close, write y read de archivos convencionales. La sesión devuelta por w_open funciona como el file descriptor de open y sirve para indicarle a las funciones w_write, w_read y w_close con quién se está produciendo esa operación de escritura, lectura, o terminación.
-	\item Se decidió usar System V como librería de IPC debido a que nos pareció más potente en algunos aspectos. Igualmente no consideramos que las diferencias fueran tan grandes como para discutir demasiado al respecto. Para decidir cuál de los dos sitemas usar se tuvo en cuenta la experiencia de los docentes de la cátedra y la disponibilidad de buen material de aprendizaje en internet y en los libros.
-	\item Haciendo un análisis más minucioso de cada método de IPC, se tomaron las siguientes decisiones: para los sockets se utilizó el protocolo AF_UNIX en modo STREAM, debido a que se consideró más simple (parecido a lectura de archivos) y no requiere capa de confiabilidad; con respecto a message queue, se eligió la solución que se consideró más elegante, que consiste en manejar una única cola de mensajes en donde cada proceso filtra los mensajes segun su pid; con respecto a fifos se utilizó uno para lectura y otro para escritura para cada par de procesos que se comunican; y por último para shared memory, se hizo uso de semáforos como indicador de cuántos recursos (paquetes) estaban disponibles en la zona compartida (lo cual traía varias ventajas como que el proceso que lee se bloquea si no hay qué leer gracias al semáforo)
+\begin{itemize}
+	\item Para facilitar el uso de las funcionalidades de transporte, se decidi\'o (aconsejados por la c\'atedra) implementar una interfaz uniforme (API) que maneje de forma transparente los 4 m\'etodos de IPC pedidos. Para lograr esto se us\'o un vector de punteros a funciones para cada uno de las funciones que se deseaban exponer (en nuestro caso w$\_$init, w$\_$open, w$\_$close, w$\_$write y w$\_$read) y en funci\'on del tipo de IPC usado se hac\'ia el llamado corespondiente.
+	\item Se decidi\'o que la capa de transporte maneje una tabla de sesiones para cada proceso en donde almacenar la informacion necesaria para acceder a los dem\'as procesos para cada uno de los IPC. Entonces, en lineas generales, al hacer los llamados a w$\_$open, la capa de protocolo guarda informaci\'on sobre el canal de comunicacion que se est\'a abriendo y se devuelve una variable identificatoria de la sesi\'on, que podr\'a ser usada luego por el usuario para escribir o leer en ese canal. La idea es muy parecida al comportamiento de las funciones open, close, write y read de archivos convencionales. La sesi\'on devuelta por w$\_$open funciona como el file descriptor de open y sirve para indicarle a las funciones w$\_$write, w$\_$read y w$\_$close con qui\'en se est\'a produciendo esa operaci\'on de escritura, lectura, o terminaci\'on.
+	\item Se decidi\'o usar System V como librer\'ia de IPC debido a que nos pareci\'o m\'as potente en algunos aspectos. Igualmente no consideramos que las diferencias fueran tan grandes como para discutir demasiado al respecto. Para decidir cu\'al de los dos sitemas usar se tuvo en cuenta la experiencia de los docentes de la c\'atedra y la disponibilidad de buen material de aprendizaje en internet y en los libros.
+	\item Haciendo un an\'alisis m\'as minucioso de cada m\'etodo de IPC, se tomaron las siguientes decisiones: para los sockets se utiliz\'o el protocolo AF$\_$UNIX en modo STREAM, debido a que se consider\'o m\'as simple (parecido a lectura de archivos) y no requiere capa de confiabilidad; con respecto a message queue, se eligi\'o la soluci\'on que se consider\'o m\'as elegante, que consiste en manejar una \'unica cola de mensajes en donde cada proceso filtra los mensajes segun su pid; con respecto a fifos se utiliz\'o uno para lectura y otro para escritura para cada par de procesos que se comunican; y por \'ultimo para shared memory, se hizo uso de sem\'aforos como indicador de cu\'antos recursos (paquetes) estaban disponibles en la zona compartida (lo cual tra\'ia varias ventajas como que el proceso que lee se bloquea si no hay qu\'e leer gracias al sem\'aforo)
+\end{itemize}
+
 
 \subsubsection{Problemas presentados}
-	\item Las mayores dificultades se hallaron entendiendo y pudiendo aplicar las funciones de System V a nuestro caso en particular, aunque una vez que nos acostumbramos a la interfaz (algo homogénea a través de los distintos IPCs) esta tarea se simplificó mucho. Otras dificultades importantes que se presentaron fueron las referentes a cómo hacer que dos procesos (que pueden no conocerse entre sí) utilicen el mismo canal de comunicación. Por ejemplo, en FIFOS, ambos procesos debían abrir el mismo archivo refiriéndose a un nombre creado dinámicamente y que variaba dependiendo de la cantidad de líneas y otros factores. La solución que se encontró en este caso fue relacionar el nombre del FIFO con el pid del proceso de la línea de colectivos.
-	\item Otro problema importante que se tuvo fue el de cerrar las vías de comunicación prolijamente. Al haber tantas estructuras, archivos abiertos, semáforos, zonas de memoria, etc necesarias para mantener la comunicación entre cada par de procesos, no era una opción no atender a este problema. La dificultad radicó en que cada proceso por separado debía cerrar sus vínculos con los demás procesos (con su consiguiente liberación de memorias alocadas para estructuras de control, cerrado de archivos, destrucción de ipcs, etc) antes de que toda la aplicación se de por terminada. Lo que nos pasó durante el desarrollo fue que al correr nuestra aplicación quedaban IPCs remanentes (que persistían a la vida del proceso de la aplicación) que ocupaban recursos del sistema y a veces hasta interferían con instancias posteriores del programa. También se producían anomalías cuando quedaban procesos corriendo en background que deberían haber sido eliminados en la ejecución anterior.
+\begin{itemize}
+	\item Las mayores dificultades se hallaron entendiendo y pudiendo aplicar las funciones de System V a nuestro caso en particular, aunque una vez que nos acostumbramos a la interfaz (algo homog\'enea a trav\'es de los distintos IPCs) esta tarea se simplific\'o mucho. Otras dificultades importantes que se presentaron fueron las referentes a c\'omo hacer que dos procesos (que pueden no conocerse entre s\'i) utilicen el mismo canal de comunicaci\'on. Por ejemplo, en FIFOS, ambos procesos deb\'ian abrir el mismo archivo refiri\'endose a un nombre creado din\'amicamente y que variaba dependiendo de la cantidad de l\'ineas y otros factores. La soluci\'on que se encontr\'o en este caso fue relacionar el nombre del FIFO con el pid del proceso de la l\'inea de colectivos.
+	\item Otro problema importante que se tuvo fue el de cerrar las v\'ias de comunicaci\'on prolijamente. Al haber tantas estructuras, archivos abiertos, sem\'aforos, zonas de memoria, etc necesarias para mantener la comunicaci\'on entre cada par de procesos, no era una opci\'on no atender a este problema. La dificultad radic\'o en que cada proceso por separado deb\'ia cerrar sus v\'inculos con los dem\'as procesos (con su consiguiente liberaci\'on de memorias alocadas para estructuras de control, cerrado de archivos, destrucci\'on de ipcs, etc) antes de que toda la aplicaci\'on se de por terminada. Lo que nos pas\'o durante el desarrollo fue que al correr nuestra aplicaci\'on quedaban IPCs remanentes (que persist\'ian a la vida del proceso de la aplicaci\'on) que ocupaban recursos del sistema y a veces hasta interfer\'ian con instancias posteriores del programa. Tambi\'en se produc\'ian anomal\'ias cuando quedaban procesos corriendo en background que deber\'ian haber sido eliminados en la ejecuci\'on anterior.
+\end{itemize}
 
 \subsubsection{Soluciones a los problemas}
-	\item Nuestra solución a todos estos problemas fue hacer que el CORE se encargue de avisar a cada proceso de línea que debía terminarse (mendiante el envío de un packete que se lo indicaba) y prolijamente cerrar sus sesiones de comunicación abiertas. Así, cada proceso de línea hacía un llamado a w_close() y luego se terminaba. Finalmente, el core cerraba las sesiones de comuncación que había abierto con las líneas, para así terminar la aplicación de modo seguro.
+\begin{itemize}
+	\item Nuestra soluci\'on a todos estos problemas fue hacer que el CORE se encargue de avisar a cada proceso de l\'inea que deb\'ia terminarse (mendiante el env\'io de un packete que se lo indicaba) y prolijamente cerrar sus sesiones de comunicaci\'on abiertas. As\'i, cada proceso de l\'inea hac\'ia un llamado a w$\_$close() y luego se terminaba. Finalmente, el core cerraba las sesiones de comuncaci\'on que hab\'ia abierto con las l\'ineas, para as\'i terminar la aplicaci\'on de modo seguro.
+
+\end{itemize}
+
+\section{C\'odigo Fuente}
+Para obtener el c\'odigo fuente de este trabajo pr\'actico descargarlo del repositorio \textbf{SVN}:\\
+\begin{quote}
+ svn checkout http://myso.googlecode.com/svn/trunk/ myso-read-only
+\end{quote}
+
+\section{Contacto}
+\begin{itemize}
+  \item Pablo Giorgi: pablogiorgi710@gmail.com
+  \item Manuel Ar\'aoz: manuelaraoz@gmail.com
+  \item Mat\'ias Williams: williams.matias@gmail.com
+\end{itemize}
+
 
 \end{document}
-
