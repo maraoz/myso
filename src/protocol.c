@@ -181,9 +181,7 @@ int s_w_write(session_t session_id, package_t package) {
     mem_zone[i].package = package;
     mem_zone[i].used = TRUE;
     // and set the resource as available
-    if (semop(shmdp->semaphore_id, &sb, 1) == -1) {
-        perror("semop write:");
-    }
+    semop(shmdp->semaphore_id, &sb, 1);
 
     return 0;
 };
