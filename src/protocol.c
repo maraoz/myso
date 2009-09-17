@@ -40,13 +40,13 @@ int is_core;
 #define WRITE 1
 #define READ 2
 
-
+// tabla para guardar la informacion de comunicacion
 int sessions[SESSION_MAX][3]; // USED, WRITE, READ
-int msqid_singleton;
 package_t error_package = {-1, -1, -1, {-1, -1}};
 
 void init_sessions(void) {
     int i;
+    // inicializa la tabla de sessions para que no esten usadas
     for (i=0; i<SESSION_MAX; i++) {
         sessions[i][USED] = FALSE;
     }
@@ -54,6 +54,7 @@ void init_sessions(void) {
 
 session_t get_session(void) {
     session_t i;
+    // busca y devuelve una session sin usar
     for (i=0; i< SESSION_MAX; i++) {
         if (sessions[i][USED] == FALSE) {
             return i;
@@ -64,6 +65,7 @@ session_t get_session(void) {
 
 int commit_session(session_t session) {
     if (sessions[session][USED] == FALSE) {
+    // si la session se escribio mientras la editaba no deja commitear los cambios
         sessions[session][USED] = TRUE;
         return 0;
     } else {
@@ -76,11 +78,17 @@ int commit_session(session_t session) {
  */
 
 #define SH_PACKAGE_MAX 100
+// esta estructura sirve para almacenar un package_t en la memoria
+// compartida. tiene, ademas del paquete, un bit que indica si ese
+// sector esta en uso o no. 
 typedef struct sh_pck {
     int used;
     package_t package;
 } sh_package_t;
 
+// describe una zona de memoria compartida. contiene el id del shared
+// memory (se usa para eliminarlo despues) y del semaforo con el que se 
+// la opera.
 typedef struct shm_descr {
     int shmid;
     sh_package_t * data;
@@ -96,18 +104,20 @@ session_t s_w_open(int other) {
     char * name;
     key_t base_key = is_core?other:getpid();
 
+    //alocamos espacio
     int size = SH_PACKAGE_MAX * sizeof(sh_package_t);
     shm_descriptor_t * desc_r = malloc(sizeof(shm_descriptor_t));
     shm_descriptor_t * desc_w = malloc(sizeof(shm_descriptor_t));
 
     int flag = 0666 | IPC_CREAT;
 
+    // creamos las claves (se requieren al crear shared memories y semaforos)
     key_t read_key = 2*base_key + (is_core?1:0);
     key_t write_key = 2*base_key + (is_core?0:1);
 
+    // creamos los semaforos y shared memories
     desc_r->shmid = shmget(read_key, size, flag);
     desc_r->semaphore_id = semget(read_key, 1, flag);
-
     desc_w->shmid= shmget(write_key, size, flag);
     desc_w->semaphore_id = semget(write_key, 1, flag);
 
@@ -117,6 +127,7 @@ session_t s_w_open(int other) {
         return -1;
     }
 
+    // adquirimos la zona de memoria
     desc_r->data = shmat(desc_r->shmid, (void *)0, 0);
     desc_w->data = shmat(desc_w->shmid, (void *)0, 0);
 
@@ -126,10 +137,14 @@ session_t s_w_open(int other) {
         free(desc_r);free(desc_w);
         return -1;
     }
+
+    // inicializacion de la zona de memoria 
     int i;
     for (i=0; i<SH_PACKAGE_MAX; i++){
         desc_w->data[i].used = FALSE;
     }
+
+    // guardamos en la tabla de sessions los descriptores de zonas de memoria
     sessions[new_session][READ] = (int) desc_r;
     sessions[new_session][WRITE] = (int) desc_w;
     if (commit_session(new_session) != -1)
@@ -139,6 +154,7 @@ session_t s_w_open(int other) {
 }
 
 int s_w_close(session_t session) {
+    // obtenemos los descriptores correspondientes de la tabla de sessions
     shm_descriptor_t * desc_r = (shm_descriptor_t *) sessions[session][READ];
     shm_descriptor_t * desc_w = (shm_descriptor_t *) sessions[session][WRITE];
 
@@ -147,11 +163,11 @@ int s_w_close(session_t session) {
         return -1;
     }
 
-    int flag;
-    flag += shmctl(desc_r->shmid, IPC_RMID, NULL);
-    flag += semctl(desc_r->semaphore_id, 0, IPC_RMID);
-    flag += shmctl(desc_w->shmid, IPC_RMID, NULL);
-    flag += semctl(desc_w->semaphore_id, 0, IPC_RMID);
+    // obliteramos todos los cachibaches
+    shmctl(desc_r->shmid, IPC_RMID, NULL);
+    semctl(desc_r->semaphore_id, 0, IPC_RMID);
+    shmctl(desc_w->shmid, IPC_RMID, NULL);
+    semctl(desc_w->semaphore_id, 0, IPC_RMID);
 
     return 0;
 
@@ -162,7 +178,7 @@ int s_w_write(session_t session_id, package_t package) {
     shm_descriptor_t * shmdp = (shm_descriptor_t *) sessions[session_id][WRITE];
     sh_package_t * mem_zone = shmdp->data;
 
-    // search for a free space in shared memory to place package
+    // buscamos una zona libre en memoria para poner el packete
     int i;
     int found_free_zone = FALSE;
     for(i=0; i<SH_PACKAGE_MAX; i++) {
@@ -171,16 +187,16 @@ int s_w_write(session_t session_id, package_t package) {
             break;
         }
     }
-    // if no free space was found, return error
+    // si no se encontraron zonas libres, devolvemos error
     if (! found_free_zone) {
-        printf("Shared memory is full. Probably some process died!!!\n");
         return -1;
     }
 
-    // if a free memory zone was found put the package in there and return
+    // ponemos el paquete ahi y lo marcamos como usado
     mem_zone[i].package = package;
     mem_zone[i].used = TRUE;
-    // and set the resource as available
+    // le avisamos al semaforo que aumentamos la cantidad de recursos 
+    // usados en esa zona de memoria
     semop(shmdp->semaphore_id, &sb, 1);
 
     return 0;
@@ -192,14 +208,15 @@ package_t s_w_read(session_t session_id) {
     shm_descriptor_t * shmdp = (shm_descriptor_t *) sessions[session_id][READ];
     sh_package_t * mem_zone = shmdp->data;
     package_t ret;
-    // search for a used space to get a package from it
+    
     int i;
     int found_free_zone = FALSE;
-    // only if there is one such resource available
-    // (if not, block until there is)
-
+    // si existen paquetes sin leer en la zona de memoria compartida
+    // (sino se bloquea esperando ese evento)
     semop(shmdp->semaphore_id, &sb, 1);
 
+    // buscamos por una zona de memoria "usada", o sea con package no leido
+    // y si lo encontramos lo devolvemos
     for(i=0; i<SH_PACKAGE_MAX; i++) {
         if (mem_zone[i].used == TRUE) {
             mem_zone[i].used = FALSE;
@@ -219,6 +236,7 @@ int f_w_init(void) {};
 session_t f_w_open(int other) {
     other = other==1?getpid():other;
 
+    /* manejos locos de strings para nombrar a los fifos*/
     char * prefix = "/tmp/";
     char name1[31];
     char name2[31];
@@ -236,6 +254,7 @@ session_t f_w_open(int other) {
     strcat(name2,other_str);
     strcat(name2,"c");
 
+    // creamos los fifos
     mknod(name1, S_IFIFO | 0666 , 0);
     mknod(name2, S_IFIFO | 0666 , 0);
     free(other_str);
@@ -251,6 +270,7 @@ session_t f_w_open(int other) {
         fd_write = open(write_name, O_WRONLY);
     }
 
+    // y lo almacenamos en la tabla de sessions
     session_t new_session = get_session();
     sessions[new_session][WRITE] = fd_write;
     sessions[new_session][READ] = fd_read;
@@ -286,6 +306,8 @@ package_t f_w_read(session_t session_id) {
     package_t buff;
     package_t * buffp = &buff;
     package_t * ret = buffp;
+    // hasta que no tenemos un paquete completo no devolvemos nada
+    // para que al usuario el IPC sea transparente
     int count;
     while(size){
         count = read( fd_read, buffp, size );
@@ -304,7 +326,7 @@ int allmighty_socket;
 
 int k_w_init(void) {
     if (is_core) {
-    /* socket server */
+    /* creando el socket server */
         int s, len;
         struct sockaddr_un local;
         if ((s = socket(AF_UNIX, SOCK_STREAM, 0)) == -1) {
@@ -329,6 +351,8 @@ int k_w_init(void) {
 session_t k_w_open(int other) {
 
     if ( is_core ) {
+        // si somos el core, aceptamos la conexion y guardamos los datos en
+        // la tabla de sessions
         struct sockaddr_un remote;
         int size = sizeof(remote);
         int new_skt, s;
@@ -347,7 +371,7 @@ session_t k_w_open(int other) {
             return -1;
         }
     } else {
-        /* socket clients */
+        /* creacion del socket cliente */
         int s, t, len;
         struct sockaddr_un remote;
 
@@ -426,7 +450,11 @@ package_t k_w_read(session_t session_id) {
 /**
  * Message Queue
  */
+// se usa una sola cola de mensajes para absolutamente TODAS las comunicaciones
+int msqid_singleton;
 
+// esta estructura es la que se enviara por la cola de mensajes
+// contiene un paquete y el id del proceso que la envio (para filtar)
 typedef struct msg {
         long mtype;
         package_t content;
@@ -434,6 +462,9 @@ typedef struct msg {
 
 
 int m_w_init(void) {
+
+    // creamos la unica cola que se va a usar
+
     key_t key;
     int msgflg, msqid;
     key = 1928;
@@ -446,6 +477,9 @@ int m_w_init(void) {
 }
 
 session_t m_w_open(int other) {
+
+    // para identificar la session usaremos el pid del otro
+    // para filtrar mensajes de la message queue
 
     session_t new_session = get_session();
     sessions[new_session][READ] = other;
@@ -466,6 +500,8 @@ int m_w_close(session_t session) {
                 return 0;
             }
         }
+        // si ya borro todas las sesiones del core,
+        // borramos la cola entera
         if (msgctl(msqid_singleton, IPC_RMID, NULL) == -1) {
             perror("msgctl");
             return -1;
@@ -496,6 +532,8 @@ package_t m_w_read(session_t session_id) {
     q_msg_t q_message;
     long id_to_filter;
 
+    // se usa el pid (o 1 en caso del core) para filtrar
+    // los mensajes de la cola
     id_to_filter = is_core?1:getpid();
 
     if (msgrcv(msqid, &q_message, sizeof(package_t), id_to_filter, 0) != -1)
@@ -517,6 +555,10 @@ package_t m_w_read(session_t session_id) {
  * GENERAL
  */
 
+// este set de funciones lo unico que hacen es encargarse de setear el 
+// IPC a usar al momento de inicializar y luego mandan el llamado a
+// w_init w_open, w_write, w_read y w_close al modulo IPC que corresponda
+// mediante arreglos de punteros a funcion
 
 int program_ipc_method;
 
@@ -559,7 +601,9 @@ package_t w_read(session_t session_id) {
  * TESTCASES
  */
 
-#define SOY_COR
+// tests usados durante el desarrollo 
+
+#define SOY_CORE
 int _main(void) {
 
     printf("inicializando transporte...");
