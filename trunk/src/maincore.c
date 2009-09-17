@@ -26,7 +26,7 @@ extern WINDOW *log_win;
 extern Tfiles files;
 
 extern ipc_selection;
-
+char * ipc_strings[] = {"SHARED MEMORY", "FIFO", "SOCKET", "MESSAGE QUEUE"};
 int
 main(int argc, char * argv[]) {
 
@@ -43,6 +43,8 @@ main(int argc, char * argv[]) {
     } else {
         ipc_selection = MESSAGE_QUEUE;
     }
+    printf("Se seleccionó el IPC %s\n", ipc_strings[ipc_selection]);
+    sleep(1);
 
     pthread_t * core_threads;
     pthread_attr_t attr;
