@@ -23,10 +23,22 @@ extern WINDOW *log_win;
 #define CD_INSERT_ACK 9
 #define CD_NEW_PAX 10
 #define CD_RND_STOPS 11
-
+#define CD_DEL_LINE 12
 
 int ipc_selection = MESSAGE_QUEUE;
-char * stringuis[] = {"SHARED_MEMORY","FIFO","SOCKET","MSG_QUEUE"};
+
+void delete_line(session_t sid, int line) {
+    package_t data;
+    
+    data.msg_id = CD_DEL_LINE;
+    data.id_line = line;
+    
+    if (w_write(sid, data) == -1) {
+        printf("error en delete line\n");
+    }
+}
+
+
 int
 m_init_core(){
     int result;
@@ -257,6 +269,7 @@ receive_lines(package_t data)
         case CD_MOVE_ACK: code = move_ack(data.id_line, data.id_bus);break;
         case CD_NEW_PAX: code = new_pax(data.id_line, data.id_bus, data.point, data.point2); break;
         case CD_RND_STOPS: code = calculate_stops(data.id_line); break;
+        case CD_DEL_LINE: code = end_line(data.id_line);break;
         default: /* */;
     }
 }
@@ -289,7 +302,8 @@ receive(session_t session)
         case CD_INSERT_ACK:
         case CD_MOVE_ACK:
         case CD_NEW_PAX:
-        case CD_RND_STOPS: if(DEBUG_MODE) wprintw(log_win,"TRACE: LLEGUE HASTA RECEIVE LINES\n");receive_lines(data); break;
+        case CD_RND_STOPS:
+        case CD_DEL_LINE: if(DEBUG_MODE) wprintw(log_win,"TRACE: LLEGUE HASTA RECEIVE LINES\n");receive_lines(data); break;
         default: /* */;
     }
 }

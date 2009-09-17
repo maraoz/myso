@@ -3,6 +3,7 @@
 #include "../inc/draw.h"
 #include "../inc/util.h"
 #include "../inc/files.h"
+#include "../inc/marshall.h"
 #include <pthread.h>
 #include <stdio.h>
 #include <unistd.h>
@@ -22,7 +23,7 @@ pthread_mutex_t map_mutex = PTHREAD_MUTEX_INITIALIZER;
 pthread_mutex_t citizen_mutex = PTHREAD_MUTEX_INITIALIZER;
 pthread_cond_t citizen_cond = PTHREAD_COND_INITIALIZER;
 person_t passenger;
-int sim_on = TRUE;
+extern sim_on;
 Tfiles files;
 
 
@@ -59,20 +60,22 @@ init(void) {
 
     
 
+
 void *
 core_listen(int index) {
     while(sim_on){
         receive(files.buffer[index]);
     }
-    closeChannel(files.buffer[index]);
     pthread_exit(0);
 }
 
 
 void *
 keyboard_listen(){
-    int ch;
-    while((ch = getch()) != KEY_F(1));
+    int ch,i;
+    while((ch = getch()) != 'q');
+    for(i=0; i<files.qty; i++)
+        delete_line(files.buffer[i],i);
     sim_on = FALSE;
     pthread_exit(0);
 }
