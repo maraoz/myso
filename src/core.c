@@ -196,7 +196,7 @@ move_bus(int fd, int id, point_t new_pos){
             return WRONG_WAY;
         }
     } else if((aux=(new_pos.y - actual_pos.y)) != 0) {
-        if((new_pos.x%6==0  ) && aux != -1  && new_pos.x != 0) {
+        if((new_pos.x%6==0) && aux != -1) {
             wprintw(log_win,"CONTRAMANO.\n");
             return WRONG_WAY;
         }
