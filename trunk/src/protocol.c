@@ -467,7 +467,7 @@ int m_w_close(session_t session) {
     if (is_core) {
         int i;
         for (i=0; i<SESSION_MAX; i++) {
-            printf("recorriendo session %d\n",i)
+            printf("recorriendo session %d\n",i);
             if (sessions[i][USED] = TRUE)
                 return 0;
         }
