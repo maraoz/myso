@@ -183,7 +183,6 @@ int s_w_write(session_t session_id, package_t package) {
     // and set the resource as available
     if (semop(shmdp->semaphore_id, &sb, 1) == -1) {
         perror("semop write:");
-        exit(1);
     }
 
     return 0;
@@ -239,12 +238,8 @@ session_t f_w_open(int other) {
     strcat(name2,other_str);
     strcat(name2,"c");
 
-    if (mknod(name1, S_IFIFO | 0666 , 0) == -1) {
-        perror("mknod warning");
-    }
-    if (mknod(name2, S_IFIFO | 0666 , 0) == -1) {
-        perror("mknod warning");
-    }
+    mknod(name1, S_IFIFO | 0666 , 0);
+    mknod(name2, S_IFIFO | 0666 , 0);
     free(other_str);
 
     char * read_name = is_core?name1:name2;
@@ -316,7 +311,7 @@ int k_w_init(void) {
         struct sockaddr_un local;
         if ((s = socket(AF_UNIX, SOCK_STREAM, 0)) == -1) {
             perror("socket");
-            exit(1);
+            return -1;
         }
         local.sun_family = AF_UNIX;
         strcpy(local.sun_path,SOCK_PATH);
@@ -342,7 +337,6 @@ session_t k_w_open(int other) {
         s = allmighty_socket;
         if ((new_skt = accept(s, (struct sockaddr *)&remote, &size)) == -1) {
             perror("accept");
-            exit(0);
             return -1;
         }
 
@@ -361,7 +355,7 @@ session_t k_w_open(int other) {
 
         if ((s = socket(AF_UNIX, SOCK_STREAM, 0)) == -1) {
             perror("socket");
-            exit(1);
+            return -1;
         }
 
         remote.sun_family = AF_UNIX;
@@ -369,7 +363,7 @@ session_t k_w_open(int other) {
         len = strlen(remote.sun_path) + sizeof(remote.sun_family);
         if (connect(s, (struct sockaddr *)&remote, len) == -1) {
             perror("connect");
-            exit(1);
+            return -1;
         }
         allmighty_socket = s;
         return 0;
@@ -379,19 +373,22 @@ session_t k_w_open(int other) {
 
 
 int k_w_close(session_t session) {
+    int skt_fd = sessions[session][WRITE];
+    if (close(skt_fd) == -1) {
+        perror("close_socket");
+        return -1;
+    } else {
+        sessions[session][USED] = FALSE;
+    }
+
     if (is_core) {
         int i;
         for (i=0; i<SESSION_MAX; i++) {
             if (sessions[i][USED] == TRUE) {
-                int skt_fd = sessions[i][WRITE];
-                if (close(skt_fd) == -1) {
-                    perror("close_socket");
-                    return -1;
-                } else {
-                    sessions[i][USED] = FALSE;
-                }
+                return 0;
             }
         }
+        unlink(SOCK_PATH);
     }
 
     return 0;
@@ -421,7 +418,7 @@ package_t k_w_read(session_t session_id) {
 
     int n = recv(skt, &pkg, sizeof(package_t) , 0);
     if (n <= 0) {
-        if (n<0) {perror("recv");exit(1);}
+        if (n<0) perror("recv");
         return error_package;
     }
     return pkg;
@@ -467,13 +464,13 @@ int m_w_close(session_t session) {
     if (is_core) {
         int i;
         for (i=0; i<SESSION_MAX; i++) {
-            printf("recorriendo session %d\n",i);
-            if (sessions[i][USED] = TRUE)
+            if (sessions[i][USED] == TRUE) {
                 return 0;
+            }
         }
         if (msgctl(msqid_singleton, IPC_RMID, NULL) == -1) {
             perror("msgctl");
-            exit(1);
+            return -1;
         }
     }
     return 0;
@@ -508,7 +505,7 @@ package_t m_w_read(session_t session_id) {
         ret = q_message.content;
         return ret;
     } else {
-        printf("Error al leer\n");
+        perror("msgrcv warning");
         return error_package;
     }
 }
@@ -543,6 +540,7 @@ session_t w_open(int other) {
 
 int (*close_fns[4]) (session_t) = {s_w_close,f_w_close,k_w_close,m_w_close};
 int w_close(session_t session) {
+    printf("%s cerrando sesión de comunicación con %d\n",is_core?"CORE":"LINE", session);
     return close_fns[program_ipc_method](session);
 }
 
