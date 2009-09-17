@@ -92,10 +92,11 @@ pax_creation() {
         get_random_stops(files.buffer[random_line], random_line);
         pthread_cond_wait(&citizen_cond,&citizen_mutex);
         if(random_line != passenger.line){
-//             wprintw(log_win,"Paradas no corresponden a la linea pedida\n");
+            wprintw(log_win,"Paradas no corresponden a la linea pedida\n");
         } else {
             insert_pax_to_line(files.buffer[passenger.line], passenger.line, passenger.up, passenger.down);
-// 	    printf("inserte nuevo pasajero\n");
+            wprintw(log_win,"Nuevo pasajero para la linea %d\n",passenger.line);
+            wprintw(log_win,"Va de la parada (%d,%d) a la parada (%d,%d)\n",passenger.up.x,passenger.up.y,passenger.down.x,passenger.down.y);
         }
         pthread_mutex_unlock(&citizen_mutex);
         
@@ -110,12 +111,12 @@ insert_bus(int fd, int id, point_t pos){
     if(DEBUG_MODE)
 	wprintw(log_win,"TRACE: PIDIO DE INSERTARSE\n");
     if(fd >= XDIM*YDIM || fd < 0) {
-       printf("Linea no soportada por el sistema.\n");
+       wprintw(log_win,"Linea no soportada por el sistema.\n");
         return FD_TOO_LARGE;
     }
     
     if(id >= XDIM*YDIM || id < 0) {
-// 	    wprintw(log_win,"Colectivo no soportado por el sistema.\n");
+	    wprintw(log_win,"Colectivo no soportado por el sistema.\n");
         return ID_TOO_LARGE;
     }
     
@@ -153,12 +154,12 @@ move_bus(int fd, int id, point_t new_pos){
 	wprintw(log_win,"TRACE: PIDIO DE MOVERSE\n");
     
     if(fd >= XDIM*YDIM || fd < 0) {
-// 	    wprintw(log_win,"Linea no soportada por el sistema.\n");
+	    wprintw(log_win,"Linea no soportada por el sistema.\n");
         return FD_TOO_LARGE;
     }
     
     if(id >= XDIM*YDIM || id < 0) {
-// 	    wprintw(log_win,"Colectivo no soportado por el sistema.\n");
+	    wprintw(log_win,"Colectivo no soportado por el sistema.\n");
         return ID_TOO_LARGE;
     }  
     
@@ -171,7 +172,6 @@ move_bus(int fd, int id, point_t new_pos){
         return NEW_POS_FAR_AWAY;
     }
   
-    //pthread_mutex_lock(&semaphore_mutex);
     if(hasSemaphore(new_pos) && isVRedHGreen(semps[(semps_hash[new_pos.y][new_pos.x])]) 
 	&& actual_pos.x == new_pos.x) {
 // 	wprintw(log_win,"No se puede avanzar a (%d,%d), semaforo en rojo.\n",new_pos.x, new_pos.y);
@@ -182,7 +182,6 @@ move_bus(int fd, int id, point_t new_pos){
 // 	wprintw(log_win,"No se puede avanzar a (%d,%d), semaforo en rojo.\n",new_pos.x, new_pos.y);
         return RED_LIGHT_ON;
     }
-    //pthread_mutex_unlock(&semaphore_mutex);
     
     if(tiles[new_pos.y][new_pos.x] == TRUE){
 // 	wprintw(log_win,"No se puede avanzar, posicion (%d,%d) ocupada\n",new_pos.x, new_pos.y);
@@ -194,16 +193,16 @@ move_bus(int fd, int id, point_t new_pos){
             wprintw(log_win,"CONTRAMANO.\n");
             return WRONG_WAY;
         }
-        if((new_pos.y%3==0 || new_pos.y==YDIM-1) && aux != -1  && new_pos.y != 0) {
+        if(((new_pos.y%3==0 && new_pos.y%6!=0)|| new_pos.y==YDIM-1) && aux != -1  && new_pos.y != 0) {
             wprintw(log_win,"CONTRAMANO.\n");
             return WRONG_WAY;
         }
     } else if((aux=(new_pos.y - actual_pos.y)) != 0) {
-        if((new_pos.x%6==0) && aux != -1) {
+        if(new_pos.x%6==0 && new_pos.x != XDIM-1 && aux != -1) {
             wprintw(log_win,"CONTRAMANO.\n");
             return WRONG_WAY;
         }
-        if((new_pos.x%3==0 || new_pos.x == XDIM-1) && aux != 1) {
+        if(((new_pos.x%3==0 && new_pos.x%6!=0) || new_pos.x == XDIM-1) && aux != 1 && new_pos.x != 0) {
             wprintw(log_win,"CONTRAMANO.\n");
             return WRONG_WAY;
         }
@@ -273,13 +272,13 @@ set_new_pax(int idl, point_t stop_up, point_t stop_down){
 
 int
 pax_get_of_bus(int idl, point_t stop){
-    wprintw(log_win,"Pasajero de linea %d bajandose en (%d,%d)\n", idl, stop.x, stop.y);
+    wprintw(log_win,"Pasajero de linea %d bajandose en (%d,%d)\n", idl+1, stop.x, stop.y);
     return 0;
 }
 
 int
 pax_get_on_bus(int idl, point_t stop){
-    wprintw(log_win,"Pasajero de linea %d subiendose en (%d,%d)\n", idl, stop.x, stop.y);
+    wprintw(log_win,"Pasajero de linea %d subiendose en (%d,%d)\n", idl+1, stop.x, stop.y);
     return 0;
 }
          

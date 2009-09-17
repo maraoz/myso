@@ -297,7 +297,7 @@ receive(session_t session)
         case CD_VALID_POS:
         case CD_INIT:
         case CD_PAX_DL:
-	case CD_PAX_UL:
+        case CD_PAX_UL:
         case CD_DEL_STOPS: if(DEBUG_MODE) wprintw(log_win,"TRACE: LLEGUE HASTA RECEIVE CORE\n"); receive_core(data); break;
         case CD_INSERT_ACK:
         case CD_MOVE_ACK:
