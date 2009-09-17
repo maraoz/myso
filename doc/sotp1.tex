@@ -1,0 +1,69 @@
+\documentclass[a4paper,10pt]{elsart}
+\usepackage[pdftex,usenames,dvipsnames]{color}
+\usepackage [spanish] {babel}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath, amsfonts, amssymb}
+\usepackage[pdftex]{color,graphicx}
+\include{latexsym}
+\include{epsf}
+
+\begin{document}
+
+
+\begin{frontmatter}
+\title{Trabajo Práctico 1: Filesystems, IPCs, Servidores}
+\author{Manuel Aráoz (49244) \& Matías Williams (49195)} \& Pablo Giorgi (49222)}
+\address{Ingeniería en Informática\\
+Instituto Tecnológico Buenos Aires\\
+Ciudad Autónoma de Buenos Aires, Argentina}
+\date{\today}
+
+
+\maketitle
+
+\begin{abstract}
+En este informe se darán a conocer las decisiones que se tomaron al momento de realizar el Trabajo Práctico, los problemas presentados y las soluciones que se aplicaron para resolverlos.
+\end{abstract}
+\begin{keyword}
+Programación lineal, programación entera, método Símplex, método de Resolución Gráfica, Camino hamiltoneano.
+\end{keyword}
+\end{frontmatter}
+\clearpage
+
+\tableofcontents
+\listoffigures
+
+\clearpage
+
+\section{Divisón en Capas}
+
+\subsection{Aplicación}
+La capa de aplicación consiste en distintos modulos. Por un lado existen los módulos \emph{maincore.c} y \emph{mainlines.c}. Estos módulos son los que contienen los \emph{main} de los procesos que van a estar corriendo a la vez. Solo habrá un proceso corriendo \emph{maincore.c} y habrá tantos procesos como archivos haya en el directorio de lineas, corriendo \emph{mainlines.c}. También, existen otros módulos que complementan las funciones de los dos \emph{main}: \emph{lineas.c} y \emph{core.c}. Aquí se hallan todas las funcionen que se van a llamar desde los dos \emph{main}. Asimismo, hay un módulo que se encarga de la interfaz gráfica: \emph{draw.c}.
+\subsubsection{Decisiones tomadas}
+\subsubsection{Problemas presentados}
+\begin{itemize}
+	\item Al principio no se chequeaba que un colectivo insertado no se pudiera insertar nuevamente. Esto generaba dos problemas; por un lado se insertaba dos veces el mismo colectivo, y por el otro varias veces se quería mover un colectivo que no estaba insertado. El segundo problema surgió porque se quiso arreglar el primero mediante utilizar un valor inválido para.
+\end{itemize}
+
+
+\subsubsection{Soluciones a los problemas}
+\subsection{Marshall}
+\subsubsection{Decisiones tomadas}
+\subsubsection{Problemas presentados}
+\subsubsection{Soluciones a los problemas}
+\subsection{Transporte}
+\subsubsection{Decisiones tomadas}
+\subsubsection{Problemas presentados}
+\subsubsection{Soluciones a los problemas}
+
+\section{Bibliografía}
+\begin{itemize}
+	\item GROSSMAN, Stanley I., \emph{Aplicaciones del Álgebra Lineal}, McGraw-Hill, Cuarta Edición, México D.F., 1992.
+	\item MUNIER, Nolberto J., \emph{Programación Lineal}, Editorial Astrea, Tercera Edición, Buenos Aires, 1979.
+	\item MUNIER, Nolberto J., \emph{Aplicaciones de la Programación Lineal}, Editorial Astrea, Buenos Aires, 1986.
+	\item WANER, Stefan, \emph{Simplex Method Tool},2008, \underline{http://www.zweigmedia.com/RealWorld/simplex.html}
+\end{itemize}
+
+
+\end{document}
+
