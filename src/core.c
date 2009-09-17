@@ -81,19 +81,21 @@ keyboard_listen(){
 void *
 pax_creation() {
     int random_line;
+    sleep(5);
     while(sim_on){
+        sleep(1);
         random_line = rand()%files.qty;
         pthread_mutex_lock(&citizen_mutex);
         get_random_stops(files.buffer[random_line], random_line);
         pthread_cond_wait(&citizen_cond,&citizen_mutex);
         if(random_line != passenger.line){
-            wprintw(log_win,"Paradas no corresponden a la linea pedida\n");
+//             wprintw(log_win,"Paradas no corresponden a la linea pedida\n");
         } else {
             insert_pax_to_line(files.buffer[passenger.line], passenger.line, passenger.up, passenger.down);
 // 	    printf("inserte nuevo pasajero\n");
         }
         pthread_mutex_unlock(&citizen_mutex);
-        sleep(1);
+        
     }
     pthread_exit(0);
 }
@@ -110,7 +112,7 @@ insert_bus(int fd, int id, point_t pos){
     }
     
     if(id >= XDIM*YDIM || id < 0) {
-	    wprintw(log_win,"Colectivo no soportado por el sistema.\n");
+// 	    wprintw(log_win,"Colectivo no soportado por el sistema.\n");
         return ID_TOO_LARGE;
     }
     
@@ -119,7 +121,7 @@ insert_bus(int fd, int id, point_t pos){
     }
     if(((pos.y%(TILES_CUADRAS+1) == 1) || (pos.y%(TILES_CUADRAS+1) == 2)) 
       && ((pos.x%(TILES_CUADRAS+1) == 1) || (pos.x%(TILES_CUADRAS+1) == 2))){
-	    wprintw(log_win,"No se puede insertar un colectivo en medio de una manzana.\n");
+// 	    wprintw(log_win,"No se puede insertar un colectivo en medio de una manzana.\n");
         return BLOCKED_SLOT;
     }
 
@@ -148,12 +150,12 @@ move_bus(int fd, int id, point_t new_pos){
 	wprintw(log_win,"TRACE: PIDIO DE MOVERSE\n");
     
     if(fd >= XDIM*YDIM || fd < 0) {
-	    wprintw(log_win,"Linea no soportada por el sistema.\n");
+// 	    wprintw(log_win,"Linea no soportada por el sistema.\n");
         return FD_TOO_LARGE;
     }
     
     if(id >= XDIM*YDIM || id < 0) {
-	    wprintw(log_win,"Colectivo no soportado por el sistema.\n");
+// 	    wprintw(log_win,"Colectivo no soportado por el sistema.\n");
         return ID_TOO_LARGE;
     }  
     
@@ -186,20 +188,20 @@ move_bus(int fd, int id, point_t new_pos){
 
     if((aux=(new_pos.x - actual_pos.x)) != 0) {
         if(new_pos.y%6==0  && aux != 1 && new_pos.y != YDIM-1) {
-            printf("CONTRAMANO.\n");
+            wprintw(log_win,"CONTRAMANO.\n");
             return WRONG_WAY;
         }
         if((new_pos.y%3==0 || new_pos.y==YDIM-1) && aux != -1  && new_pos.y != 0) {
-            printf("CONTRAMANO.\n");
+            wprintw(log_win,"CONTRAMANO.\n");
             return WRONG_WAY;
         }
     } else if((aux=(new_pos.y - actual_pos.y)) != 0) {
-        if((new_pos.x%6==0 || new_pos.x==XDIM-1 ) && aux != -1) {
-            printf("CONTRAMANO.\n");
+        if((new_pos.x%6==0  ) && aux != -1  && new_pos.x != 0) {
+            wprintw(log_win,"CONTRAMANO.\n");
             return WRONG_WAY;
         }
-        if(new_pos.x%3==0 && aux != 1 && new_pos.x != 0 && new_pos.x != XDIM-1) {
-            printf("CONTRAMANO.\n");
+        if((new_pos.x%3==0 || new_pos.x == XDIM-1) && aux != 1) {
+            wprintw(log_win,"CONTRAMANO.\n");
             return WRONG_WAY;
         }
     }
