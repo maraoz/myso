@@ -95,7 +95,7 @@ pax_creation() {
             wprintw(log_win,"Paradas no corresponden a la linea pedida\n");
         } else {
             insert_pax_to_line(files.buffer[passenger.line], passenger.line, passenger.up, passenger.down);
-            wprintw(log_win,"Nuevo pasajero para la linea %d\n",passenger.line);
+            wprintw(log_win,"Nuevo pasajero para la linea %d\n",passenger.line+1);
             wprintw(log_win,"Va de la parada (%d,%d) a la parada (%d,%d)\n",passenger.up.x,passenger.up.y,passenger.down.x,passenger.down.y);
         }
         pthread_mutex_unlock(&citizen_mutex);

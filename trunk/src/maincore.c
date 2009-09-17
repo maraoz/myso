@@ -132,7 +132,7 @@ main(int argc, char * argv[]) {
     pthread_mutex_destroy(&map_mutex);
     pthread_mutex_destroy(&citizen_mutex);
     pthread_cond_destroy(&citizen_cond);
-
+    closeFd(3);
     for (i = 0; i<files.qty; i++)
         closeChannel(files.buffer[i]);
     exit(0);

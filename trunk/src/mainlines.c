@@ -48,6 +48,7 @@ main(int argc, char * argv[] ){
     qty_buses = get_qty_buses(3);
     buses_times = get_times(3);
 
+    
     movements = calloc(sizeof(int),qty_buses);
     if(movements == NULL){
 	printf("+ERROR: No hay suficiente memoria\n");
@@ -65,7 +66,7 @@ main(int argc, char * argv[] ){
     }
    buses.stops_length = get_stops(3, &buses.stops);
     
-
+    closeFd(3);
     pax = malloc(buses.stops_length*sizeof(int*));
     if(pax == NULL){
 	printf("+ERROR: No hay suficiente memoria\n");
