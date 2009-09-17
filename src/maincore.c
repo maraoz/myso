@@ -10,23 +10,30 @@
 #include <stdlib.h>
 #include <ncurses.h>
 
+
 extern boolean tiles[YDIM][XDIM];
 extern point_t buses[XDIM*YDIM][XDIM*YDIM];
 
 extern semaphore semps[(CUADRAS+1)*(CUADRAS+1)-4];
 extern int semps_hash[(CUADRAS+1)][(CUADRAS+1)];
 extern pthread_mutex_t semaphore_mutex;
+
 extern pthread_mutex_t map_mutex;
-int sim_on = TRUE;
+
 extern person_t passenger;
 extern pthread_mutex_t citizen_mutex;
 extern pthread_cond_t citizen_cond;
+
 extern WINDOW *log_win;
 
 extern Tfiles files;
 
 extern ipc_selection;
+
+int sim_on = TRUE;
+
 char * ipc_strings[] = {"SHARED MEMORY", "FIFO", "SOCKET", "MESSAGE QUEUE"};
+
 int
 main(int argc, char * argv[]) {
 

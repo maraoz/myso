@@ -42,8 +42,11 @@ init(void) {
             aux.x = j;
             aux.y = i;
             if(hasSemaphore(aux)) {
+                /*Seteo en Vertical Red el estado inicial de todos los semaforos*/
                 semps[index].state = V_RED;
-                semps_hash[aux.y][aux.x] = index;
+                /* Agrego en la matrix semps_hash el indice en el vecto 
+                 * semps de dicho semaforo */
+                semps_hash[aux.y][aux.x] = index; 
                 semps[index++].pos = aux;
                 tiles[i][j] = FALSE;
             } else if(((i%(TILES_CUADRAS+1) == 1) || (i%(TILES_CUADRAS+1) == 2)) 
@@ -64,7 +67,7 @@ init(void) {
 void *
 core_listen(int index) {
     while(sim_on){
-        receive(files.buffer[index]);
+        receive(files.buffer[index]); /* En files.buffer tengo todos las session_t */
     }
     pthread_exit(0);
 }
@@ -73,10 +76,10 @@ core_listen(int index) {
 void *
 keyboard_listen(){
     int ch,i;
-    while((ch = getch()) != 'q');
+    while((ch = getch()) != 'q'); /* Leo del teclado hasta leer una 'q' */
     for(i=0; i<files.qty; i++)
-        delete_line(files.buffer[i],i);
-    sim_on = FALSE;
+        delete_line(files.buffer[i],i); /* Envio señales para matar todas las lineas */
+    sim_on = FALSE; /* Seteo la variable de simulacion activa en FALSE */
     pthread_exit(0);
 }
 
@@ -84,16 +87,20 @@ keyboard_listen(){
 void *
 pax_creation() {
     int random_line;
-    sleep(5);
+    sleep(5); /* Espero 5 segundos para no empezar inmediatamente a crear pasajeros */
     while(sim_on){
-        sleep(3);
-        random_line = rand()%files.qty;
-        pthread_mutex_lock(&citizen_mutex);
-        get_random_stops(files.buffer[random_line], random_line);
+        sleep(3); /*Tiempo entre creacion de pasajeros seteado en 3 segundos */
+        random_line = rand()%files.qty; /* Elijo una linea al azar entre todas las que tengo disponible */
+        pthread_mutex_lock(&citizen_mutex); 
+        get_random_stops(files.buffer[random_line], random_line); 
+        /* Envio mensaje para que me envien paradas y las espero */
         pthread_cond_wait(&citizen_cond,&citizen_mutex);
         if(random_line != passenger.line){
+            /* Si el numero de parada elegido al azar no coincide con el seteado en el pasajero
+             * hay un error */
             wprintw(log_win,"Paradas no corresponden a la linea pedida\n");
         } else {
+            /* Inserto pasajero en su linea correspondiente */
             insert_pax_to_line(files.buffer[passenger.line], passenger.line, passenger.up, passenger.down);
             wprintw(log_win,"Nuevo pasajero para la linea %d\n",passenger.line+1);
             wprintw(log_win,"Va de la parada (%d,%d) a la parada (%d,%d)\n",passenger.up.x,passenger.up.y,passenger.down.x,passenger.down.y);
@@ -107,71 +114,85 @@ pax_creation() {
 
 
 int
-insert_bus(int fd, int id, point_t pos){
+insert_bus(int idl, int idb, point_t pos){
     if(DEBUG_MODE)
 	wprintw(log_win,"TRACE: PIDIO DE INSERTARSE\n");
-    if(fd >= XDIM*YDIM || fd < 0) {
-       wprintw(log_win,"Linea no soportada por el sistema.\n");
+    
+    /* Reviso que sea una linea valida */
+    if(idl >= XDIM*YDIM || idl < 0) {
+        wprintw(log_win,"Linea no soportada por el sistema.\n");
         return FD_TOO_LARGE;
     }
     
-    if(id >= XDIM*YDIM || id < 0) {
-	    wprintw(log_win,"Colectivo no soportado por el sistema.\n");
+    /* Reviso que sea un colectivo valido */
+    if(idb >= XDIM*YDIM || idb < 0) {
+        wprintw(log_win,"Colectivo no soportado por el sistema.\n");
         return ID_TOO_LARGE;
     }
     
+    /* Reviso que la posicion sea valida */
     if(!valid_pos(pos)){
         return NEW_POS_INVALID;
     }
+    
+    /*Reviso que no caiga dentro de una manzana */
     if(((pos.y%(TILES_CUADRAS+1) == 1) || (pos.y%(TILES_CUADRAS+1) == 2)) 
       && ((pos.x%(TILES_CUADRAS+1) == 1) || (pos.x%(TILES_CUADRAS+1) == 2))){
 // 	    wprintw(log_win,"No se puede insertar un colectivo en medio de una manzana.\n");
         return BLOCKED_SLOT;
     }
 
+    /*Reviso que el lugar nuevo este vacio */
     if(tiles[pos.y][pos.x]){
 //        printf("Hay un bus en ese lugar, intentar luego.\n");
         return BUS_ALREADY_IN_SLOT;
     }
 
+    /* Si llegue hasta acá, inserto el colectivo */
     pthread_mutex_lock(&map_mutex);
     tiles[pos.y][pos.x] = TRUE;
-    buses[fd][id] = pos;
+    buses[idl][idb] = pos;
     pthread_mutex_unlock(&map_mutex);
-    insert_bus_ack(files.buffer[fd],fd,id);
+    insert_bus_ack(files.buffer[idl],idl,idb);
     if(DEBUG_MODE)
 	wprintw(log_win,"TRACE: COLECTIVO INSERTADO\n");
-    return id;
+    return idb;
         
 }
 
 
 int
-move_bus(int fd, int id, point_t new_pos){
-    point_t actual_pos = buses[fd][id];
+move_bus(int idl, int idb, point_t new_pos){
+    /* Guardo la posicion actual del colectivo en una variable local */
+    point_t actual_pos = buses[idl][idb];
     int aux; 
     if(DEBUG_MODE)
 	wprintw(log_win,"TRACE: PIDIO DE MOVERSE\n");
     
-    if(fd >= XDIM*YDIM || fd < 0) {
+    /* Reviso que sea una linea valida */
+    if(idl >= XDIM*YDIM || idl < 0) {
 	    wprintw(log_win,"Linea no soportada por el sistema.\n");
         return FD_TOO_LARGE;
     }
     
-    if(id >= XDIM*YDIM || id < 0) {
+    /* Reviso que sea un colectivo valido */
+    if(idb >= XDIM*YDIM || idb < 0) {
 	    wprintw(log_win,"Colectivo no soportado por el sistema.\n");
         return ID_TOO_LARGE;
     }  
     
+    /* Reviso que new_pos sea una posicion valida */
     if(!valid_pos(new_pos)){
         return NEW_POS_INVALID;
     }
     
+    /* Reviso que el colectivo no se quiera mover mas de 1 lugar por turno */
     if(dist(new_pos, actual_pos) > 1){
 //         wprintw(log_win,"No te podes mover mas de 1 lugar por turno.\n");
         return NEW_POS_FAR_AWAY;
     }
   
+    /* Reviso que los semaforos esten en verde en la direccion que me quiero mover */
     if(hasSemaphore(new_pos) && isVRedHGreen(semps[(semps_hash[new_pos.y][new_pos.x])]) 
 	&& actual_pos.x == new_pos.x) {
 // 	wprintw(log_win,"No se puede avanzar a (%d,%d), semaforo en rojo.\n",new_pos.x, new_pos.y);
@@ -184,10 +205,13 @@ move_bus(int fd, int id, point_t new_pos){
     }
     
     if(tiles[new_pos.y][new_pos.x] == TRUE){
+        /*Reviso que el lugar nuevo este vacio */
 // 	wprintw(log_win,"No se puede avanzar, posicion (%d,%d) ocupada\n",new_pos.x, new_pos.y);
         return NEW_POS_ALREADY_OCCUPIED;
     }
 
+
+    /* Reviso que ningun colectivo este moviendose en contramano */
     if((aux=(new_pos.x - actual_pos.x)) != 0) {
         if(new_pos.y%6==0  && aux != 1 && new_pos.y != YDIM-1) {
             wprintw(log_win,"CONTRAMANO.\n");
@@ -208,7 +232,8 @@ move_bus(int fd, int id, point_t new_pos){
         }
     }
 
-    buses[fd][id] = new_pos;
+    /* Si llegue hasta acá, muevo el colectivo */
+    buses[idl][idb] = new_pos;
     pthread_mutex_lock(&map_mutex);
 //     wprintw(log_win,"actual pos: (%d,%d)\n",actual_pos.x,actual_pos.y);
     tiles[actual_pos.y][actual_pos.x] = FALSE;
@@ -217,9 +242,9 @@ move_bus(int fd, int id, point_t new_pos){
     pthread_mutex_unlock(&map_mutex);
     if(DEBUG_MODE)
 	wprintw(log_win,"TRACE: SE MOVIO\n");
-    move_request_ack(files.buffer[fd],fd,id);
+    move_request_ack(files.buffer[idl],idl,idb);
     
-    return id;
+    return idb;
 }
 
 int
@@ -253,6 +278,7 @@ isVRedHGreen(semaphore s){
 
 void
 switch_semaphore(semaphore * sem){
+    /* Cambio el estado del semaforo */
     sem->state = !sem->state;
 }
 
@@ -261,6 +287,7 @@ set_new_pax(int idl, point_t stop_up, point_t stop_down){
     
     pthread_mutex_lock(&citizen_mutex);
     
+    /* Creo el nuevo pasajero */
     passenger.line = idl;
     passenger.up = stop_up;
     passenger.down = stop_down;
@@ -271,14 +298,14 @@ set_new_pax(int idl, point_t stop_up, point_t stop_down){
 }
 
 int
-pax_get_of_bus(int idl, point_t stop){
-    wprintw(log_win,"Pasajero de linea %d bajandose en (%d,%d)\n", idl+1, stop.x, stop.y);
+pax_get_of_bus(int idl, int idb, point_t stop){
+    wprintw(log_win,"Pasajero de linea %d, colectivo %d, bajandose en (%d,%d)\n", idl+1, idb+1, stop.x, stop.y);
     return 0;
 }
 
 int
-pax_get_on_bus(int idl, point_t stop){
-    wprintw(log_win,"Pasajero de linea %d subiendose en (%d,%d)\n", idl+1, stop.x, stop.y);
+pax_get_on_bus(int idl, int idb, point_t stop){
+    wprintw(log_win,"Pasajero de linea %d, colectivo %d, subiendose en (%d,%d)\n", idl+1, idb+1, stop.x, stop.y);
     return 0;
 }
          

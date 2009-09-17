@@ -32,7 +32,7 @@ void end_line(int line_id) {
 }
 
 void 
-new_pax(int fd, int id, point_t start, point_t stop){
+new_pax(int idl, point_t start, point_t stop){
     int i,j=-1,k=-1;
     for(i=0;i<buses.stops_length;i++){
         if(start.x == buses.stops[i].x && start.y == buses.stops[i].y){

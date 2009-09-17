@@ -251,8 +251,8 @@ receive_core(package_t data)
         case CD_MOVE_BUS: code = move_bus(data.id_line, data.id_bus, data.point);break;
         case CD_VALID_POS: code = valid_pos(data.point);break;
         case CD_INIT: code = init(); break;
-        case CD_PAX_DL: code = pax_get_of_bus(data.id_line,data.point); break;
-	case CD_PAX_UL: code = pax_get_on_bus(data.id_line,data.point); break;
+        case CD_PAX_DL: code = pax_get_of_bus(data.id_line,data.id_bus,data.point); break;
+        case CD_PAX_UL: code = pax_get_on_bus(data.id_line,data.id_bus,data.point); break;
         case CD_DEL_STOPS: code = set_new_pax(data.id_line, data.point, data.point2);break;
         default: /* */;
     }
@@ -267,7 +267,7 @@ receive_lines(package_t data)
     {
         case CD_INSERT_ACK: code = insert_ack(data.id_line, data.id_bus);break;
         case CD_MOVE_ACK: code = move_ack(data.id_line, data.id_bus);break;
-        case CD_NEW_PAX: code = new_pax(data.id_line, data.id_bus, data.point, data.point2); break;
+        case CD_NEW_PAX: code = new_pax(data.id_line, data.point, data.point2); break;
         case CD_RND_STOPS: code = calculate_stops(data.id_line); break;
         case CD_DEL_LINE: code = end_line(data.id_line);break;
         default: /* */;

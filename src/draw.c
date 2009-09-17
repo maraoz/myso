@@ -46,15 +46,13 @@ draw(void)
     point_t aux, aux2;
 	int startx, starty, width, height;
 
-	initscr();			/* Start curses mode 		*/
-	cbreak();			/* Line buffering disabled, Pass on
-// 					 * everty thing to me 		*/
-	keypad(stdscr, TRUE);		/* I need that nifty F1 	*/
-// 
+	initscr();			
+	cbreak();
+	keypad(stdscr, TRUE);
 	height = LINES-2;
 	width = COLS / 2;
-	starty = 2;	/* Calculating for a center placement */
-	startx = 0;	/* of the window		*/
+	starty = 2;	
+	startx = 0;	
 	printw("Press Q to exit");
 	refresh();
 	city_box = create_newwin(height, width, starty, startx);
@@ -112,7 +110,7 @@ draw(void)
     delwin(city_win);
     delwin(log_box);
     delwin(log_win);
-	endwin();			/* End curses mode		  */
+	endwin();	
 	pthread_exit(0);
 }
 
