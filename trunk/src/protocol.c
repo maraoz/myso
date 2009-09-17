@@ -26,7 +26,6 @@
 #include "../inc/protocol.h"
 #include "../inc/util.h"
 
-extern WINDOW *log_win;
 
 /**
  * tutorial usado:
@@ -465,6 +464,18 @@ session_t m_w_open(int other) {
 
 int m_w_close(session_t session) {
     sessions[session][USED] = FALSE;
+    if (is_core) {
+        int i;
+        for (i=0; i<SESSION_MAX; i++) {
+            printf("recorriendo session %d\n",i)
+            if (sessions[i][USED] = TRUE)
+                return 0;
+        }
+        if (msgctl(msqid_singleton, IPC_RMID, NULL) == -1) {
+            perror("msgctl");
+            exit(1);
+        }
+    }
     return 0;
 }
 
