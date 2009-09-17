@@ -50,18 +50,18 @@ draw(void)
 // 					 * everty thing to me 		*/
 	keypad(stdscr, TRUE);		/* I need that nifty F1 	*/
 // 
-	height = 45;
-	width = 90;
-	starty = (LINES - height) / 2;	/* Calculating for a center placement */
+	height = LINES-2;
+	width = COLS / 2;
+	starty = 2;	/* Calculating for a center placement */
 	startx = 0;	/* of the window		*/
 	printw("Press F1 to exit");
 	refresh();
 	city_box = create_newwin(height, width, starty, startx);
-	log_box = create_newwin(height, width-30, starty, startx+width+5);
-// 	city_win = subwin(city_box,height-4, width-5, starty+2, startx+3);
-    city_win = newwin(height-4, width-5, starty+2, startx+3);
-// 	log_win = subwin(hola,height-2, width-32, starty+1, startx+width+6);
-    log_win = newwin(height-2, width-32, starty+1, startx+width+6);
+    log_box = create_newwin(height, width-30, starty, startx+width+5);
+    werase(city_box);
+    werase(log_box);
+	city_win = subwin(city_box,height-4, width-5, starty+2, startx+3);
+	log_win = subwin(log_box,height-2, width-32, starty+1, startx+width+6);
 	scrollok(log_win, TRUE);
 
 	while(sim_on) {
