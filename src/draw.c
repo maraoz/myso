@@ -55,7 +55,7 @@ draw(void)
 	width = COLS / 2;
 	starty = 2;	/* Calculating for a center placement */
 	startx = 0;	/* of the window		*/
-	printw("Press F1 to exit");
+	printw("Press Q to exit");
 	refresh();
 	city_box = create_newwin(height, width, starty, startx);
     log_box = create_newwin(height, width-30, starty, startx+width+5);

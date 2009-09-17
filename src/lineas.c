@@ -24,6 +24,7 @@ pthread_mutex_t pax_mutex = PTHREAD_MUTEX_INITIALIZER;
 extern WINDOW *log_win;
 
 void end_line(int line_id) {
+    sim_on = FALSE;
     closeChannel(session);
     pthread_mutex_destroy(&pax_mutex);
     free(movements);
