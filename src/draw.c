@@ -114,7 +114,7 @@ draw(void)
 	pthread_exit(0);
 }
 
-
+/* Dibuja una cuadra */
 void
 print_square(point_t point)
 {
@@ -124,6 +124,7 @@ print_square(point_t point)
         mvwprintw(city_win,(point.y)+i, point.x, "|||||||||");
 }
 
+/* Dibuja las cuadras */
 void
 print_all_squares(void)
 {
@@ -139,6 +140,8 @@ print_all_squares(void)
         }
 }
 
+/* Printea los colectivos, indicando numero de linea y id
+ * del colectivo */
 void
 print_bus(point_t point1, point_t point2)
 {
@@ -153,6 +156,7 @@ print_bus(point_t point1, point_t point2)
     mvwprintw(city_win,(point1.y)+1, point1.x, "%02d", j);
 }
 
+/* Printea los semaforos horizontales */
 void
 print_h_sem(point_t point)
 {
@@ -162,6 +166,7 @@ print_h_sem(point_t point)
     mvwprintw(city_win,(point.y)+1, (point.x)+3, "|");
 }
 
+/* Printea los semaforos verticales */
 void
 print_v_sem(point_t point)
 {
