@@ -151,6 +151,7 @@ insert_bus(int idl, int idb, point_t pos){
     /* Si llegue hasta acá, inserto el colectivo */
     pthread_mutex_lock(&map_mutex);
     tiles[pos.y][pos.x] = TRUE;
+    wprintw(log_win,"%d,%d\n",idl,idb);
     buses[idl][idb] = pos;
     pthread_mutex_unlock(&map_mutex);
     insert_bus_ack(files.buffer[idl],idl,idb);

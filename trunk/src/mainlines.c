@@ -7,6 +7,7 @@
 #include <unistd.h>
 #include <ncurses.h>
 
+/* Variables globales */
 extern buses_line buses;
 extern pid_t my_pid;
 int sim_on = TRUE;
@@ -24,12 +25,12 @@ extern int ipc_selection;
 int
 main(int argc, char * argv[] ){
 
-    ipc_selection = atoi(argv[2]);
+    ipc_selection = atoi(argv[2]); /* Leo el IPC a utilizar */
     m_init_line();
 
-    session = openChannel(1);
+    session = openChannel(1); /* Abro canal de comunicacion con core */
 
-    line_id = atoi(argv[1]);
+    line_id = atoi(argv[1]); /* Leo el ID de la linea */
 
     int * buses_times;
     pthread_t * buses_threads;
@@ -55,7 +56,8 @@ main(int argc, char * argv[] ){
 	return 1;
     }
     for(i =0 ; i<qty_buses; i++){
-        movements[i] = -1;
+	/* Inicializo todos los movimientos de los colectivos de esta linea en -1 */
+        movements[i] = -1; 
     }
      
     buses_threads = malloc(sizeof(pthread_t) * qty_buses);
@@ -78,20 +80,21 @@ main(int argc, char * argv[] ){
 	}
     }
 
-    aux = buses_times[0];
+    aux = buses_times[0]; /* Tiempo que tarda en aparacer el primer colectivo */
     
+    /* Thread para escuchar del core */
     aux_pthread_creation = pthread_create(&listener_thread, &attr, (void*)(line_listener), (void *)0);
     while(qty_buses > 0) {
         sleep(aux);
         aux_pthread_creation = pthread_create(&buses_threads[index], &attr, (void*)(new_bus), (void *)index);
 	    index++;
         qty_buses--;
-	    if(qty_buses > 0){
+	if(qty_buses > 0){
+	     /* Tiempo que tarda en aparacer colectivo index*/
             aux = buses_times[index] - buses_times[index-1];
-	    } else {
-// 		printf("+ERROR: No se pudo crear el colectivo \n");
-            aux = 0;
-        }
+	} else {
+	    aux = 0;
+	}	
     }
    
     pthread_exit(0);
