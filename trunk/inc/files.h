@@ -1,3 +1,6 @@
+#ifndef __FILES_H__
+#define __FILES_H__
+
 /* Funcion que abre el directorio con los archivos,
  * los abre uno a uno si corresponde y devuelve el FD. */
 int openFiles(void);
@@ -27,3 +30,5 @@ int closeFd(int fd);
 
 /* Funcion que cierra el cirectorio. */
 void closeDir(void);
+
+#endif
