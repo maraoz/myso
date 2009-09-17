@@ -1,6 +1,7 @@
 #include <ncurses.h>
 #include <unistd.h>
 #include <pthread.h>
+#include <stdlib.h>
 #include "../inc/typedef.h"
 #include "../inc/core.h"
 #include "../inc/draw.h"
@@ -11,11 +12,11 @@ extern int semps_hash[(CUADRAS+1)][(CUADRAS+1)];
 extern pthread_mutex_t semaphore_mutex;
 extern pthread_mutex_t map_mutex;
 extern int sim_on;
-
+extern point_t buses[XDIM*YDIM][XDIM*YDIM];
 
 void print_square(point_t point);
 void print_all_squares(void);
-void print_bus(point_t point);
+void print_bus(point_t point1, point_t point2);
 void print_h_sem(point_t point);
 void print_v_sem(point_t point);
 
@@ -42,7 +43,7 @@ draw(void)
 {
     WINDOW * hola;
     int i,j;
-    point_t aux;
+    point_t aux, aux2;
 	int startx, starty, width, height;
 
 	initscr();			/* Start curses mode 		*/
@@ -60,8 +61,8 @@ draw(void)
     log_box = create_newwin(height, width-30, starty, startx+width+5);
     werase(city_box);
     werase(log_box);
-	city_win = subwin(city_box,height-4, width-5, starty+2, startx+3);
-	log_win = subwin(log_box,height-2, width-32, starty+1, startx+width+6);
+        city_win = newwin(height-4, width-5, starty+2, startx+3);
+        log_win = newwin(height-2, width-32, starty+1, startx+width+6);
 	scrollok(log_win, TRUE);
 
 	while(sim_on) {
@@ -85,24 +86,20 @@ draw(void)
                 if( !((i%(TILES_CUADRAS+1) == 1) || (i%(TILES_CUADRAS+1) == 2)) || 
 		 !((j%(TILES_CUADRAS+1) == 1) || (j%(TILES_CUADRAS+1) == 2)))
                 {
-		    aux.x = j;
-		    aux.y = i;
-                    if(hasSemaphore(aux))
+		    aux2.x = j;
+		    aux2.y = i;
+                    aux.x = Xpositions[j];
+                    aux.y = Ypositions[i];
+
+                    if(hasSemaphore(aux2))
 		    {
-			aux.x = Xpositions[j];
-			aux.y = Ypositions[i];
-			
                         if(isVRedHGreen(semps[(semps_hash[i][j])]))
                             print_v_sem(aux);
                         else
                             print_h_sem(aux);
 		    }
                     if(tiles[i][j])
-		    {
-			aux.x = Xpositions[j];
-			aux.y = Ypositions[i];
-                        print_bus(aux);
-		    }
+                        print_bus(aux, aux2);
 
 		    refresh(); 
 
@@ -145,10 +142,17 @@ print_all_squares(void)
 }
 
 void
-print_bus(point_t point)
+print_bus(point_t point1, point_t point2)
 {
-    mvwprintw(city_win,point.y, point.x, "##");
-    mvwprintw(city_win,(point.y)+1, point.x, "##");
+    int i, j, flag = 1;
+
+    for(i = 0; i < XDIM*YDIM && flag; i++)
+        for(j = 0; j < XDIM*YDIM && flag; j++)
+            if(buses[i][j].x == point2.x && buses[i][j].y == point2.y)
+                flag = 0;
+
+    mvwprintw(city_win,point1.y, point1.x, "%02d", i);
+    mvwprintw(city_win,(point1.y)+1, point1.x, "%02d", j);
 }
 
 void
