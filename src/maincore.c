@@ -44,7 +44,7 @@ main(int argc, char * argv[]) {
         if (int_opt >= 0 && int_opt < 4 ) {
             ipc_selection = int_opt;
         } else {
-            printf("COdigo de IPC invalido, se toma el default"
+            printf("Codigo de IPC invalido, se toma el default"
             "MESSAGE_QUEUE\n");
             ipc_selection = MESSAGE_QUEUE;
         }
@@ -99,7 +99,6 @@ main(int argc, char * argv[]) {
         files.qty++;
         if(files.qty%10 == 0){
             files.buffer = realloc(files.buffer,(files.qty+10)*sizeof(int));
-	    // TODO: CHEQUEAR POR NULL
             }
         }
     }

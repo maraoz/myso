@@ -26,9 +26,6 @@ person_t passenger;
 extern sim_on;
 Tfiles files;
 
-
-// int session_line;
-
 int
 init(void) {
     
@@ -103,7 +100,7 @@ pax_creation() {
             /* Inserto pasajero en su linea correspondiente */
             insert_pax_to_line(files.buffer[passenger.line], passenger.line, passenger.up, passenger.down);
             wprintw(log_win,"Nuevo pasajero para la linea %d\n",passenger.line+1);
-            wprintw(log_win,"Va de la parada (%d,%d) a la parada (%d,%d)\n",passenger.up.x,passenger.up.y,passenger.down.x,passenger.down.y);
+            wprintw(log_win,"Va de la parada (%d,%d) a la parada (%d,%d)\n" ,passenger.up.x,passenger.up.y,passenger.down.x,passenger.down.y);
         }
         pthread_mutex_unlock(&citizen_mutex);
         
@@ -115,8 +112,6 @@ pax_creation() {
 
 int
 insert_bus(int idl, int idb, point_t pos){
-    if(DEBUG_MODE)
-	wprintw(log_win,"TRACE: PIDIO DE INSERTARSE\n");
     
     /* Reviso que sea una linea valida */
     if(idl >= XDIM*YDIM || idl < 0) {
@@ -138,13 +133,11 @@ insert_bus(int idl, int idb, point_t pos){
     /*Reviso que no caiga dentro de una manzana */
     if(((pos.y%(TILES_CUADRAS+1) == 1) || (pos.y%(TILES_CUADRAS+1) == 2)) 
       && ((pos.x%(TILES_CUADRAS+1) == 1) || (pos.x%(TILES_CUADRAS+1) == 2))){
-// 	    wprintw(log_win,"No se puede insertar un colectivo en medio de una manzana.\n");
         return BLOCKED_SLOT;
     }
 
     /*Reviso que el lugar nuevo este vacio */
     if(tiles[pos.y][pos.x]){
-//        printf("Hay un bus en ese lugar, intentar luego.\n");
         return BUS_ALREADY_IN_SLOT;
     }
 
@@ -154,10 +147,8 @@ insert_bus(int idl, int idb, point_t pos){
     buses[idl][idb] = pos;
     pthread_mutex_unlock(&map_mutex);
     insert_bus_ack(files.buffer[idl],idl,idb);
-    if(DEBUG_MODE)
-	wprintw(log_win,"TRACE: COLECTIVO INSERTADO\n");
+
     return idb;
-        
 }
 
 
@@ -166,8 +157,6 @@ move_bus(int idl, int idb, point_t new_pos){
     /* Guardo la posicion actual del colectivo en una variable local */
     point_t actual_pos = buses[idl][idb];
     int aux; 
-    if(DEBUG_MODE)
-	wprintw(log_win,"TRACE: PIDIO DE MOVERSE\n");
     
     /* Reviso que sea una linea valida */
     if(idl >= XDIM*YDIM || idl < 0) {
@@ -188,28 +177,23 @@ move_bus(int idl, int idb, point_t new_pos){
     
     /* Reviso que el colectivo no se quiera mover mas de 1 lugar por turno */
     if(dist(new_pos, actual_pos) > 1){
-//         wprintw(log_win,"No te podes mover mas de 1 lugar por turno.\n");
         return NEW_POS_FAR_AWAY;
     }
   
     /* Reviso que los semaforos esten en verde en la direccion que me quiero mover */
     if(hasSemaphore(new_pos) && isVRedHGreen(semps[(semps_hash[new_pos.y][new_pos.x])]) 
 	&& actual_pos.x == new_pos.x) {
-// 	wprintw(log_win,"No se puede avanzar a (%d,%d), semaforo en rojo.\n",new_pos.x, new_pos.y);
         return RED_LIGHT_ON;
     }
     if(hasSemaphore(new_pos) && !isVRedHGreen(semps[(semps_hash[new_pos.y][new_pos.x])]) 
     && actual_pos.y == new_pos.y) {
-// 	wprintw(log_win,"No se puede avanzar a (%d,%d), semaforo en rojo.\n",new_pos.x, new_pos.y);
         return RED_LIGHT_ON;
     }
     
     if(tiles[new_pos.y][new_pos.x] == TRUE){
         /*Reviso que el lugar nuevo este vacio */
-// 	wprintw(log_win,"No se puede avanzar, posicion (%d,%d) ocupada\n",new_pos.x, new_pos.y);
         return NEW_POS_ALREADY_OCCUPIED;
     }
-
 
     /* Reviso que ningun colectivo este moviendose en contramano */
     if((aux=(new_pos.x - actual_pos.x)) != 0) {
@@ -235,13 +219,10 @@ move_bus(int idl, int idb, point_t new_pos){
     /* Si llegue hasta acá, muevo el colectivo */
     buses[idl][idb] = new_pos;
     pthread_mutex_lock(&map_mutex);
-//     wprintw(log_win,"actual pos: (%d,%d)\n",actual_pos.x,actual_pos.y);
     tiles[actual_pos.y][actual_pos.x] = FALSE;
-//     wprintw(log_win,"new pos: (%d,%d)\n",new_pos.x,new_pos.y);
     tiles[new_pos.y][new_pos.x] = TRUE;
     pthread_mutex_unlock(&map_mutex);
-    if(DEBUG_MODE)
-	wprintw(log_win,"TRACE: SE MOVIO\n");
+
     move_request_ack(files.buffer[idl],idl,idb);
     
     return idb;
@@ -250,8 +231,7 @@ move_bus(int idl, int idb, point_t new_pos){
 int
 valid_pos(point_t pos){
     
-    if(pos.x >= XDIM || pos.x < 0 
-        || pos.y >= YDIM || pos.y < 0){
+    if(pos.x >= XDIM || pos.x < 0 || pos.y >= YDIM || pos.y < 0){
             wprintw(log_win,"pos.x = %d, pos.y = %d\n", pos.x, pos.y);
             wprintw(log_win,"Posicion fuera las dimensiones de la ciudad.\n");
             return FALSE;
