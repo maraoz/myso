@@ -198,20 +198,20 @@ move_bus(int idl, int idb, point_t new_pos){
     /* Reviso que ningun colectivo este moviendose en contramano */
     if((aux=(new_pos.x - actual_pos.x)) != 0) {
         if(new_pos.y%6==0  && aux != 1 && new_pos.y != YDIM-1) {
-            wprintw(log_win,"CONTRAMANO.\n");
+            wprintw(log_win,"CONTRAMANO: colectivo %d de la linea %d.\n",idb,idl);
             return WRONG_WAY;
         }
         if(((new_pos.y%3==0 && new_pos.y%6!=0)|| new_pos.y==YDIM-1) && aux != -1  && new_pos.y != 0) {
-            wprintw(log_win,"CONTRAMANO.\n");
+            wprintw(log_win,"CONTRAMANO: colectivo %d de la linea %d.\n",idb,idl);
             return WRONG_WAY;
         }
     } else if((aux=(new_pos.y - actual_pos.y)) != 0) {
         if(new_pos.x%6==0 && new_pos.x != XDIM-1 && aux != -1) {
-            wprintw(log_win,"CONTRAMANO.\n");
+            wprintw(log_win,"CONTRAMANO: colectivo %d de la linea %d.\n",idb,idl);
             return WRONG_WAY;
         }
         if(((new_pos.x%3==0 && new_pos.x%6!=0) || new_pos.x == XDIM-1) && aux != 1 && new_pos.x != 0) {
-            wprintw(log_win,"CONTRAMANO.\n");
+            wprintw(log_win,"CONTRAMANO: colectivo %d de la linea %d.\n",idb,idl);
             return WRONG_WAY;
         }
     }
