@@ -50,7 +50,7 @@ draw(void)
 	cbreak();
 	keypad(stdscr, TRUE);
 	height = LINES-2;
-	width = COLS / 2;
+	width = (COLS+25) / 2;
 	starty = 2;	
 	startx = 0;	
 	printw("Press Q to exit");

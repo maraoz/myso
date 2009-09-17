@@ -10,7 +10,7 @@
 #include <stdlib.h>
 #include <ncurses.h>
 
-
+/* Variables globales */
 extern boolean tiles[YDIM][XDIM];
 extern point_t buses[XDIM*YDIM][XDIM*YDIM];
 
@@ -36,21 +36,22 @@ char * ipc_strings[] = {"SHARED MEMORY", "FIFO", "SOCKET", "MESSAGE QUEUE"};
 
 int
 main(int argc, char * argv[]) {
-
+    
+    /* Se decide con que IPC se va a trabajar */
     if (argc == 2){
         char * option = argv[1];
         int int_opt = atoi(option);
         if (int_opt >= 0 && int_opt < 4 ) {
             ipc_selection = int_opt;
         } else {
-            printf("C�digo de IPC inv�lido, se toma el default"
+            printf("COdigo de IPC invalido, se toma el default"
             "MESSAGE_QUEUE\n");
             ipc_selection = MESSAGE_QUEUE;
         }
     } else {
         ipc_selection = MESSAGE_QUEUE;
     }
-    printf("Se seleccionó el IPC %s\n", ipc_strings[ipc_selection]);
+    printf("Se selecciona el IPC %s\n", ipc_strings[ipc_selection]);
     sleep(1);
 
     pthread_t * core_threads;
@@ -60,17 +61,19 @@ main(int argc, char * argv[]) {
 
     pthread_attr_init(&attr);
     pthread_attr_setdetachstate(&attr, PTHREAD_CREATE_DETACHED);
-    files.buffer = malloc(10*sizeof(int));
-    files.qty = 0;
+    files.buffer = malloc(10*sizeof(int)); /* Aca se van a tener los fd de los archivos */
+    files.qty = 0; /* La cantidad de los fd al principio es 0 */
     if(files.buffer == NULL)
         return 1;
 
     init();
 
     openDir();
-
+    
+    /* Leo del directorio, hasta que no haya mas archivos */ 
     while((files.buffer[files.qty] = openFiles()) != 0) {
 
+    /* Reviso que no sea un directorio el archivo leido */
     if(files.buffer[files.qty] != -1){
         pid_t pid;
         int aux;
@@ -78,8 +81,8 @@ main(int argc, char * argv[]) {
         char * ipc_method;
         line_id = itoa(files.qty);
         ipc_method = itoa(ipc_selection);
-        preparefd(files.buffer[files.qty]);
-        closeFd(files.buffer[files.qty]);
+        preparefd(files.buffer[files.qty]); /* Duplica el FD */
+        closeFd(files.buffer[files.qty]); /* Cierro el FD que habia duplicado */
         char *args[] = {"lineas", line_id, ipc_method ,(char *) 0 };
         pid = fork();
         switch(pid){
@@ -90,7 +93,7 @@ main(int argc, char * argv[]) {
             case -1:
                     return 1;
             default:
-                files.buffer[files.qty] = openChannel(pid);
+                files.buffer[files.qty] = openChannel(pid); /* Abro canal de conversacion con la linea */
                 break;
         }
         files.qty++;
@@ -108,19 +111,25 @@ main(int argc, char * argv[]) {
 	return 1;
     }
 
+    /* Thread de dibujo */
     aux_pthread_creation = pthread_create(&core_threads[0], &attr, (void*)(draw), NULL);
     if(aux_pthread_creation){
        wprintw(log_win, "+ERROR: No se pudo crear el thread pedido.\n");
     }
+
+    /* Thread de creacion de pasajeros */
     aux_pthread_creation = pthread_create(&core_threads[1], &attr, (void*)(pax_creation), NULL);
     if(aux_pthread_creation){
        wprintw(log_win, "+ERROR: No se pudo crear el thread pedido.\n");
     }
+    
+    /* Thread para escuchar de teclado */
     aux_pthread_creation = pthread_create(&core_threads[2], &attr, (void*)(keyboard_listen), NULL);
     if(aux_pthread_creation){
        wprintw(log_win, "+ERROR: No se pudo crear el thread pedido.\n");
     }
 
+    /* Threads para escuchar a las lineas */
     for(i=0;i<files.qty;i++){
         aux_pthread_creation = pthread_create(&core_threads[i+3], &attr, (void*)(core_listen), (void*)i);
         if(aux_pthread_creation){
@@ -129,6 +138,7 @@ main(int argc, char * argv[]) {
     }
     pthread_attr_destroy(&attr);
 
+    /* Cada cierto intervalo de tiempo invierto el estado de los semaforos */
     while(sim_on){
         int i;
         sleep(10);
@@ -143,6 +153,6 @@ main(int argc, char * argv[]) {
     pthread_cond_destroy(&citizen_cond);
     closeFd(3);
     for (i = 0; i<files.qty; i++)
-        closeChannel(files.buffer[i]);
+        closeChannel(files.buffer[i]); /* Cierro la comunicacion con todas las lineas */
     exit(0);
 }
