@@ -107,7 +107,7 @@ new_bus(int index) {
     }
     if(DEBUG_MODE)
 	printf("sali del while\n");
-    while(1){
+    while(sim_on){
         sleep(2);
         if(DEBUG_MODE)
 	    printf("intenando moverme\n");
