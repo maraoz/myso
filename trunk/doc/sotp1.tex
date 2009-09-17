@@ -3,30 +3,25 @@
 \usepackage [spanish] {babel}
 \usepackage[utf8]{inputenc}
 \usepackage{amsmath, amsfonts, amssymb}
-\usepackage[pdftex]{color,graphicx}
 \include{latexsym}
-\include{epsf}
 
 \begin{document}
 
 
 \begin{frontmatter}
-\title{Trabajo Pr谩ctico 1: Filesystems, IPCs, Servidores}
-\author{Manuel Ar谩oz (49244) \& Mat铆as Williams (49195)} \& Pablo Giorgi (49222)}
-\address{Ingenier铆a en Inform谩tica\\
-Instituto Tecnol贸gico Buenos Aires\\
-Ciudad Aut贸noma de Buenos Aires, Argentina}
+\title{Trabajo Práctico 1: Filesystems, IPCs, Servidores}
+\author{Manuel Aráoz (49244) \& Matí­as Williams (49195)} \& Pablo Giorgi (49222)}
+\address{Ingeniería en Informática\\
+Instituto Tecnológico Buenos Aires\\
+Ciudad Autónoma de Buenos Aires, Argentina}
 \date{\today}
 
 
 \maketitle
 
 \begin{abstract}
-En este informe se dar谩n a conocer las decisiones que se tomaron al momento de realizar el Trabajo Pr谩ctico, los problemas presentados y las soluciones que se aplicaron para resolverlos.
+En este informe se darán a conocer las decisiones que se tomaron al momento de realizar el Trabajo Práctico, los problemas presentados y las soluciones que se aplicaron para resolverlos.
 \end{abstract}
-\begin{keyword}
-Programaci贸n lineal, programaci贸n entera, m茅todo S铆mplex, m茅todo de Resoluci贸n Gr谩fica, Camino hamiltoneano.
-\end{keyword}
 \end{frontmatter}
 \clearpage
 
@@ -35,35 +30,63 @@ Programaci贸n lineal, programaci贸n entera, m茅todo S铆mplex, m茅todo de Resoluc
 
 \clearpage
 
-\section{Divis贸n en Capas}
+\section{División en Capas}
 
-\subsection{Aplicaci贸n}
-La capa de aplicaci贸n consiste en distintos modulos. Por un lado existen los m贸dulos \emph{maincore.c} y \emph{mainlines.c}. Estos m贸dulos son los que contienen los \emph{main} de los procesos que van a estar corriendo a la vez. Solo habr谩 un proceso corriendo \emph{maincore.c} y habr谩 tantos procesos como archivos haya en el directorio de lineas, corriendo \emph{mainlines.c}. Tambi茅n, existen otros m贸dulos que complementan las funciones de los dos \emph{main}: \emph{lineas.c} y \emph{core.c}. Aqu铆 se hallan todas las funcionen que se van a llamar desde los dos \emph{main}. Asimismo, hay un m贸dulo que se encarga de la interfaz gr谩fica: \emph{draw.c}.
+\subsection{Aplicación}
+La capa de aplicación consiste en distintos módulos. Por un lado existen los módulos \emph{maincore.c} y \emph{mainlines.c}. Estos módulos son los que contienen los \emph{main} de los procesos que van a estar corriendo a la vez. Solo habrá un proceso corriendo \emph{maincore.c} y habrá tantos threads como archivos haya en el directorio de lineas, corriendo \emph{mainlines.c}. También, existen otros módulos que complementan las funciones de los dos \emph{main}: \emph{lineas.c} y \emph{core.c}. Aquí­ se hallan todas las funciones que se van a llamar desde los dos \emph{main}. Asimismo, hay un módulo que se encarga de la interfaz gráfica: \emph{draw.c}.
+
+\subsubsection{Archivos}
+Para la parte de levantar la información de los archivos, se organizó de la siguiente manera:
+En primer lugar se creó un directorio en el que se guardan todos los archivos con la información de las lineas. Dichos archivos tienen como nombre un número que los describe.
+Al iniciar el core, llama a una función que abre el directorio y va devolviendo los FD de los archivos abiertos, hasta que no quedan más en el directorio.
+Luego, antes de crear el proceso linea desde core, se pasa el FD a 3, para que cada linea sepa de antemano de qué FD leer sus datos.
+Despues se tienen las funciones que levantan los datos de los files descriptors abiertos, se van llamando de a una con el número de FD, que será 3.
+La organizacion interna de los archivos se corresponde con el orden en que se llaman las funciones que piden los datos, simplemente para agregar simplicidad.
+También existen 2 funciones del tipo close, una para los FD y otra para el directorio.
+
+\subsubsection{Draw Image}
+Para la parte de imprimir la pantalla con el estado del sistema, lo que se hizo fue crear una función draw como thread de core, para independizarlo, y en caso de haber algun error, este no repercutiría en el resto del sistema.
+La forma de dibujar fue básicamente crear 2 ventanas, una para la ciudad, y otra para los mensajes que se considere importante mostrar, como ser los movimientos de los pasajeros, etc.
+Ademas se muestra el número de linea de colectivo y el Id del interno del mismo, para poder seguir su recorrido.
+
 \subsubsection{Decisiones tomadas}
 \subsubsection{Problemas presentados}
 \begin{itemize}
-	\item Al principio no se chequeaba que un colectivo insertado no se pudiera insertar nuevamente. Esto generaba dos problemas; por un lado se insertaba dos veces el mismo colectivo, y por el otro varias veces se quer铆a mover un colectivo que no estaba insertado. El segundo problema surgi贸 porque se quiso arreglar el primero mediante utilizar un valor inv谩lido para.
+	\item Al principio no se chequeaba que un colectivo insertado no se pudiera insertar nuevamente. Esto generaba dos problemas; por un lado se insertaba dos veces el mismo colectivo, y por el otro varias veces se querí­a mover un colectivo que no estaba insertado. El segundo problema surgió porque se quiso arreglar el primero mediante utilizar un valor inválido para.
 \end{itemize}
 
-
 \subsubsection{Soluciones a los problemas}
+
+
 \subsection{Marshall}
+Para la capa de marshall lo que se hizo fue, en base a determinadas funciones que se conocía que usarían los 2 procesos que se iban a comunicar por medio de IPCS, se crearon funciones que en cierta manera empaquetarían los datos que estas utilizarían de la siguiente forma:
+Yendo a un ejemplo concreto supongamos el caso en que una linea necesita insertar un colectivo en la ciudad.
+En primer lugar, el proceso lineas envía a core un insert request por medio del IPC que se este usando; el thread de core encargado de la comunicación que probablemente estará bloqueado en read dentro de receive, recibirá un paquete.
+Dicho paquete, entre su información, contendrá un ID de mensaje, en este caso el ID que le indica a core que debe insertar un colectivo, a lo que core reaccionará realizando dicha accion con los parametros que también recibió en el paquete.
+Luego de esto, core necesita hacer saber a la linea si logró realizar dicha acción; si pudo insertar el colectivo, responderá con un insert request ack. Un thread de lineas, recibirá este paquete y confirmará la inserción.
+Si no pudo core insertar el colectivo por algún motivo, no enviará el insert request ack, con lo cual, lineas no recibirá confirmación y el próximo mensaje que enviará será nuevamente el de inserción.
+
 \subsubsection{Decisiones tomadas}
-\subsubsection{Problemas presentados}
-\subsubsection{Soluciones a los problemas}
+Lo interesante de la capa de marshall es que se logró utilizar el mismo codigo para los 4 IPCs, que era el objetivo del mismo.
+Esto es consecuencia de que la parte de comunicación con los IPCs se da por medio de 4 funciones, open, close, read y write.
+Las cuales enmascaran a las funciones nombradas anteriormente de cada uno de los IPCs.
+
 \subsection{Transporte}
+En la capa de transporte se implementaron los 4 IPCs vistos en la materia: FIFO, Shared Memory, Sockets y Message Queue.
+Todos estos, tienen las primitivas básicas: open, close, read y write enmascaradas detrás de funciones generales que llamarán a la que corresponda según el IPC que se este usando.
+
 \subsubsection{Decisiones tomadas}
+	\item Para facilitar el uso de las funcionalidades de transporte, se decidió (aconsejados por la cátedra) implementar una interfaz uniforme (API) que maneje de forma transparente los 4 métodos de IPC pedidos. Para lograr esto se usó un vector de punteros a funciones para cada uno de las funciones que se deseaban exponer (en nuestro caso w_init, w_open, w_close, w_write y w_read) y en función del tipo de IPC usado se hacía el llamado corespondiente.
+	\item Se decidió que la capa de transporte maneje una tabla de sesiones para cada proceso en donde almacenar la informacion necesaria para acceder a los demás procesos para cada uno de los IPC. Entonces, en lineas generales, al hacer los llamados a w_open, la capa de protocolo guarda información sobre el canal de comunicacion que se está abriendo y se devuelve una variable identificatoria de la sesión, que podrá ser usada luego por el usuario para escribir o leer en ese canal. La idea es muy parecida al comportamiento de las funciones open, close, write y read de archivos convencionales. La sesión devuelta por w_open funciona como el file descriptor de open y sirve para indicarle a las funciones w_write, w_read y w_close con quién se está produciendo esa operación de escritura, lectura, o terminación.
+	\item Se decidió usar System V como librería de IPC debido a que nos pareció más potente en algunos aspectos. Igualmente no consideramos que las diferencias fueran tan grandes como para discutir demasiado al respecto. Para decidir cuál de los dos sitemas usar se tuvo en cuenta la experiencia de los docentes de la cátedra y la disponibilidad de buen material de aprendizaje en internet y en los libros.
+	\item Haciendo un análisis más minucioso de cada método de IPC, se tomaron las siguientes decisiones: para los sockets se utilizó el protocolo AF_UNIX en modo STREAM, debido a que se consideró más simple (parecido a lectura de archivos) y no requiere capa de confiabilidad; con respecto a message queue, se eligió la solución que se consideró más elegante, que consiste en manejar una única cola de mensajes en donde cada proceso filtra los mensajes segun su pid; con respecto a fifos se utilizó uno para lectura y otro para escritura para cada par de procesos que se comunican; y por último para shared memory, se hizo uso de semáforos como indicador de cuántos recursos (paquetes) estaban disponibles en la zona compartida (lo cual traía varias ventajas como que el proceso que lee se bloquea si no hay qué leer gracias al semáforo)
+
 \subsubsection{Problemas presentados}
+	\item Las mayores dificultades se hallaron entendiendo y pudiendo aplicar las funciones de System V a nuestro caso en particular, aunque una vez que nos acostumbramos a la interfaz (algo homogénea a través de los distintos IPCs) esta tarea se simplificó mucho. Otras dificultades importantes que se presentaron fueron las referentes a cómo hacer que dos procesos (que pueden no conocerse entre sí) utilicen el mismo canal de comunicación. Por ejemplo, en FIFOS, ambos procesos debían abrir el mismo archivo refiriéndose a un nombre creado dinámicamente y que variaba dependiendo de la cantidad de líneas y otros factores. La solución que se encontró en este caso fue relacionar el nombre del FIFO con el pid del proceso de la línea de colectivos.
+	\item Otro problema importante que se tuvo fue el de cerrar las vías de comunicación prolijamente. Al haber tantas estructuras, archivos abiertos, semáforos, zonas de memoria, etc necesarias para mantener la comunicación entre cada par de procesos, no era una opción no atender a este problema. La dificultad radicó en que cada proceso por separado debía cerrar sus vínculos con los demás procesos (con su consiguiente liberación de memorias alocadas para estructuras de control, cerrado de archivos, destrucción de ipcs, etc) antes de que toda la aplicación se de por terminada. Lo que nos pasó durante el desarrollo fue que al correr nuestra aplicación quedaban IPCs remanentes (que persistían a la vida del proceso de la aplicación) que ocupaban recursos del sistema y a veces hasta interferían con instancias posteriores del programa. También se producían anomalías cuando quedaban procesos corriendo en background que deberían haber sido eliminados en la ejecución anterior.
+
 \subsubsection{Soluciones a los problemas}
-
-\section{Bibliograf铆a}
-\begin{itemize}
-	\item GROSSMAN, Stanley I., \emph{Aplicaciones del 脕lgebra Lineal}, McGraw-Hill, Cuarta Edici贸n, M茅xico D.F., 1992.
-	\item MUNIER, Nolberto J., \emph{Programaci贸n Lineal}, Editorial Astrea, Tercera Edici贸n, Buenos Aires, 1979.
-	\item MUNIER, Nolberto J., \emph{Aplicaciones de la Programaci贸n Lineal}, Editorial Astrea, Buenos Aires, 1986.
-	\item WANER, Stefan, \emph{Simplex Method Tool},2008, \underline{http://www.zweigmedia.com/RealWorld/simplex.html}
-\end{itemize}
-
+	\item Nuestra solución a todos estos problemas fue hacer que el CORE se encargue de avisar a cada proceso de línea que debía terminarse (mendiante el envío de un packete que se lo indicaba) y prolijamente cerrar sus sesiones de comunicación abiertas. Así, cada proceso de línea hacía un llamado a w_close() y luego se terminaba. Finalmente, el core cerraba las sesiones de comuncación que había abierto con las líneas, para así terminar la aplicación de modo seguro.
 
 \end{document}
 

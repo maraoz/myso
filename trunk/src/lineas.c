@@ -79,8 +79,6 @@ calculate_stops(int fd){
 
 void
 move_ack(int fd, int id){
-    if(DEBUG_MODE)
-        printf("TRACE: ME MOVI\n");
     if(movements[id] == -1){
          printf("+ERROR: no existe el colectivo\n");
         return;
@@ -94,8 +92,6 @@ void
 insert_ack(int fd, int id){
     /* Reviso que no este insertado todavia */
     if(movements[id] == -1){
-        if(DEBUG_MODE)
-        printf("TRACE: ME INSERTE\n");
         movements[id] = 1;
     }
 }
@@ -114,12 +110,8 @@ new_bus(int index) {
         insert_request(session, line_id, index, buses.path[0]);
         usleep(100000); /* Tiempo de espera entre pedidos de insercion */
     }
-    if(DEBUG_MODE)
-	printf("sali del while\n");
     while(sim_on){
         sleep(2); /* Tiempo de espera entre pedidos de movimiento */
-        if(DEBUG_MODE)
-	    printf("intenando moverme\n");
         move_request(session, line_id, index, buses.path[movements[my_index]]);
 	    /* Si la posicion en la que estoy es la siguiente parada, veo si hay gente para subir o bajar */
 	    if(buses.path[movements[my_index]].x == buses.stops[j].x && buses.path[movements[my_index]].y == buses.stops[j].y ) {

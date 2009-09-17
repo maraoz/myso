@@ -19,7 +19,6 @@ extern int line_id;
 extern int * insertion_ack;
 extern int ** pax;
 extern pthread_mutex_t pax_mutex;
-// extern WINDOW *log_win;
 extern int ipc_selection;
 
 int

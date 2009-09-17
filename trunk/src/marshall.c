@@ -8,7 +8,6 @@
 #include <stdio.h>
 #include <ncurses.h>
 
-
 extern WINDOW *log_win;
 
 #define CD_NO 0
@@ -68,7 +67,6 @@ openChannel(int channel){
     if(result == -1)
 	wprintw(log_win, "+ERROR: ha fallado en open, el channel es %d\n", channel);
 
-    
     return result;
 }
 
@@ -93,8 +91,6 @@ insert_request(session_t session, int idl, int idb, point_t pos)
 
     if(result == -1)
 	wprintw(log_win, "+ERROR: ha fallado en insert request\n");
-
-
 }
 
 void
@@ -107,8 +103,6 @@ insert_bus_ack(session_t session, int idl, int idb){
     data.id_line = idl;
     data.id_bus = idb;
 
-    if(DEBUG_MODE)
-    wprintw(log_win, "TRACE: ESTOY POR ESCRIBIR EL APROBADO DEL INSERT\n");
     result = w_write(session, data);
     
     if(result == -1)
@@ -125,8 +119,6 @@ move_request_ack(session_t session, int idl, int idb){
     data.id_line = idl;
     data.id_bus = idb;
 
-    if(DEBUG_MODE)
-	wprintw(log_win, "TRACE: ESTOY POR ESCRIBIR EL APROBADO DEL MOVE\n");
     result = w_write(session, data);
     
     if(result == -1)
@@ -281,15 +273,6 @@ receive(session_t session)
                 
     data = w_read(session);
 
-    if(DEBUG_MODE)
-	wprintw(log_win,"TRACE: LLEGUE HASTA ANTES DEL SWITCH\n");
-    if(DEBUG_MODE)
-	wprintw(log_win,"TRACE: MSG_ID = %d\n",data.msg_id);
-    if(data.msg_id == -1){
-        if(DEBUG_MODE){
-	    wprintw(log_win,"TRACE: EL MENSAJE ES EL ESPERADO\n");
-	}
-    }
     switch(data.msg_id)
     {
         case CD_INSERT_BUS:
@@ -298,12 +281,12 @@ receive(session_t session)
         case CD_INIT:
         case CD_PAX_DL:
         case CD_PAX_UL:
-        case CD_DEL_STOPS: if(DEBUG_MODE) wprintw(log_win,"TRACE: LLEGUE HASTA RECEIVE CORE\n"); receive_core(data); break;
+        case CD_DEL_STOPS: receive_core(data); break;
         case CD_INSERT_ACK:
         case CD_MOVE_ACK:
         case CD_NEW_PAX:
         case CD_RND_STOPS:
-        case CD_DEL_LINE: if(DEBUG_MODE) wprintw(log_win,"TRACE: LLEGUE HASTA RECEIVE LINES\n");receive_lines(data); break;
+        case CD_DEL_LINE: receive_lines(data); break;
         default: /* */;
     }
 }
