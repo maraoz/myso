@@ -1,0 +1,1 @@
+El perro azul puede mutar a otros colores, aparte de ser azul puede ser verde, rojo y amarillo.
